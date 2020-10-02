@@ -209,7 +209,8 @@ public class MathFunctions {
 
         try {
             // solve roots
-            double xRoot1 = (-quadraticB + Math.sqrt(pow(quadraticB, 2) - (4.0 * quadraticA * quadraticC))) / (2.0 * quadraticA);
+            double discriminant = Math.sqrt(pow(quadraticB, 2) - (4.0 * quadraticA * quadraticC));
+            double xRoot1 = (-quadraticB + discriminant) / (2.0 * quadraticA);
             double yRoot1 = lineSlope * (xRoot1 - x1) + y1;
 
             //add back in translations
@@ -217,15 +218,15 @@ public class MathFunctions {
             yRoot1 += circleCenter.y;
 
             //within range
-            double minX = linePoint1.x < linePoint2.x ? linePoint1.x : linePoint2.x;
-            double maxX = linePoint1.x > linePoint2.x ? linePoint1.x : linePoint2.x;
+            double minX = Math.min(linePoint1.x, linePoint2.x);
+            double maxX = Math.max(linePoint1.x, linePoint2.x);
 
             if (xRoot1 > minX && xRoot1 < maxX) {
                 solutions.add(new Point(xRoot1, yRoot1));
             }
 
             //do the same for the other root
-            double xRoot2 = (-quadraticB - Math.sqrt(pow(quadraticB, 2) - (4.0 * quadraticA * quadraticC))) / (2.0 * quadraticA);
+            double xRoot2 = (-quadraticB - discriminant) / (2.0 * quadraticA);
             double yRoot2 = lineSlope * (xRoot2 - x1) + y1;
 
             xRoot2 += circleCenter.x;
