@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.os.SystemClock;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
@@ -17,13 +18,13 @@ public class ShooterModule implements Module, TelemetryProvider {
     // States
     public double flyWheelTargetSpeed;
     public double shooterFlapAngle; // Radians, relative to horizon.
-    public int queuedFires; // Number of rings queued up to shoot.
+    public boolean indexRing;
 
     // Motors
-    private DcMotorEx leftFlyWheel;
-//    private DcMotorEx rightFlyWheel;
+    private DcMotorEx flyWheel1;
+    private DcMotorEx flyWheel2;
     private EnhancedServo shooterFlap;
-    private Servo indexerServo;
+    private EnhancedServo indexerServo;
 
     public ShooterModule(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -34,24 +35,40 @@ public class ShooterModule implements Module, TelemetryProvider {
     @Override
     public void init() {
         // TODO
-        leftFlyWheel = (DcMotorEx) robot.getDcMotor("leftFlyWheel");
-//        rightFlyWheel = (DcMotorEx) robot.getDcMotor("rightFlyWheel");
+        flyWheel1 = (DcMotorEx) robot.getDcMotor("yLeft");
+        flyWheel2 = (DcMotorEx) robot.getDcMotor("yRight");
         shooterFlap = new EnhancedServo(robot.getServo("shooterFlap"), 0, 180); // In degrees
-//        indexerServo = robot.getServo("indexerServo");
+        indexerServo = new EnhancedServo(robot.getServo("indexerServo"), 0, 180);
 
-        leftFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        rightFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        flyWheel1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        flyWheel2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        leftFlyWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        rightFlyWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        flyWheel1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
+    private long indexTime  = 0;
     @Override
     public void update() {
         // TODO
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
-        leftFlyWheel.setVelocity(flyWheelTargetSpeed);
+        flyWheel1.setVelocity(flyWheelTargetSpeed);
+        flyWheel2.setVelocity(flyWheelTargetSpeed);
         shooterFlap.setAngle(shooterFlapAngle);
+
+        long currentTime = SystemClock.elapsedRealtime();
+        boolean isDoneIndexing = currentTime > indexTime + 1000;
+        boolean indexerReturned = currentTime > indexTime + 5000;
+        if (indexRing && indexerReturned) {
+            indexerServo.setAngle(180);
+            indexTime = currentTime;
+            indexRing = false;
+        } else if (indexRing) {
+            indexRing = false;
+        }
+        if (isDoneIndexing) {
+            indexerServo.setAngle(0);
+        }
     }
 
     @Override
@@ -63,8 +80,9 @@ public class ShooterModule implements Module, TelemetryProvider {
     public ArrayList<String> getTelemetryData() {
         // TODO
         ArrayList<String> data = new ArrayList<>();
-//        data.add("Flywheel speed: " + flyWheelSpeed);
-//        data.add("Will shoot: " + willShoot);
+        data.add("Flywheel speed: " + flyWheelTargetSpeed);
+        data.add("Flap angle: " + shooterFlapAngle);
+        data.add("Will index: " + indexRing);
 
         return data;
     }

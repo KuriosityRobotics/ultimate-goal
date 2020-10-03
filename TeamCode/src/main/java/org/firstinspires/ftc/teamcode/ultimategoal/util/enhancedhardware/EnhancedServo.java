@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class EnhancedServo {
     private Servo servo;
 
-    double position;
+    double position = Double.MAX_VALUE;
 
     double lowestPositionAngle; // The angle of the servo at position 0
     double highestPositionAngle; // The angle of the servo at position 1
