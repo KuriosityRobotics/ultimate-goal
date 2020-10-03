@@ -14,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.DrivetrainModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.ShooterModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.VelocityModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
@@ -24,6 +25,7 @@ public class Robot {
     public DrivetrainModule drivetrainModule;
     public OdometryModule odometryModule;
     public VelocityModule velocityModule;
+    public ShooterModule shooterModule;
 
     public long currentTimeMilli;
 
@@ -83,9 +85,10 @@ public class Robot {
         this.drivetrainModule = new DrivetrainModule(this, true);
         this.odometryModule = new OdometryModule(this, true);
         this.velocityModule = new VelocityModule(this, true);
+        this.shooterModule = new ShooterModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrainModule, this.odometryModule, this.velocityModule
+                this.drivetrainModule, this.odometryModule, this.velocityModule, this.shooterModule
         };
 
         // Initialize modules
