@@ -16,10 +16,12 @@ public class DrivetrainModule implements Module, TelemetryProvider {
     public double yMovement;
     public double xMovement;
     public double turnMovement;
+    public boolean isSlowMode;
 
     // Constants
     private final static double POWER_SCALE_FACTOR = 0.8;
     private final static double MECANUM_POWER_SCALE_FACTOR = 1.414;
+    private final static double SLOW_MODE_FACTOR = 0.2;
 
     // Motors
     private DcMotor fLeft;
@@ -82,6 +84,13 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         bLPower *= POWER_SCALE_FACTOR;
         bRPower *= POWER_SCALE_FACTOR;
 
+        if (isSlowMode) {
+            fLPower *= SLOW_MODE_FACTOR;
+            fRPower *= SLOW_MODE_FACTOR;
+            bLPower *= SLOW_MODE_FACTOR;
+            bRPower *= SLOW_MODE_FACTOR;
+        }
+
         setMotorPowers(fLPower, fRPower, bLPower, bRPower);
     }
 
@@ -117,6 +126,7 @@ public class DrivetrainModule implements Module, TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
+        data.add("isSlowMode: " + isSlowMode);
         data.add("xMovement: " + xMovement);
         data.add("yMovement: " + yMovement);
         data.add("turnMovement: " + turnMovement);

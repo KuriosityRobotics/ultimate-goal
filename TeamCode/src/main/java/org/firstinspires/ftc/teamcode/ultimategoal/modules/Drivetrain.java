@@ -306,6 +306,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         this.brakeHeading = brakeHeading;
     }
 
+    public void setSlowMode(boolean isSlowMode) {
+        this.drivetrainModule.isSlowMode = isSlowMode;
+    }
+
     @Override
     public boolean isOn() {
         return isOn;
