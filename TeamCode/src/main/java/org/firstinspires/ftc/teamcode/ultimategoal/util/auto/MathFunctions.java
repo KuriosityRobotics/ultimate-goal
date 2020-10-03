@@ -8,8 +8,8 @@ public class MathFunctions {
     /**
      * Wraps angle (in radians) to a value from -pi to pi
      *
-     * @param   angle   Angle to be wrapped
-     * @return  The wrapped angle, between -pi and pi
+     * @param angle Angle to be wrapped
+     * @return The wrapped angle, between -pi and pi
      */
     public static double angleWrap(double angle) {
         return angleWrap(angle, 0);
@@ -18,9 +18,9 @@ public class MathFunctions {
     /**
      * Wraps an angle (in radians) to a value within pi of centerOfWrap.
      *
-     * @param   angle          The angle to be wrapped
-     * @param   centerOfWrap   The center of the boundary in which the angle can be wrapped to.
-     * @return  The wrapped angle, which will lie within pi of the centerOfWrap.
+     * @param angle        The angle to be wrapped
+     * @param centerOfWrap The center of the boundary in which the angle can be wrapped to.
+     * @return The wrapped angle, which will lie within pi of the centerOfWrap.
      */
     public static double angleWrap(double angle, double centerOfWrap) {
         if (angle > centerOfWrap + Math.PI) {
@@ -35,9 +35,9 @@ public class MathFunctions {
     /**
      * Returns the distance between two points, uses Math.hypot.
      *
-     * @param   a   A point.
-     * @param   b   A point.
-     * @return  The distance between the points.
+     * @param a A point.
+     * @param b A point.
+     * @return The distance between the points.
      */
     public static double distance(Point a, Point b) {
         return Math.hypot(a.y - b.y, a.x - b.x);
@@ -45,14 +45,14 @@ public class MathFunctions {
 
     /**
      * Calculate the distance between a given point and a given line segment represented by two points.
-     *
+     * <p>
      * This will return the distance from a point to the endpoint of a segment if the point is not
      * within the bounds of the segment.
      *
-     * @param   point        The point.
-     * @param   linePoint1   A point on the line.
-     * @param   linePoint2   Another, different, point on the line.
-     * @return  The distance between the point and the line segment determined by the two linePoints.
+     * @param point      The point.
+     * @param linePoint1 A point on the line.
+     * @param linePoint2 Another, different, point on the line.
+     * @return The distance between the point and the line segment determined by the two linePoints.
      */
     public static double lineSegmentPointDistance(Point point, Point linePoint1, Point linePoint2) {
         if (!pointWithinLineSegment(point, linePoint1, linePoint2)) {
@@ -70,10 +70,10 @@ public class MathFunctions {
      * point lies between the endpoints of the segment, rigorously, it lies between the area defined
      * by perpendicular lines at each endpoint of the segment.
      *
-     * @param   point        The point.
-     * @param   linePoint1   The first endpoint of the line segment.
-     * @param   linePoint2   The other endpoint of the line segment.
-     * @return  Whether or not the point given lies within bounds of the line segment.
+     * @param point      The point.
+     * @param linePoint1 The first endpoint of the line segment.
+     * @param linePoint2 The other endpoint of the line segment.
+     * @return Whether or not the point given lies within bounds of the line segment.
      */
     public static boolean pointWithinLineSegment(Point point, Point linePoint1, Point linePoint2) {
         if (Math.abs(linePoint1.y - linePoint2.y) < 0.003) {
@@ -97,10 +97,10 @@ public class MathFunctions {
      * Given a point and a line (represented by 2 points), this method finds the point on the line
      * closest to the given point.
      *
-     * @param   point        The point for which to find the closest point lying on the given line.
-     * @param   linePoint1   A point on the line.
-     * @param   linePoint2   A different point on the line.
-     * @return  The point closest to the given point that lies on the line specified.
+     * @param point      The point for which to find the closest point lying on the given line.
+     * @param linePoint1 A point on the line.
+     * @param linePoint2 A different point on the line.
+     * @return The point closest to the given point that lies on the line specified.
      */
     public static Point closestPointOnLineToPoint(Point point, Point linePoint1, Point linePoint2) {
         double lineSlope;
@@ -122,11 +122,11 @@ public class MathFunctions {
     /**
      * Returns the intersection between two lines.
      *
-     * @param   firstLinePoint    A point on the first line.
-     * @param   firstLineSlope    The slope of the first line.
-     * @param   secondLinePoint   A point on the second line.
-     * @param   secondLineSlope   The slope of the second line.
-     * @return  The point representing the intersection of the two lines.
+     * @param firstLinePoint  A point on the first line.
+     * @param firstLineSlope  The slope of the first line.
+     * @param secondLinePoint A point on the second line.
+     * @param secondLineSlope The slope of the second line.
+     * @return The point representing the intersection of the two lines.
      */
     public static Point twoLineIntersectionPoint(Point firstLinePoint, double firstLineSlope, Point secondLinePoint, double secondLineSlope) {
         /* The generalized equation for the intersection of two lines given by y = mx + b is
@@ -150,14 +150,14 @@ public class MathFunctions {
 
     /**
      * Solves for the real roots of a quadratic equation in the form of ax^2 + bx + c.
-     *
+     * <p>
      * Will return null values if there are no real solution, or 1 value followed by null if there
      * is only one real solution.
      *
-     * @param   a   coefficient of squared term
-     * @param   b   coefficient of linear term
-     * @param   c   constant
-     * @return  double[2] with the roots of the quadratic.
+     * @param a coefficient of squared term
+     * @param b coefficient of linear term
+     * @param c constant
+     * @return double[2] with the roots of the quadratic.
      */
     public static double[] solveQuadratic(double a, double b, double c) {
         /* The equation for the roots of a quadratic equation is: (-b +/- sqrt(b^2-4ac)) / 2a
@@ -178,10 +178,10 @@ public class MathFunctions {
     /**
      * Returns all the intersections between a segment of a line and a circle.
      *
-     * @param circleCenter   The center of the circle.
-     * @param radius         The radius of the circle.
-     * @param linePoint1     An end point of the segment.
-     * @param linePoint2     The other end point of the segment.
+     * @param circleCenter The center of the circle.
+     * @param radius       The radius of the circle.
+     * @param linePoint1   An end point of the segment.
+     * @param linePoint2   The other end point of the segment.
      * @return An ArrayList of points representing the intersection between the circle and the line segment.
      */
     public static ArrayList<Point> lineSegmentCircleIntersection(Point circleCenter, double radius, Point linePoint1, Point linePoint2) {
