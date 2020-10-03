@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.VelocityModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ActionExecutor;
 
 public class Robot {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
@@ -36,6 +37,9 @@ public class Robot {
 
     // New thread that updates modules
     ModuleExecutor moduleExecutor;
+
+    // Action executor
+    public ActionExecutor actionExecutor;
 
     // Array that all modules will be loaded into for easier access
     private Module[] modules;
@@ -56,6 +60,8 @@ public class Robot {
 
         initHubs();
         initModules();
+
+        actionExecutor = new ActionExecutor(this);
     }
 
     public void update() {

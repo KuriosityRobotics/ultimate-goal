@@ -2,15 +2,15 @@ package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
 
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
 import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.closestPointOnLineToPoint;
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.lineSegmentPointDistance;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.lineSegmentCircleIntersection;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.lineSegmentPointDistance;
 
 public class PathFollow implements TelemetryProvider {
     Robot robot;
@@ -62,6 +62,8 @@ public class PathFollow implements TelemetryProvider {
 
             setMovementsToTarget(adjustedTargetPoint, moveSpeed, turnSpeed);
 
+            robot.actionExecutor.updateExecution();
+
             if (isDone(path, robotPoint, robotHeading)) {
                 robot.drivetrainModule.xMovement = 0;
                 robot.drivetrainModule.yMovement = 0;
@@ -106,6 +108,12 @@ public class PathFollow implements TelemetryProvider {
             }
         }
 
+        if (clippedIndex != pathIndex) {
+            for (int skippedIndex = pathIndex; skippedIndex <= clippedIndex; skippedIndex++) {
+                robot.actionExecutor.registerActions(path[skippedIndex].actions);
+            }
+        }
+
         pathIndex = clippedIndex;
 
         return clipped;
@@ -129,7 +137,7 @@ public class PathFollow implements TelemetryProvider {
             for (Point thisIntersection : intersections) {
 
                 double angle = Math.atan2(thisIntersection.x - center.x, thisIntersection.y - center.y) + direction;
-                double deltaAngle = Math.abs(MathFunctions.angleWrap(angle - heading));
+                double deltaAngle = Math.abs(angleWrap(angle - heading));
                 double thisDistToFirst = Math.hypot(thisIntersection.x - lineStartPoint.x, thisIntersection.y - lineStartPoint.y);
 
                 if (deltaAngle < nearestAngle && thisDistToFirst > distToFirst) {
