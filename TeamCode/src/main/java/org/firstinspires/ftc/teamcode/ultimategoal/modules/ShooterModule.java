@@ -15,6 +15,8 @@ public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
+    private static final int FLYWHEEL_SPEED_THRESHOLD = 90;
+
     // States
     public double flyWheelTargetSpeed;
     public double shooterFlapAngle; // Radians, relative to horizon.
@@ -34,9 +36,9 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     @Override
     public void init() {
-        // TODO
-        flyWheel1 = (DcMotorEx) robot.getDcMotor("yLeft");
-        flyWheel2 = (DcMotorEx) robot.getDcMotor("yRight");
+        flyWheel1 = (DcMotorEx) robot.getDcMotor("flyWheel1");
+        flyWheel2 = (DcMotorEx) robot.getDcMotor("flyWheel2");
+
         shooterFlap = new EnhancedServo(robot.getServo("shooterFlap"), 0, 180); // In degrees
         indexerServo = new EnhancedServo(robot.getServo("indexerServo"), 0, 180);
 
@@ -51,7 +53,6 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     @Override
     public void update() {
-        // TODO
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
         flyWheel1.setVelocity(flyWheelTargetSpeed);
         flyWheel2.setVelocity(flyWheelTargetSpeed);
@@ -62,9 +63,11 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         boolean indexerReturned = currentTime > indexTime + 5000;
         if (indexRing && indexerReturned) {
-            indexerServo.setAngle(180);
-            indexTime = currentTime;
-            indexRing = false;
+            if (upToSpeed()) {
+                indexerServo.setAngle(180);
+                indexTime = currentTime;
+                indexRing = false;
+            }
         } else if (indexRing) {
             indexRing = false;
         }
@@ -75,6 +78,11 @@ public class ShooterModule implements Module, TelemetryProvider {
         }
     }
 
+    private boolean upToSpeed() {
+        return Math.abs(flyWheel1.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD
+                && Math.abs(flyWheel2.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD;
+    }
+
     @Override
     public boolean isOn() {
         return isOn;
@@ -82,7 +90,6 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     @Override
     public ArrayList<String> getTelemetryData() {
-        // TODO
         ArrayList<String> data = new ArrayList<>();
         data.add("Flywheel speed: " + flyWheelTargetSpeed);
         data.add("Flap angle: " + shooterFlapAngle);

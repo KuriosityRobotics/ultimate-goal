@@ -41,9 +41,9 @@ public class OdometryModule implements Module, TelemetryProvider {
     }
 
     public void init() {
-        yLeft = robot.getDcMotor("yLeft");
-        yRight = robot.getDcMotor("yRight");
-        mecanum = robot.getDcMotor("mecanum");
+        yLeft = robot.getDcMotor("fLeft");
+        yRight = robot.getDcMotor("fRight");
+        mecanum = robot.getDcMotor("bLeft");
 
         yLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         yRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -75,9 +75,9 @@ public class OdometryModule implements Module, TelemetryProvider {
      * Calculates the robot's position.
      */
     private void calculateRobotPosition() {
-        leftPodNewPosition = yLeft.getCurrentPosition() * -1;
+        leftPodNewPosition = yLeft.getCurrentPosition();
         rightPodNewPosition = yRight.getCurrentPosition();
-        mecanumPodNewPosition = mecanum.getCurrentPosition();
+        mecanumPodNewPosition = -1 * mecanum.getCurrentPosition();
 
         double leftPodDelta = leftPodNewPosition - leftPodOldPosition;
         double rightPodDelta = rightPodNewPosition - rightPodOldPosition;
