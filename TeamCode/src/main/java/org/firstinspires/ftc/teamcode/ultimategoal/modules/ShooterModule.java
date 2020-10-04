@@ -47,17 +47,19 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    private long indexTime  = 0;
+    private long indexTime = 0;
+
     @Override
     public void update() {
         // TODO
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
         flyWheel1.setVelocity(flyWheelTargetSpeed);
         flyWheel2.setVelocity(flyWheelTargetSpeed);
+
         shooterFlap.setAngle(shooterFlapAngle);
 
         long currentTime = SystemClock.elapsedRealtime();
-        boolean isDoneIndexing = currentTime > indexTime + 1000;
+
         boolean indexerReturned = currentTime > indexTime + 5000;
         if (indexRing && indexerReturned) {
             indexerServo.setAngle(180);
@@ -66,6 +68,8 @@ public class ShooterModule implements Module, TelemetryProvider {
         } else if (indexRing) {
             indexRing = false;
         }
+
+        boolean isDoneIndexing = currentTime > indexTime + 1000;
         if (isDoneIndexing) {
             indexerServo.setAngle(0);
         }
