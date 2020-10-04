@@ -15,8 +15,9 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
 
     ToggleButton a = new ToggleButton();
 
-    double flapAngle = 90; // In degrees
-    double flyWheelSpeed = 1000; // In degrees per second
+    // States
+    double flapPosition = 0.74; // In degrees
+    double flyWheelSpeed = 1550; // In ticks per second
 
     @Override
     public void runOpMode() {
@@ -27,16 +28,16 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
         robot.startModules();
 
         while (opModeIsActive()) {
-            flapAngle -= gamepad1.right_stick_y * 0.001;
-            flyWheelSpeed -= gamepad1.left_stick_y * 0.005;
+            flapPosition -= gamepad1.right_stick_y * 0.000001;
+            flyWheelSpeed -= gamepad1.left_stick_y * 0.00005;
 
-            if (flapAngle > 180) {
-                flapAngle = 180;
-            } else if (flapAngle < 0) {
-                flapAngle = 0;
+            if (flapPosition > 1) {
+                flapPosition = 1;
+            } else if (flapPosition < 0) {
+                flapPosition = 0;
             }
 
-            robot.shooterModule.shooterFlapAngle = flapAngle;
+            robot.shooterModule.shooterFlapPosition = flapPosition;
             robot.shooterModule.flyWheelTargetSpeed = flyWheelSpeed;
 
             if (a.isToggled(gamepad1.a)) {
@@ -49,8 +50,8 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
 
-        data.add("Fly wheel speed: " + flyWheelSpeed);
-        data.add("Shooter flap angle: " + flapAngle);
+        data.add("Fly wheel target speed: " + flyWheelSpeed);
+        data.add("Shooter flap target angle: " + flapPosition);
 
         return data;
     }
