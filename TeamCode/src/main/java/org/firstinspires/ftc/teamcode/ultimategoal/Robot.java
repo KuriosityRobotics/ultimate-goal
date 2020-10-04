@@ -61,7 +61,7 @@ public class Robot {
     }
 
     public void update() {
-        refreshData2();
+        refreshHubData();
 
         currentTimeMilli = SystemClock.elapsedRealtime();
 
@@ -118,11 +118,8 @@ public class Robot {
         }
     }
 
-    public void refreshData1() {
+    public void refreshHubData() {
         revHub1.getBulkData();
-    }
-
-    public void refreshData2() {
         revHub2.getBulkData();
     }
 
