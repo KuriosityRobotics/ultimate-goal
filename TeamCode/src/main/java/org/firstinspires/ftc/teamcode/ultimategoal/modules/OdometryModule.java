@@ -30,10 +30,6 @@ public class OdometryModule implements Module, TelemetryProvider {
     private double rightPodOldPosition = 0;
     private double mecanumPodOldPosition = 0;
 
-    public double leftPodNewPosition;
-    public double rightPodNewPosition;
-    public double mecanumPodNewPosition;
-
     public OdometryModule(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
         this.robot = robot;
@@ -75,9 +71,9 @@ public class OdometryModule implements Module, TelemetryProvider {
      * Calculates the robot's position.
      */
     private void calculateRobotPosition() {
-        leftPodNewPosition = yLeft.getCurrentPosition();
-        rightPodNewPosition = yRight.getCurrentPosition();
-        mecanumPodNewPosition = -1 * mecanum.getCurrentPosition();
+        double leftPodNewPosition = yLeft.getCurrentPosition();
+        double rightPodNewPosition = yRight.getCurrentPosition();
+        double mecanumPodNewPosition = -1 * mecanum.getCurrentPosition();
 
         double leftPodDelta = leftPodNewPosition - leftPodOldPosition;
         double rightPodDelta = rightPodNewPosition - rightPodOldPosition;
