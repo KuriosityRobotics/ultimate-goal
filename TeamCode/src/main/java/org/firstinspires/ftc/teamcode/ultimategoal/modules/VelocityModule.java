@@ -4,6 +4,7 @@ import android.os.SystemClock;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 import java.util.ArrayList;
 
@@ -18,11 +19,6 @@ public class VelocityModule implements Module, TelemetryProvider {
     private long oldUpdateTime;
     private long currentUpdateTime;
 
-    private double oldWorldX = 0;
-    private double oldWorldY = 0;
-    private double oldWorldAngle = 0;
-
-
     private Robot robot;
 
     public VelocityModule(Robot robot, boolean isOn) {
@@ -35,16 +31,23 @@ public class VelocityModule implements Module, TelemetryProvider {
         oldUpdateTime = SystemClock.elapsedRealtime();
     }
 
+    private Point oldWorldPosition;
+    private double oldWorldAngle = 0;
+
     public void update() {
+        Point robotPosition = robot.drivetrain.getCurrentPosition();
+        double robotHeading = robot.drivetrain.getCurrentHeading();
+
         currentUpdateTime = robot.currentTimeMilli;
 
-        xVel = 1000 * (robot.odometryModule.worldX - oldWorldX) / (currentUpdateTime - oldUpdateTime);
-        yVel = 1000 * (robot.odometryModule.worldY - oldWorldY) / (currentUpdateTime - oldUpdateTime);
-        angleVel = 1000 * (robot.odometryModule.worldAngleRad - oldWorldAngle) / (currentUpdateTime - oldUpdateTime);
+        if (oldWorldPosition != null) {
+            xVel = 1000 * (robotPosition.x - oldWorldPosition.x) / (currentUpdateTime - oldUpdateTime);
+            yVel = 1000 * (robotPosition.y - oldWorldPosition.y) / (currentUpdateTime - oldUpdateTime);
+            angleVel = 1000 * (robotHeading - oldWorldAngle) / (currentUpdateTime - oldUpdateTime);
+        }
 
-        oldWorldX = robot.odometryModule.worldX;
-        oldWorldY = robot.odometryModule.worldY;
-        oldWorldAngle = robot.odometryModule.worldAngleRad;
+        oldWorldPosition = robotPosition;
+        oldWorldAngle = robotHeading;
         oldUpdateTime = currentUpdateTime;
     }
 

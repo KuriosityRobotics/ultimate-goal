@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PIDController;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 import java.util.ArrayList;
 
@@ -19,33 +20,30 @@ public class PIDTest extends LinearOpMode implements TelemetryProvider {
     public void runOpMode() {
         robot.telemetryDump.registerProvider(this);
         initRobot();
-        PIDController pidController = new PIDController(0.01,0.0000001,0,robot);
+        PIDController pidController = new PIDController(0.01, 0.0000001, 0, robot);
         waitForStart();
         robot.startModules();
 
         while (opModeIsActive()) {
             long initialTime = SystemClock.elapsedRealtime();
-            pidController.PID(robot.odometryModule.worldY,56);
-            robot.drivetrainModule.yMovement = pidController.scale;
+
+            Point robotPosition = robot.drivetrain.getCurrentPosition();
+
+            pidController.PID(robotPosition.y, 56);
+            robot.drivetrain.setMovements(0, pidController.scale, 0);
+
             lastUpdateTime = SystemClock.elapsedRealtime() - initialTime;
         }
     }
 
     private void initRobot() {
-        robot = new Robot(hardwareMap, telemetry,this);
+        robot = new Robot(hardwareMap, telemetry, this);
     }
-
-    private void updateDrivetrainStates() {
-        robot.drivetrainModule.yMovement = gamepad1.left_stick_y;
-        robot.drivetrainModule.xMovement = gamepad1.left_stick_x;
-        robot.drivetrainModule.turnMovement = gamepad1.right_stick_x;
-    }
-
 
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("Module Executor thread loop time: " + String.valueOf(lastUpdateTime));
+        data.add("Loop time: " + lastUpdateTime);
         return data;
     }
 
