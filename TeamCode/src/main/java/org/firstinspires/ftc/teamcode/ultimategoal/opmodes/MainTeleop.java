@@ -27,7 +27,7 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
         robot.startModules();
 
         while (opModeIsActive()) {
-            updateDrivetrainStates();
+//            updateDrivetrainStates();
             lastUpdateTime = SystemClock.elapsedRealtime();
         }
     }
@@ -37,7 +37,6 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
     }
 
     private void updateDrivetrainStates() {
-
         double yMovement = 0;
         double xMovement = 0;
         double turnMovement = 0;
@@ -86,7 +85,6 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
         robot.drivetrainModule.yMovement = yMovement;
         robot.drivetrainModule.xMovement = xMovement;
         robot.drivetrainModule.turnMovement = turnMovement;
-
     }
 
     private boolean usingJoysticks() {
@@ -103,6 +101,7 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
 
         ArrayList<String> data = new ArrayList<>();
         data.add("TeleOp while loop update time: " + String.valueOf(currentTime - lastUpdateTime));
+        data.add("got position: " + robot.getDcMotor("fLeft").getCurrentPosition());
         lastUpdateTime = currentTime;
 
         return data;
