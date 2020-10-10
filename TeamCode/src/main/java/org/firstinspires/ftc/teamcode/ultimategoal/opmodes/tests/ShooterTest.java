@@ -22,7 +22,6 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     final double FLAP_MAX = 0.71;
     double flapPosition = 0.355; // In degrees
     double flyWheelSpeed = 1550; // In ticks per second
-    
 
     @Override
     public void runOpMode() {
