@@ -29,12 +29,12 @@ public class ModuleExecutor extends Thread implements TelemetryProvider {
      */
     public void run() {
         while (robot.isOpModeActive()) {
-            long startTime = SystemClock.elapsedRealtime();
+            long currentIterationStartTime = SystemClock.elapsedRealtime();
 
             robot.update();
 
             if (SHOW_UPDATE_SPEED) {
-                lastUpdateTime = SystemClock.elapsedRealtime() - startTime;
+                lastUpdateTime = SystemClock.elapsedRealtime() - currentIterationStartTime;
             }
 
             if (robot.WILL_FILE_DUMP) {
