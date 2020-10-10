@@ -21,9 +21,12 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
     private double arrowMoveAngle = 0;
 
     public void runOpMode() {
-        initRobot();
         robot.telemetryDump.registerProvider(this);
+
+        initRobot();
+
         waitForStart();
+
         robot.startModules();
 
         while (opModeIsActive()) {
@@ -59,13 +62,13 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
 
         if (gamepad1.left_bumper) {
             if (!lastArrowMoveState) {
-                arrowMoveAngle = robot.odometryModule.worldAngleRad;
+                arrowMoveAngle = robot.drivetrain.getCurrentHeading();
                 lastArrowMoveState = true;
             }
 
             double r = Math.hypot(yMovement, xMovement);
             double aT = Math.atan2(yMovement, xMovement);
-            double t = aT + robot.odometryModule.worldAngleRad - arrowMoveAngle;
+            double t = aT + robot.drivetrain.getCurrentHeading() - arrowMoveAngle;
 
             double nXMovement = r * Math.cos(t);
             double nYMovement = r * Math.sin(t);
@@ -82,9 +85,7 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
             turnMovement *= SLOW_MODE_SCALE_FACTOR;
         }
 
-        robot.drivetrainModule.yMovement = yMovement;
-        robot.drivetrainModule.xMovement = xMovement;
-        robot.drivetrainModule.turnMovement = turnMovement;
+        robot.drivetrain.setMovements(xMovement, yMovement, turnMovement);
     }
 
     private boolean usingJoysticks() {

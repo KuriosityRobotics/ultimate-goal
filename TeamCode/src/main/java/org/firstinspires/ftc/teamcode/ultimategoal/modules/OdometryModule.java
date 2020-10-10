@@ -1,46 +1,33 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.os.SystemClock;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
-import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Locale;
 
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.StringHelper.concat;
-
 public class OdometryModule implements Module, TelemetryProvider, FileDumpProvider {
+    private Robot robot;
     private boolean isOn;
 
+    // Position of the robot
     public double worldX;
     public double worldY;
     public double worldAngleRad;
 
-    private Robot robot;
-
+    // Encoders (as Motors)
     private DcMotor yLeft;
     private DcMotor yRight;
     private DcMotor mecanum;
 
-    private final double INCHES_PER_ENCODER_TICK = 0.0007284406721 * 100.0/101.9889;
-    private final double LR_ENCODER_DIST_FROM_CENTER = 6.942654509 * 3589.8638/3600.0 * 3531.4628211/3600.0;
+    // Constants
+    private final double INCHES_PER_ENCODER_TICK = 0.0007284406721 * 100.0 / 101.9889;
+    private final double LR_ENCODER_DIST_FROM_CENTER = 6.942654509 * 3589.8638 / 3600.0 * 3531.4628211 / 3600.0;
     private final double M_ENCODER_DIST_FROM_CENTER = 4.5;
-
-    private double leftPodOldPosition = 0;
-    private double rightPodOldPosition = 0;
-    private double mecanumPodOldPosition = 0;
-
-    public double leftPodNewPosition;
-    public double rightPodNewPosition;
-    public double mecanumPodNewPosition;
-
-    private long startTime = SystemClock.currentThreadTimeMillis();
 
     public OdometryModule(Robot robot, boolean isOn) {
         robot.fileDump.registerProvider(this);
@@ -63,9 +50,12 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         mecanum.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-
-    public synchronized void update() {
+    public void update() {
         calculateRobotPosition();
+    }
+
+    public Point getCurrentPosition() {
+        return new Point(worldX, worldY);
     }
 
     public ArrayList<String> getTelemetryData() {
@@ -83,6 +73,11 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     public String getFileData() {
         return String.format(Locale.CANADA_FRENCH, "(%f, %f), %f", worldX, worldY, worldAngleRad);
     }
+
+    // Helper variables
+    private double leftPodOldPosition = 0;
+    private double rightPodOldPosition = 0;
+    private double mecanumPodOldPosition = 0;
 
     /**
      * Calculates the robot's position.
@@ -130,54 +125,54 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     /*
     taylor series expansion to make stuff COOL
      */
-    private double sinXOverX(double x){
-        if (Math.abs(x) < 2){
+    private double sinXOverX(double x) {
+        if (Math.abs(x) < 2) {
             double retVal = 0;
             double top = 1;
             double bottom = 1;
-            for (int i = 0; i < 9; i++){
-                retVal += top/bottom;
-                top *= -x*x;
-                bottom *= (2 * i + 2)*(2 * i + 3);
+            for (int i = 0; i < 9; i++) {
+                retVal += top / bottom;
+                top *= -x * x;
+                bottom *= (2 * i + 2) * (2 * i + 3);
             }
             return retVal;
         } else {
-            return Math.sin(x)/x;
+            return Math.sin(x) / x;
         }
     }
 
     /*
     taylor series expansion to make stuff COOL
      */
-    private double cosXMinusOneOverX(double x){
-        if (Math.abs(x) < 2){
+    private double cosXMinusOneOverX(double x) {
+        if (Math.abs(x) < 2) {
             double retVal = 0;
             double top = -x;
             double bottom = 2;
-            for (int i = 0; i < 9; i++){
-                retVal += top/bottom;
-                top *= -x*x;
-                bottom *= (2 * i + 3)*(2 * i + 4);
+            for (int i = 0; i < 9; i++) {
+                retVal += top / bottom;
+                top *= -x * x;
+                bottom *= (2 * i + 3) * (2 * i + 4);
             }
             return retVal;
         } else {
-            return (Math.cos(x)-1)/x;
+            return (Math.cos(x) - 1) / x;
         }
     }
 
-    public synchronized DcMotor getyLeft() {
+    public DcMotor getyLeft() {
         return yLeft;
     }
 
-    public synchronized DcMotor getyRight() {
+    public DcMotor getyRight() {
         return yRight;
     }
 
-    public synchronized DcMotor getMecanum() {
+    public DcMotor getMecanum() {
         return mecanum;
     }
 
-    public boolean isOn(){
+    public boolean isOn() {
         return isOn;
     }
 

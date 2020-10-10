@@ -16,14 +16,14 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ShooterModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.VelocityModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.Drivetrain;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 
 public class Robot {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
-    public DrivetrainModule drivetrainModule;
-    public OdometryModule odometryModule;
+    public Drivetrain drivetrain;
     public VelocityModule velocityModule;
     public ShooterModule shooterModule;
 
@@ -92,13 +92,12 @@ public class Robot {
 
     private void initModules() {
         // Add individual modules into the array here
-        this.drivetrainModule = new DrivetrainModule(this, true);
-        this.odometryModule = new OdometryModule(this, true);
+        this.drivetrain = new Drivetrain(this, true);
         this.velocityModule = new VelocityModule(this, true);
         this.shooterModule = new ShooterModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrainModule, this.odometryModule, this.velocityModule, this.shooterModule
+                this.drivetrain, this.velocityModule, this.shooterModule
         };
 
         // Initialize modules

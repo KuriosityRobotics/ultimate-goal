@@ -8,7 +8,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 
 import java.util.ArrayList;
 
-
 public class DrivetrainModule implements Module, TelemetryProvider {
     private Robot robot;
     private boolean isOn;
@@ -51,7 +50,7 @@ public class DrivetrainModule implements Module, TelemetryProvider {
 
 
     // drivetrain update method applies the powers based on y x and turn movements
-    public synchronized void update() {
+    public void update() {
         double fLPower = ((yMovement) - turnMovement + xMovement * MECANUM_POWER_SCALE_FACTOR);
         double fRPower = ((yMovement) + turnMovement - xMovement * MECANUM_POWER_SCALE_FACTOR);
         double bLPower = ((yMovement) - turnMovement - xMovement * MECANUM_POWER_SCALE_FACTOR);
@@ -84,6 +83,12 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         setMotorPowers(fLPower, fRPower, bLPower, bRPower);
     }
 
+    public void setMovements(double xMovement, double yMovement, double turnMovement) {
+        this.xMovement = xMovement;
+        this.yMovement = yMovement;
+        this.turnMovement = turnMovement;
+    }
+
     private void setMotorPowers(double fLPower, double fRPower, double bLPower, double bRPower) {
         fLeft.setPower(fLPower);
         fRight.setPower(fRPower);
@@ -114,7 +119,7 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         return bRight;
     }
 
-    public boolean isOn(){
+    public boolean isOn() {
         return isOn;
     }
 
