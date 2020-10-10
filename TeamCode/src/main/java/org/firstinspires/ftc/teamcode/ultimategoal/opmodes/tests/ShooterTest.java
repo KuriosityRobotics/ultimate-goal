@@ -18,7 +18,7 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
 
     // States
     double flapPosition = 0.74; // In degrees
-    double flyWheelSpeed = 1550; // In ticks per second
+    double flyWheelSpeed = robot.FLY_WHEEL_SPEED; // In ticks per second
 
     @Override
     public void runOpMode() {

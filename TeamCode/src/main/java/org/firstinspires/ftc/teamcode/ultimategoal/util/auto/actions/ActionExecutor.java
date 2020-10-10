@@ -4,6 +4,7 @@ import android.os.SystemClock;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.TowerGoal;
 
 import java.util.ArrayList;
 
@@ -40,6 +41,22 @@ public class ActionExecutor implements TelemetryProvider {
                     break;
                 case FULL_SPEED:
                     drivetrainSlowMode(false);
+
+                    action.state = ActionState.COMPLETE;
+
+                    break;
+                case SHOOT_RING_BLUE_HIGH:
+                    robot.drivetrain.setMovements(0, 0, 0);
+
+                    robot.shooter.target = TowerGoal.BLUE_HIGH;
+                    robot.shooter.isAimBotActive = true;
+                    robot.shooter.queueRingIndex(3);
+
+                    while (robot.shooter.awaitingIndexes()) {
+                        // Wait for shooter to finish shooting
+                    }
+
+                    robot.shooter.isAimBotActive = false;
 
                     action.state = ActionState.COMPLETE;
 

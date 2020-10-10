@@ -333,6 +333,15 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         hopperModule.switchHopperPosition();
     }
 
+    /**
+     * Whether or not the shooter is awaiting indexes.
+     *
+     * @return If there are indexes queued.
+     */
+    public boolean awaitingIndexes() {
+        return queuedIndexes > 0;
+    }
+
     @Override
     public boolean isOn() {
         return isOn;
