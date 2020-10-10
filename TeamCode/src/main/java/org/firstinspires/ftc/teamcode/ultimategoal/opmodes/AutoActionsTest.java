@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.Action;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ActionType;
 
 @Autonomous
-public class SimpleStraightTest extends LinearOpMode {
+public class AutoActionsTest extends LinearOpMode {
     Robot robot;
 
     @Override

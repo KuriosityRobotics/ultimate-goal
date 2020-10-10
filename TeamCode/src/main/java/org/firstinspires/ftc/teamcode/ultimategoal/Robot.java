@@ -22,6 +22,9 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ActionExecutor;
 
 public class Robot {
+    // Constants
+    public static final int FLYWHEEL_SPEED = 1550;
+
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public DrivetrainModule drivetrainModule;
     public OdometryModule odometryModule;

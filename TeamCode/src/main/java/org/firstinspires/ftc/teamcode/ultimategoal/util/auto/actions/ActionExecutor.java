@@ -44,6 +44,12 @@ public class ActionExecutor implements TelemetryProvider {
                     action.state = ActionState.COMPLETE;
 
                     break;
+                case SHOOT_RING:
+                    robot.shooterModule.setStatesToShoot(robot.FLYWHEEL_SPEED);
+
+                    action.state = ActionState.COMPLETE;
+
+                    break;
             }
 
             if (action.state == ActionState.COMPLETE) {

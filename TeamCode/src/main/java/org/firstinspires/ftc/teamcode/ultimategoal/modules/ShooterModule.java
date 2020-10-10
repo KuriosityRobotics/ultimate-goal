@@ -55,8 +55,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    private long indexTime = 0;
-
     @Override
     public void update() {
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
@@ -65,26 +63,66 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         shooterFlap.setPosition(shooterFlapPosition);
 
-        long currentTime = SystemClock.elapsedRealtime();
+        updateIndexer();
+    }
 
-        boolean indexerReturned = currentTime > indexTime + 1200;
-        if (indexRing && indexerReturned) {
-            if (upToSpeed()) {
-                indexerServo.setPosition(INDEX_PUSH_POSITION);
-                indexTime = currentTime;
+    private long indexTime = 0;
+
+    /**
+     * Logic to update the position of the indexer.
+     */
+    private void updateIndexer() {
+        if (flyWheelTargetSpeed > 0) {
+            long currentTime = SystemClock.elapsedRealtime();
+
+            boolean indexerReturned = currentTime > indexTime + 1200;
+            if (indexRing && indexerReturned) {
+                if (upToSpeed()) {
+                    indexerServo.setPosition(INDEX_PUSH_POSITION);
+                    indexTime = currentTime;
+                    indexRing = false;
+                }
+            } else if (indexRing) {
                 indexRing = false;
             }
-        } else if (indexRing) {
-            indexRing = false;
-        }
 
-        boolean isDoneIndexing = currentTime > indexTime + 600;
-        if (isDoneIndexing) {
-            indexerServo.setPosition(INDEX_OPEN_POSITION);
+            boolean isDoneIndexing = currentTime > indexTime + 600;
+            if (isDoneIndexing) {
+                indexerServo.setPosition(INDEX_OPEN_POSITION);
+            }
         }
     }
 
-    private boolean upToSpeed() {
+    /**
+     * Sets states of the shooter module to shoot a ring. This includes ramping up the flywheel
+     * and firing the ring when ready.
+     *
+     * @param flyWheelTargetSpeed The target speed of the flywheel.
+     */
+    public void setStatesToShoot(double flyWheelTargetSpeed) {
+        this.flyWheelTargetSpeed = flyWheelTargetSpeed;
+        indexRing = true;
+    }
+
+    /**
+     * Sets states of the shooter module to shoot a ring. This includes ramping up the flywheel
+     * and firing the ring when ready.
+     *
+     * @param flyWheelTargetSpeed The target speed of the flywheel.
+     * @param shooterFlapPosition The position to move the shooter flap to.
+     */
+    public void setStatesToShoot(double flyWheelTargetSpeed, double shooterFlapPosition) {
+        this.flyWheelTargetSpeed = flyWheelTargetSpeed;
+        this.shooterFlapPosition = shooterFlapPosition;
+        indexRing = true;
+    }
+
+    /**
+     * Checks to see if the flywheel is up to speed.
+     *
+     * @return true if the flywheel speed is within the threshold of the target speed.
+     */
+    public boolean upToSpeed() {
         return Math.abs(flyWheel1.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD
                 && Math.abs(flyWheel2.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD;
     }

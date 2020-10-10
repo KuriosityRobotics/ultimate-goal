@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 
 @Autonomous
-public class AutoPathTest extends LinearOpMode {
+public class CurvedPurePursuitTest extends LinearOpMode {
 
     public Robot robot;
 
