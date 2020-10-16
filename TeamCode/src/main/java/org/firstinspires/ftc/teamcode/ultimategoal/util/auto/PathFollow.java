@@ -14,7 +14,6 @@ import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunction
 
 public class PathFollow implements TelemetryProvider, FileDumpProvider {
     Robot robot;
-
     private boolean isFileDump = false;
 
     Point clippedPoint = new Point(0, 0);
@@ -22,10 +21,10 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     Point adjustedTargetPoint;
 
     // constants
-    private static final double DISTANCE_THRESHOLD = 0.5;
-    private static final double ANGLE_THRESHOLD = Math.toRadians(2);
-    private static final double FOLLOW_RADIUS = 15;
-    private static final double SLIP_FACTOR = 0;
+    public static final double DISTANCE_THRESHOLD = 0.5;
+    public static final double ANGLE_THRESHOLD = Math.toRadians(2);
+    public static final double FOLLOW_RADIUS = 15;
+    public static final double SLIP_FACTOR = 0;
 
     // states
     private boolean isTargetingLastPoint = false;
