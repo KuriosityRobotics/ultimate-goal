@@ -10,10 +10,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.DrivetrainModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ShooterModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.VelocityModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Drivetrain;

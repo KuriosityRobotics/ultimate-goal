@@ -6,9 +6,8 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.DrivetrainModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
-
-import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
 
@@ -166,6 +165,34 @@ public class Drivetrain implements Module {
         }
 
         setMovements(xMovement, yMovement, turnMovement);
+    }
+
+    /**
+     * Move to a given point. Does not return until the drivetrain is within the threshold of the point.
+     *
+     * @param point point to move to.
+     */
+    public void moveToPoint(Point point) {
+        moveToPoint(point, 1, 1, 0, false, 0);
+    }
+
+    /**
+     * Move to a given point. Does not return until the drivetrain is within threshold of the point.
+     *
+     * @param targetPoint      The target point to move to.
+     * @param moveSpeed        The speed at which to move, from 0 to 1.
+     * @param turnSpeed        The speed at which to turn, from 0 to 1.
+     * @param direction        The direction to follow the path.
+     * @param willAngleLock    Whether or not to angle lock.
+     * @param angleLockHeading The heading to angle lock to. If willAnglelock is false, this does not matter.r
+     */
+    public void moveToPoint(Point targetPoint, double moveSpeed, double turnSpeed, double direction, boolean willAngleLock, double angleLockHeading) {
+        Point robotPosition = getCurrentPosition();
+
+        while ((Math.hypot(robotPosition.x - targetPoint.x, robotPosition.y - targetPoint.y) > PathFollow.DISTANCE_THRESHOLD)
+                || (!willAngleLock || (Math.abs(angleWrap(angleLockHeading - angleLockHeading)) > PathFollow.ANGLE_THRESHOLD))) {
+            setMovementsToPoint(targetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, false, PathFollow.FOLLOW_RADIUS);
+        }
     }
 
     @Override
