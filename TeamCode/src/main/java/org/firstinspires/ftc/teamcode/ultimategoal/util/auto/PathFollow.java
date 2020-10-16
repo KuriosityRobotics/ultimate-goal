@@ -1,16 +1,14 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
 
-import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
 import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.closestPointOnLineToPoint;
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.lineSegmentPointDistance;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.lineSegmentCircleIntersection;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.lineSegmentPointDistance;
 
 public class PathFollow implements TelemetryProvider {
     Robot robot;
@@ -21,10 +19,10 @@ public class PathFollow implements TelemetryProvider {
     Point adjustedTargetPoint;
 
     // constants
-    private static final double DISTANCE_THRESHOLD = 0.5;
-    private static final double ANGLE_THRESHOLD = Math.toRadians(2);
-    private static final double FOLLOW_RADIUS = 15;
-    private static final double SLIP_FACTOR = 0;
+    public static final double DISTANCE_THRESHOLD = 0.5;
+    public static final double ANGLE_THRESHOLD = Math.toRadians(2);
+    public static final double FOLLOW_RADIUS = 15;
+    public static final double SLIP_FACTOR = 0;
 
     // states
     private boolean isTargetingLastPoint = false;
