@@ -176,6 +176,10 @@ public class Drivetrain implements Module {
         moveToPoint(point, 1, 1, 0, false, 0);
     }
 
+    public void turnTo(double heading) {
+        moveToPoint(getCurrentPosition(), 1, 1, 0, true, heading);
+    }
+
     /**
      * Move to a given point. Does not return until the drivetrain is within threshold of the point.
      *

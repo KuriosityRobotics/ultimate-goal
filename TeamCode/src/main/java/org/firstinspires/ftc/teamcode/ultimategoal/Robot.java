@@ -17,12 +17,15 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.Drivetrain;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.shooter.AimBot;
 
 public class Robot {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
     public VelocityModule velocityModule;
     public ShooterModule shooterModule;
+
+    public AimBot aimBot;
 
     public long currentTimeMilli;
 
@@ -96,6 +99,9 @@ public class Robot {
 
         // Start the thread for executing modules.
         moduleExecutor = new ModuleExecutor(this);
+
+        // Aimbot
+        aimBot = new AimBot(this);
     }
 
     /**
