@@ -12,16 +12,23 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class FileDump {
-    private ArrayList<FileDumpProvider> providers;
+    private HashSet<FileDumpProvider> providers;
     HashMap<String, FileData> files;
     long startTime;
 
     public FileDump() {
-        startTime = SystemClock.elapsedRealtime();
+        startTime = Calendar.getInstance().getTime().getTime();
+        providers = new HashSet<>();
         files = new HashMap<>();
+    }
+
+    public void registerProvider(FileDumpProvider provider) {
+        providers.add(provider);
     }
 
     public void doTick() {

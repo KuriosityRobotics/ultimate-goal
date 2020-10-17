@@ -32,7 +32,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     // states
     private boolean isTargetingLastPoint = false;
     private String description;
-    private Point[] path;
+    private Waypoint[] path;
     private int pathIndex = 0;
 
     // settings
@@ -40,10 +40,11 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     private double angleLockHeading = 0;
     private boolean willAngleLock = false;
 
-    public PathFollow(Point[] path, Robot robot, String description) {
+    public PathFollow(Waypoint[] path, Robot robot, String description) {
         this.path = path;
         this.robot = robot;
         this.description = description;
+
     }
 
     public void pathFollow(double direction, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading) {

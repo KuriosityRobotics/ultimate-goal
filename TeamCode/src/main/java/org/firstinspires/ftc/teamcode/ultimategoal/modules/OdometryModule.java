@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.os.SystemClock;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
@@ -7,6 +9,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Locale;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.StringHelper.concat;
@@ -32,7 +35,14 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     private double rightPodOldPosition = 0;
     private double mecanumPodOldPosition = 0;
 
+    public double leftPodNewPosition;
+    public double rightPodNewPosition;
+    public double mecanumPodNewPosition;
+
+    private long startTime = Calendar.getInstance().getTime().getTime();
+
     public OdometryModule(Robot robot, boolean isOn) {
+        robot.fileDump.registerProvider(this);
         robot.telemetryDump.registerProvider(this);
         this.robot = robot;
         this.isOn = isOn;
@@ -66,7 +76,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     public String getFileName() {
-        return System.currentTimeMillis() + "odometry.txt";
+        return startTime + "_odometry.txt";
     }
 
     public String getFileData() {

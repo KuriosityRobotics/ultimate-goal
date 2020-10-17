@@ -74,9 +74,6 @@ public class Robot {
                 }
             }
         }
-        if (WILL_FILE_DUMP) {
-            fileDump.doTick();
-        }
         telemetryDump.update();
     }
 

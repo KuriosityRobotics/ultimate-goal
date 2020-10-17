@@ -101,7 +101,7 @@ public class GoalFinder {
     }
 
     /**
-     * This function takes an Image in the form of a Mat, and then will calculate how many rings are stacked in it
+     * processes the frame, returns goallocationdata which has a bunch of cool stuff about goal location data
      *
      * @param input
      * @return an int which represents the calculated number of rings
@@ -111,10 +111,9 @@ public class GoalFinder {
     }
 
     /**
-     * This function takes an Image in the form of a Mat, and then will calculate how many rings are stacked in it
-     * It also mutates the input image if shouldWriteToImage is true, and draws some text, a bounding box, and the border of the rings
-     *
-     * @param input
+     * processes the frame, returns goallocationdata which has a bunch of cool stuff about goal location data
+     * @see GoalLocationData
+     * @param input frame input
      * @return an int which represents the calculated number of rings
      */
     public static GoalLocationData processFrame(final Mat input, boolean shouldWriteToImage) {
@@ -143,7 +142,7 @@ public class GoalFinder {
 
 //                double yaw = findAngle(centre, new Point(goalLocation.x, centre.y)) * (180/Math.PI); // Now isolate the two angles
 //                double pitch = findAngle(centre, new Point(centre.x, goalLocation.y)) * (180/Math.PI);
-                double yaw = (70.42/input.width()) * (goalLocation.x - centre.x);
+                double yaw = (70.42/input.width()) * (goalLocation.x - centre.x); // TODO: this is pepega
                 double pitch = (43.30/input.width()) * (goalLocation.y - centre.y);
 
 
