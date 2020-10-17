@@ -104,11 +104,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         return data;
     }
 
-    @Override
-    public void fileDump() {
-        // TODO
-    }
-
     public String getName() {
         return "ShooterModule";
     }

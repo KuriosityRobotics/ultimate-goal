@@ -83,8 +83,11 @@ public class Robot {
 
     private void cleanUp() {
         this.fileDump.writeFilesToDevice();
-        for(Module module : this.modules)
-            module.close();
+        try {
+            this.moduleExecutor.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initModules() {

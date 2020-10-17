@@ -44,6 +44,7 @@ public class ModuleExecutor extends Thread implements TelemetryProvider {
             robot.telemetryDump.update();
         }
         System.out.println("Module executor thread exited due to opMode no longer being active.");
+
     }
 
     @Override

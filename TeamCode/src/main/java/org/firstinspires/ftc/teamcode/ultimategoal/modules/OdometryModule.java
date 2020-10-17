@@ -77,7 +77,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     public String getFileName() {
-        return startTime + "_odometry.txt";
+        return "odometry.txt";
     }
 
     public String getFileData() {

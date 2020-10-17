@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import java.io.Closeable;
 
-public interface Module extends Closeable {
+public interface Module {
     /**
      * Initializes the module. This includes setting up all motors/servos
      * */
@@ -19,8 +19,4 @@ public interface Module extends Closeable {
     public boolean isOn();
 
     public String getName();
-
-    public default void close() {
-
-    }
 }
