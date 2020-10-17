@@ -29,7 +29,7 @@ public class PIDTest extends LinearOpMode implements TelemetryProvider {
 
             Point robotPosition = robot.drivetrain.getCurrentPosition();
 
-            pidController.PID(robotPosition.y, 56);
+            pidController.calculatePID(robotPosition.y, 56);
             robot.drivetrain.setMovements(0, pidController.scale, 0);
 
             lastUpdateTime = SystemClock.elapsedRealtime() - initialTime;

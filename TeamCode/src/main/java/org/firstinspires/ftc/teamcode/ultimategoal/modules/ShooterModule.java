@@ -22,7 +22,7 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     // States
     public double flyWheelTargetSpeed;
-    public double shooterFlapPosition;
+    public double shooterFlapPosition = 0.71;
     public boolean indexRing;
 
     // Motors
