@@ -75,6 +75,16 @@ public class Robot {
             }
         }
         telemetryDump.update();
+
+        if(isStopRequested()) {
+            this.cleanUp();
+        }
+    }
+
+    private void cleanUp() {
+        this.fileDump.writeFilesToDevice();
+        for(Module module : this.modules)
+            module.close();
     }
 
     private void initModules() {
@@ -142,5 +152,13 @@ public class Robot {
 
     public boolean isStopRequested() {
         return linearOpMode.isStopRequested();
+    }
+
+    private void ಢ_ಢ() {
+        throw new Error("ರ_ರ plz dont rely on finalize to cleanup");
+    }
+    public void finalize() {
+        this.cleanUp();
+        ಢ_ಢ();
     }
 }

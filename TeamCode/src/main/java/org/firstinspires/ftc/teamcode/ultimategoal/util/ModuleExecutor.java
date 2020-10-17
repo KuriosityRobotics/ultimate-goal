@@ -39,9 +39,6 @@ public class ModuleExecutor extends Thread implements TelemetryProvider {
 
             if (robot.WILL_FILE_DUMP) {
                 robot.fileDump.doTick();
-
-                if (robot.isStopRequested())
-                    robot.fileDump.writeFilesToDevice();
             }
 
             robot.telemetryDump.update();

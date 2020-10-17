@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
@@ -39,7 +40,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     public double rightPodNewPosition;
     public double mecanumPodNewPosition;
 
-    private long startTime = Calendar.getInstance().getTime().getTime();
+    private long startTime = SystemClock.currentThreadTimeMillis();
 
     public OdometryModule(Robot robot, boolean isOn) {
         robot.fileDump.registerProvider(this);
