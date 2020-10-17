@@ -69,6 +69,10 @@ public class Drivetrain implements Module {
         return odometryModule.getCurrentPosition();
     }
 
+    public double[] getEncoderPositions() {
+        return odometryModule.getEncoderPositions();
+    }
+
     /**
      * Returns the heading of the robot, in radians.
      *
