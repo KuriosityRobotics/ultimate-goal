@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 import java.util.ArrayList;
@@ -58,6 +58,15 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         return new Point(worldX, worldY);
     }
 
+    /**
+     * Get the current positions of the encoders.
+     *
+     * @return The position of the encoders in a double[], with left, right, then mecanum values.
+     */
+    public double[] getEncoderPositions() {
+        return new double[]{leftPodKnownPosition, rightPodKnownPosition, mecanumPodKnownPosition};
+    }
+
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("worldX: " + worldX);
@@ -75,9 +84,9 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     // Helper variables
-    private double leftPodOldPosition = 0;
-    private double rightPodOldPosition = 0;
-    private double mecanumPodOldPosition = 0;
+    private double leftPodKnownPosition = 0;
+    private double rightPodKnownPosition = 0;
+    private double mecanumPodKnownPosition = 0;
 
     /**
      * Calculates the robot's position.
@@ -87,15 +96,15 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         double rightPodNewPosition = yRight.getCurrentPosition();
         double mecanumPodNewPosition = -1 * mecanum.getCurrentPosition();
 
-        double leftPodDelta = leftPodNewPosition - leftPodOldPosition;
-        double rightPodDelta = rightPodNewPosition - rightPodOldPosition;
-        double mecanumPodDelta = mecanumPodNewPosition - mecanumPodOldPosition;
+        double leftPodDelta = leftPodNewPosition - leftPodKnownPosition;
+        double rightPodDelta = rightPodNewPosition - rightPodKnownPosition;
+        double mecanumPodDelta = mecanumPodNewPosition - mecanumPodKnownPosition;
 
         calculateNewPosition(leftPodDelta, rightPodDelta, mecanumPodDelta);
 
-        leftPodOldPosition = leftPodNewPosition;
-        rightPodOldPosition = rightPodNewPosition;
-        mecanumPodOldPosition = mecanumPodNewPosition;
+        leftPodKnownPosition = leftPodNewPosition;
+        rightPodKnownPosition = rightPodNewPosition;
+        mecanumPodKnownPosition = mecanumPodNewPosition;
     }
 
     public void calculateNewPosition(double dLeftPod, double dRightPod, double dMecanumPod) {
