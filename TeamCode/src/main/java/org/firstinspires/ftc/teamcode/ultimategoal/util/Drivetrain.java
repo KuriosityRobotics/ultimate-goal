@@ -67,6 +67,16 @@ public class Drivetrain implements Module, TelemetryProvider {
         this.xMovement = xMovement;
         this.yMovement = yMovement;
         this.turnMovement = turnMovement;
+
+        if (xMovement == 0 && yMovement == 0 && turnMovement == 0 && zeroPowerBrake) {
+            if (!isBrake) {
+                isBrake = true;
+                brakePoint = getCurrentPosition();
+                brakeHeading = getCurrentHeading();
+            }
+        } else {
+            isBrake = false;
+        }
     }
 
     /**
@@ -100,28 +110,17 @@ public class Drivetrain implements Module, TelemetryProvider {
      * These two movements are different when braking must be applied.
      */
     private void setDrivetrainMovements() {
-//        if (zeroPowerBrake) {
-//            if (xMovement == 0 && yMovement == 0 && turnMovement == 0) {
-//                if (!isBrake) {
-//                    brakePoint = getCurrentPosition();
-//                    brakeHeading = getCurrentHeading();
-//                    isBrake = true;
-//                }
-//
-//                setMovementsToBrakePoint();
-//            } else {
-//                isBrake = false;
-//                drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
-//            }
-//        } else {
-        drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
-//        }
+        if (isBrake) {
+            setMovementsToBrakePosition();
+        } else {
+            drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
+        }
     }
 
     /**
      * Sets movement of drivetrain to try to stay on the brake point.
      */
-    public void setMovementsToBrakePoint() {
+    public void setMovementsToBrakePosition() {
         Point robotPosition = getCurrentPosition();
         double robotHeading = getCurrentHeading();
 
