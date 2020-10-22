@@ -1,5 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.TestOpModes;
-
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 

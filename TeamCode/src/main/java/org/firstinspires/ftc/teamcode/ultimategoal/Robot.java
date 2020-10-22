@@ -72,12 +72,22 @@ public class Robot {
                 } catch (Exception e) {
                     Log.d("Module", "Module couldn't update: " + module.getName());
                 }
-                if (WILL_FILE_DUMP) {
-                    module.fileDump();
-                }
             }
         }
         telemetryDump.update();
+
+        if(isStopRequested()) {
+            this.cleanUp();
+        }
+    }
+
+    private void cleanUp() {
+        this.fileDump.writeFilesToDevice();
+        try {
+            this.moduleExecutor.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initModules() {
@@ -145,5 +155,13 @@ public class Robot {
 
     public boolean isStopRequested() {
         return linearOpMode.isStopRequested();
+    }
+
+    private void ಢ_ಢ() {
+        throw new Error("ರ_ರ plz dont rely on finalize to cleanup");
+    }
+    public void finalize() {
+        this.cleanUp();
+        ಢ_ಢ();
     }
 }

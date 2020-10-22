@@ -37,13 +37,14 @@ public class ModuleExecutor extends Thread implements TelemetryProvider {
                 lastUpdateTime = SystemClock.elapsedRealtime() - startTime;
             }
 
-            if (robot.isStopRequested() && robot.WILL_FILE_DUMP) {
-                robot.fileDump.writeFilesToDevice();
+            if (robot.WILL_FILE_DUMP) {
+                robot.fileDump.doTick();
             }
 
             robot.telemetryDump.update();
         }
         System.out.println("Module executor thread exited due to opMode no longer being active.");
+
     }
 
     @Override

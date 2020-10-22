@@ -1,15 +1,21 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.os.SystemClock;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 
+import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.StringHelper.concat;
 
-public class OdometryModule implements Module, TelemetryProvider {
+public class OdometryModule implements Module, TelemetryProvider, FileDumpProvider {
     private boolean isOn;
 
     public double worldX;
@@ -30,7 +36,14 @@ public class OdometryModule implements Module, TelemetryProvider {
     private double rightPodOldPosition = 0;
     private double mecanumPodOldPosition = 0;
 
+    public double leftPodNewPosition;
+    public double rightPodNewPosition;
+    public double mecanumPodNewPosition;
+
+    private long startTime = SystemClock.currentThreadTimeMillis();
+
     public OdometryModule(Robot robot, boolean isOn) {
+        robot.fileDump.registerProvider(this);
         robot.telemetryDump.registerProvider(this);
         this.robot = robot;
         this.isOn = isOn;
@@ -63,8 +76,12 @@ public class OdometryModule implements Module, TelemetryProvider {
         return data;
     }
 
-    public void fileDump(){
-        robot.fileDump.addData(concat("1"," ","odometry.txt"), concat(worldX," ",worldY," ",worldAngleRad));
+    public String getFileName() {
+        return "odometry.txt";
+    }
+
+    public String getFileData() {
+        return String.format(Locale.CANADA_FRENCH, "(%f, %f), %f", worldX, worldY, worldAngleRad);
     }
 
     /**
