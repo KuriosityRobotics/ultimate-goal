@@ -80,6 +80,7 @@ android {
             ndk {
                 abiFilters "armeabi-v7a"
             }
+            ext.enableCrashlytics = false
         }
         debug {
             debuggable true
@@ -88,6 +89,7 @@ android {
             ndk {
                 abiFilters "armeabi-v7a"
             }
+            ext.enableCrashlytics = false
         }
     }
 
