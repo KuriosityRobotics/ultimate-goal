@@ -21,7 +21,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 public class Robot {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
-    public VelocityModule velocityModule;
     public ShooterModule shooterModule;
 
     public long currentTimeMilli;
@@ -90,11 +89,10 @@ public class Robot {
     private void initModules() {
         // Add individual modules into the array here
         this.drivetrain = new Drivetrain(this, true);
-        this.velocityModule = new VelocityModule(this, true);
         this.shooterModule = new ShooterModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.velocityModule, this.shooterModule
+                this.drivetrain, this.shooterModule
         };
 
         // Initialize modules

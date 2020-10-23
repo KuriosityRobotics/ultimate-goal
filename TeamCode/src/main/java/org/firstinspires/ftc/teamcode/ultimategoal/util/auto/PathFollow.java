@@ -142,8 +142,8 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     private Point adjustTargetPoint(Point targetPoint) {
         double robotHeading = robot.drivetrain.getCurrentHeading();
 
-        double robotSlipX = SLIP_FACTOR * robot.velocityModule.xVel;
-        double robotSlipY = SLIP_FACTOR * robot.velocityModule.yVel;
+        double robotSlipX = SLIP_FACTOR * robot.drivetrain.velocityModule.xVel;
+        double robotSlipY = SLIP_FACTOR * robot.drivetrain.velocityModule.yVel;
 
         double slipX = robotSlipX * Math.cos(robotHeading) + robotSlipY * Math.sin(robotHeading);
         double slipY = robotSlipY * Math.cos(robotHeading) - robotSlipX * Math.sin(robotHeading);

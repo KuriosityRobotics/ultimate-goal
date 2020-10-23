@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.DrivetrainModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.VelocityModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PIDController;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
@@ -20,6 +21,7 @@ public class Drivetrain implements Module, TelemetryProvider {
 
     private DrivetrainModule drivetrainModule;
     private OdometryModule odometryModule;
+    public VelocityModule velocityModule;
 
     PIDController pidController;
 
@@ -35,6 +37,7 @@ public class Drivetrain implements Module, TelemetryProvider {
 
         drivetrainModule = new DrivetrainModule(robot, isOn);
         odometryModule = new OdometryModule(robot, isOn);
+        velocityModule = new VelocityModule(robot, isOn);
 
         pidController = new PIDController(0.01, 0.0000001, 0, robot);
 
@@ -45,11 +48,13 @@ public class Drivetrain implements Module, TelemetryProvider {
     public void init() {
         drivetrainModule.init();
         odometryModule.init();
+        velocityModule.init();
     }
 
     @Override
     public void update() {
         odometryModule.update();
+        velocityModule.update();
 
         setDrivetrainMovements();
 
