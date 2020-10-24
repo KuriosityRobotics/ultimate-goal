@@ -102,6 +102,9 @@ public class Robot {
 
         // Start the thread for executing modules.
         moduleExecutor = new ModuleExecutor(this);
+
+        // Tick telemetryDump once to get the lines to show up
+        telemetryDump.update();
     }
 
     /**
