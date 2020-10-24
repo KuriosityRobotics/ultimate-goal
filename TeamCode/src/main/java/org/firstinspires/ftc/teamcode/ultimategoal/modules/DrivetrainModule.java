@@ -43,9 +43,6 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         fRight.setDirection(DcMotorSimple.Direction.FORWARD);
         bLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         bRight.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        // TODO: issue 15
-//        setDrivetrainZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
 
