@@ -204,12 +204,12 @@ public class Drivetrain implements Module, TelemetryProvider {
 
         if (isTargetingLastPoint) {
             if (USE_NONLINEARMOMENTUM_CONTROLLER) {
-                double p = NON_LINEAR_P * Math.sqrt(distanceToTarget);
+                double p = NON_LINEAR_P * distanceToTarget;
 
                 double robotVelocity = Math.hypot(velocityModule.xVel, velocityModule.yVel);
                 velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotHeading);
 
-                scale = p - ((velocityAlongPath - MOMENTUM_CONSTANT) * MOMENTUM_FACTOR);
+                scale = p - ((velocityAlongPath - MOMENTUM_CONSTANT) * (1/(distanceToTarget)) * MOMENTUM_FACTOR);
 
                 xMovement = Math.max(xMovement * scale, moveSpeed);
                 yMovement = Math.max(yMovement * scale, moveSpeed);

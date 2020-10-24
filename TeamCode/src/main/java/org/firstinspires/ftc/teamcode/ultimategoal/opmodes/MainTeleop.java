@@ -30,7 +30,7 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
         robot.startModules();
 
         while (opModeIsActive()) {
-//            updateDrivetrainStates();
+            updateDrivetrainStates();
             lastUpdateTime = SystemClock.elapsedRealtime();
         }
     }
@@ -79,6 +79,7 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
             lastArrowMoveState = false;
         }
 
+        // TODO: use brakemode of branch AutoActions instead
         if (gamepad1.right_bumper) {
             xMovement *= SLOW_MODE_SCALE_FACTOR;
             yMovement *= SLOW_MODE_SCALE_FACTOR;
