@@ -63,6 +63,12 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
 
             if (isDone(path, robotPoint, robotHeading)) {
                 robot.drivetrain.setMovements(0, 0, 0);
+
+                robot.drivetrain.brakePoint = path[path.length - 1];
+                if (willAngleLock) {
+                    robot.drivetrain.brakeHeading = angleLockHeading;
+                }
+
                 return;
             }
         }
