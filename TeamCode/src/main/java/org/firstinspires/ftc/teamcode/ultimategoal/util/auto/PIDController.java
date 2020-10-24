@@ -9,7 +9,7 @@ public class PIDController implements TelemetryProvider {
     public double P;
     public double I;
     public double D;
-    Robot robot;
+
     double integral;
     double prevError;
     public double scale = 1;
@@ -19,7 +19,6 @@ public class PIDController implements TelemetryProvider {
         this.P = P;
         this.I = I;
         this.D = D;
-        this.robot = robot;
         
         reset();
     }

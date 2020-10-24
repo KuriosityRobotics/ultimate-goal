@@ -23,7 +23,13 @@ public class Drivetrain implements Module, TelemetryProvider {
     private OdometryModule odometryModule;
     public VelocityModule velocityModule;
 
-    PIDController pidController;
+    PIDController pidController = new PIDController(0.01, 0.0000001, 0, robot);
+    private static final boolean USE_NONLINEARMOMENTUM_CONTROLLER = false;
+
+    // Non-linear momentum controller factors
+    private static final double NON_LINEAR_P = 0.01;
+    private static final double MOMENTUM_CONSTANT = 0;
+    private static final double MOMENTUM_FACTOR = 0;
 
     // States
     public boolean zeroPowerBrake = true;
@@ -38,8 +44,6 @@ public class Drivetrain implements Module, TelemetryProvider {
         drivetrainModule = new DrivetrainModule(robot, isOn);
         odometryModule = new OdometryModule(robot, isOn);
         velocityModule = new VelocityModule(robot, isOn);
-
-        pidController = new PIDController(0.01, 0.0000001, 0, robot);
 
         robot.telemetryDump.registerProvider(this);
     }
@@ -156,6 +160,8 @@ public class Drivetrain implements Module, TelemetryProvider {
     }
 
     private Point lastTargetPoint = new Point();
+    double velocityAlongPath;
+    double scale;
 
     /**
      * Set the movements of the drivetrain to go to a target point. Should be called over and over
@@ -197,8 +203,21 @@ public class Drivetrain implements Module, TelemetryProvider {
         double turnMovement = Range.clip(relativeTurnAngle / Math.toRadians(30), -1, 1) * turnSpeed;
 
         if (isTargetingLastPoint) {
-            xMovement *= Range.clip(distanceToTarget / followRadius, 0.25, 1);
-            yMovement *= Range.clip(distanceToTarget / followRadius, 0.25, 1);
+            if (USE_NONLINEARMOMENTUM_CONTROLLER) {
+                double p = NON_LINEAR_P * Math.sqrt(distanceToTarget);
+
+                double robotVelocity = Math.hypot(velocityModule.xVel, velocityModule.yVel);
+                velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotHeading);
+
+                scale = p - ((velocityAlongPath - MOMENTUM_CONSTANT) * MOMENTUM_FACTOR);
+
+                xMovement = Math.max(xMovement * scale, moveSpeed);
+                yMovement = Math.max(yMovement * scale, moveSpeed);
+            } else {
+                double scale = pidController.calculatePID(robotPosition, targetPoint);
+                xMovement = Math.max(xMovement * scale, moveSpeed);
+                yMovement = Math.max(yMovement * scale, moveSpeed);
+            }
         }
 
         setMovements(xMovement, yMovement, turnMovement);
@@ -249,6 +268,8 @@ public class Drivetrain implements Module, TelemetryProvider {
         data.add("yMovement: " + yMovement);
         data.add("turnMovemnt: " + turnMovement);
         data.add("isBrake: " + isBrake);
+//        data.add("velocityAlongPath: " + velocityAlongPath);
+//        data.add("non-lin momentum scale: " + scale);
         return data;
     }
 
