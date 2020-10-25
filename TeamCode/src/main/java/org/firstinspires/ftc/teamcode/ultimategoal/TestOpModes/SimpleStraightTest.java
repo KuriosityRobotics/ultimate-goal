@@ -21,11 +21,21 @@ public class SimpleStraightTest extends LinearOpMode {
                 new Waypoint(0, 48)
         }, robot, "test");
 
+        PathFollow pf2 = new PathFollow(new Waypoint[]{
+                new Waypoint(0, 48),
+                new Waypoint(0, 24),
+                new Waypoint(0, 0)
+        }, robot, "test");
+
         waitForStart();
 
         robot.startModules();
 
-        pf1.pathFollow(0, 1, 1, false, 0);
+        pf1.pathFollow(0, 1, 1, true, 0);
+
+        sleep(5000);
+
+        pf2.pathFollow(Math.PI, 1, 1, true, 0);
 
         sleep(5000);
     }

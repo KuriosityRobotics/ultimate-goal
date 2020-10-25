@@ -18,17 +18,18 @@ import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunction
 public class Drivetrain implements Module, TelemetryProvider {
     Robot robot;
     public boolean isOn;
+    public boolean weakBrake = false;
 
     private DrivetrainModule drivetrainModule;
     private OdometryModule odometryModule;
     public VelocityModule velocityModule;
 
-    PIDController pidController;
-    private static final boolean USE_NONLINEARMOMENTUM_CONTROLLER = true;
+//    PIDController pidController;
 
     // Non-linear momentum controller factors
-    private static final double NON_LINEAR_P = 0.25;
-    private static final double MOMENTUM_FACTOR = 0.09;
+    private static final double NON_LINEAR_P = 0.19;
+    private static final double MOMENTUM_FACTOR = 0.0017;
+    private static final double INVERSE_DISTANCE_FACTOR = 0.5;
 
     // States
     public boolean zeroPowerBrake = true;
@@ -135,6 +136,13 @@ public class Drivetrain implements Module, TelemetryProvider {
         double robotHeading = getCurrentHeading();
 
         double distanceToTarget = Math.hypot(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
+
+        if (weakBrake && distanceToTarget > .5) {
+            brakePoint = new Point((brakePoint.x + robotPosition.x) / 2, (brakePoint.y + robotPosition.y) / 2);
+
+            distanceToTarget = Math.hypot(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
+        }
+
         double absoluteAngleToTarget = Math.atan2(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
 
         double relativeAngleToPoint = absoluteAngleToTarget - robotHeading;
@@ -156,13 +164,20 @@ public class Drivetrain implements Module, TelemetryProvider {
         double p = NON_LINEAR_P * Math.sqrt(distanceToTarget);
 
         double robotVelocity = Math.hypot(velocityModule.xVel, velocityModule.yVel);
-        velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotHeading);
+        double robotVelocityHeading = Math.atan2(velocityModule.yVel, velocityModule.xVel);
+        velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotVelocityHeading);
 
-        double inverseDistance = distanceToTarget == 0 ? Double.MAX_VALUE : 1 / (distanceToTarget + 1);
-        scale = p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR);
+        double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
+        scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
 
-        xMovement = Math.min(xPower * scale, 1);
-        yMovement = Math.min(yPower * scale, 1);
+        xMovement = Range.clip(xPower * scale, -1, 1);
+        yMovement = Range.clip(yPower * scale, -1, 1);
+
+        if (weakBrake) {
+            xMovement *= 0.15;
+            yMovement *= 0.15;
+            turnMovement *= 0.15;
+        }
 
         drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
     }
@@ -213,13 +228,14 @@ public class Drivetrain implements Module, TelemetryProvider {
             double p = NON_LINEAR_P * Math.sqrt(distanceToTarget);
 
             double robotVelocity = Math.hypot(velocityModule.xVel, velocityModule.yVel);
-            velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotHeading);
+            double robotVelocityHeading = Math.atan2(velocityModule.yVel, velocityModule.xVel);
+            velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotVelocityHeading);
 
-            double inverseDistance = distanceToTarget == 0 ? Double.MAX_VALUE : 1 / (distanceToTarget + 1);
-            scale = p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR);
+            double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
+            scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
 
-            xMovement = Math.min(xPower * scale, moveSpeed);
-            yMovement = Math.min(yPower * scale, moveSpeed);
+            xMovement = Range.clip(xPower * scale, -moveSpeed, moveSpeed);
+            yMovement = Range.clip(yPower * scale, -moveSpeed, moveSpeed);
         }
 
         setMovements(xMovement, yMovement, turnMovement);
@@ -268,11 +284,11 @@ public class Drivetrain implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("xMovement: " + xMovement);
         data.add("yMovement: " + yMovement);
-        data.add("turnMovemnt: " + turnMovement);
+        data.add("turnMovement: " + turnMovement);
         data.add("isBrake: " + isBrake);
         data.add("Brake Point: " + brakePoint);
         data.add("Brake heading: " + brakeHeading);
-        data.add("velocityAlongPath: " + velocityAlongPath);
+        data.add("velocity along path: " + velocityAlongPath);
         data.add("non-lin momentum scale: " + scale);
         return data;
     }
