@@ -93,10 +93,18 @@ public class DrivetrainModule implements Module, TelemetryProvider {
     }
 
     private void setMotorPowers(double fLPower, double fRPower, double bLPower, double bRPower) {
-        fLeft.setPower(fLPower);
-        fRight.setPower(fRPower);
-        bLeft.setPower(bLPower);
-        bRight.setPower(bRPower);
+        setMotorPower(fLeft, fLPower);
+        setMotorPower(fRight, fRPower);
+        setMotorPower(bLeft, bLPower);
+        setMotorPower(bRight, bRPower);
+    }
+
+    private void setMotorPower(DcMotor motor, double power) {
+        if (Math.abs(power) < 0.01) {
+            motor.setPower(0);
+        } else {
+            motor.setPower(power);
+        }
     }
 
     private void setDrivetrainZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
