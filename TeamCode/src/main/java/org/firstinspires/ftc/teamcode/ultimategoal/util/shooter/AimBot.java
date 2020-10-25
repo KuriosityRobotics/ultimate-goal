@@ -23,12 +23,36 @@ public class AimBot {
     }
 
     /**
+     * Aim and shoot one ring into the target.
+     *
+     * @param target The target to shoot into.
+     */
+    public void shoot(TowerGoal target, int numRings) {
+        aimShooter(target);
+
+        robot.shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
+
+        for (int i = 0; i < numRings; i++) {
+            robot.shooterModule.indexRing = true;
+
+            while (robot.shooterModule.indexRing) {
+
+            }
+        }
+    }
+
+    /**
      * Aim the shooter at the target specified.
      *
      * @param target The target to aim at.
      */
     public void aimShooter(TowerGoal target) {
-        // TODO: Turn robot to face target, give commands to shooter
+        // TODO: SET HEADING
+
+        // Set flap
+        //  -0.00000548x^2 + 0.00107x + 0.59623
+        double distanceToTarget = distanceToTarget(target);
+        robot.shooterModule.shooterFlapPosition = (-0.00000548 * distanceToTarget * distanceToTarget) + (0.00107 * distanceToTarget) + 0.59623;
     }
 
     /**
