@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.util;
+package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import com.qualcomm.robotcore.util.Range;
 
@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.DrivetrainModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.VelocityModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PIDController;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
