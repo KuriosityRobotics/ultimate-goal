@@ -20,14 +20,14 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     public double worldAngleRad;
 
     // Encoders (as Motors)
-    private DcMotor yLeft;
-    private DcMotor yRight;
-    private DcMotor mecanum;
+    private DcMotor yLeftEncoder;
+    private DcMotor yRightEncoder;
+    private DcMotor mecanumEncoder;
 
     // Constants
-    private final double INCHES_PER_ENCODER_TICK = 0.0007284406721 * 100.0 / 101.9889;
-    private final double LR_ENCODER_DIST_FROM_CENTER = 6.942654509 * 3589.8638 / 3600.0 * 3531.4628211 / 3600.0;
-    private final double M_ENCODER_DIST_FROM_CENTER = 4.5;
+    private final static double INCHES_PER_ENCODER_TICK = 0.0007284406721 * 100.0 / 101.9889;
+    private final static double LR_ENCODER_DIST_FROM_CENTER = 6.942654509 * 3589.8638 / 3600.0 * 3531.4628211 / 3600.0;
+    private final static double M_ENCODER_DIST_FROM_CENTER = 4.5;
 
     public OdometryModule(Robot robot, boolean isOn) {
         robot.fileDump.registerProvider(this);
@@ -37,17 +37,17 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     public void init() {
-        yLeft = robot.getDcMotor("fLeft");
-        yRight = robot.getDcMotor("fRight");
-        mecanum = robot.getDcMotor("bLeft");
+        yLeftEncoder = robot.getDcMotor("fLeft");
+        yRightEncoder = robot.getDcMotor("fRight");
+        mecanumEncoder = robot.getDcMotor("bLeft");
 
-        yLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        yRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        mecanum.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        yLeftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        yRightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        mecanumEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        yLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        yRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        mecanum.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        yLeftEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        yRightEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        mecanumEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void update() {
@@ -92,9 +92,9 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
      * Calculates the robot's position.
      */
     private void calculateRobotPosition() {
-        double leftPodNewPosition = yLeft.getCurrentPosition();
-        double rightPodNewPosition = yRight.getCurrentPosition();
-        double mecanumPodNewPosition = -1 * mecanum.getCurrentPosition();
+        double leftPodNewPosition = yLeftEncoder.getCurrentPosition();
+        double rightPodNewPosition = yRightEncoder.getCurrentPosition();
+        double mecanumPodNewPosition = -1 * mecanumEncoder.getCurrentPosition();
 
         double leftPodDelta = leftPodNewPosition - leftPodKnownPosition;
         double rightPodDelta = rightPodNewPosition - rightPodKnownPosition;
@@ -169,16 +169,16 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         }
     }
 
-    public DcMotor getyLeft() {
-        return yLeft;
+    public DcMotor getyLeftEncoder() {
+        return yLeftEncoder;
     }
 
-    public DcMotor getyRight() {
-        return yRight;
+    public DcMotor getyRightEncoder() {
+        return yRightEncoder;
     }
 
-    public DcMotor getMecanum() {
-        return mecanum;
+    public DcMotor getMecanumEncoder() {
+        return mecanumEncoder;
     }
 
     public boolean isOn() {

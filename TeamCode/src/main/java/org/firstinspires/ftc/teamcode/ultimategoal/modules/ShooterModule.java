@@ -65,7 +65,7 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         shooterFlap.setPosition(shooterFlapPosition);
 
-        long currentTime = robot.currentTimeMilli;
+        long currentTime = robot.getCurrentTimeMilli();
 
         boolean indexerReturned = currentTime > indexTime + 1200;
         if (indexRing && indexerReturned) {
