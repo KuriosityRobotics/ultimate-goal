@@ -45,18 +45,12 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         bRight.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 
-
-    double fLPower;
-    double fRPower;
-    double bLPower;
-    double bRPower;
-
     // drivetrain update method applies the powers based on y x and turn movements
     public void update() {
-        fLPower = ((yMovement) - turnMovement + xMovement * MECANUM_POWER_SCALE_FACTOR);
-        fRPower = ((yMovement) + turnMovement - xMovement * MECANUM_POWER_SCALE_FACTOR);
-        bLPower = ((yMovement) - turnMovement - xMovement * MECANUM_POWER_SCALE_FACTOR);
-        bRPower = ((yMovement) + turnMovement + xMovement * MECANUM_POWER_SCALE_FACTOR);
+        double fLPower = ((yMovement) - turnMovement + xMovement * MECANUM_POWER_SCALE_FACTOR);
+        double fRPower = ((yMovement) + turnMovement - xMovement * MECANUM_POWER_SCALE_FACTOR);
+        double bLPower = ((yMovement) - turnMovement - xMovement * MECANUM_POWER_SCALE_FACTOR);
+        double bRPower = ((yMovement) + turnMovement + xMovement * MECANUM_POWER_SCALE_FACTOR);
 
         double maxPower = Math.abs(fLPower);
         if (Math.abs(fRPower) > maxPower) {
@@ -105,13 +99,6 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         } else {
             motor.setPower(power);
         }
-    }
-
-    private void setDrivetrainZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
-        fLeft.setZeroPowerBehavior(zeroPowerBehavior);
-        fRight.setZeroPowerBehavior(zeroPowerBehavior);
-        bLeft.setZeroPowerBehavior(zeroPowerBehavior);
-        bRight.setZeroPowerBehavior(zeroPowerBehavior);
     }
 
     public boolean isOn() {

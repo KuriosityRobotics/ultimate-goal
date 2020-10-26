@@ -24,8 +24,6 @@ public class Drivetrain implements Module, TelemetryProvider {
     private OdometryModule odometryModule;
     public VelocityModule velocityModule;
 
-//    PIDController pidController;
-
     // Non-linear momentum controller factors
     private static final double NON_LINEAR_P = 0.19;
     private static final double MOMENTUM_FACTOR = 0.0017;
@@ -46,8 +44,6 @@ public class Drivetrain implements Module, TelemetryProvider {
         velocityModule = new VelocityModule(robot, isOn);
 
         robot.telemetryDump.registerProvider(this);
-
-//        pidController =  new PIDController(0.01, 0, 0, robot);
     }
 
     @Override
@@ -163,8 +159,8 @@ public class Drivetrain implements Module, TelemetryProvider {
 
         double p = NON_LINEAR_P * Math.sqrt(distanceToTarget);
 
-        double robotVelocity = Math.hypot(velocityModule.xVel, velocityModule.yVel);
-        double robotVelocityHeading = Math.atan2(velocityModule.yVel, velocityModule.xVel);
+        double robotVelocity = Math.hypot(velocityModule.getxVel(), velocityModule.getyVel());
+        double robotVelocityHeading = Math.atan2(velocityModule.getyVel(), velocityModule.getxVel());
         velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotVelocityHeading);
 
         double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
@@ -227,8 +223,8 @@ public class Drivetrain implements Module, TelemetryProvider {
         if (isTargetingLastPoint) {
             double p = NON_LINEAR_P * Math.sqrt(distanceToTarget);
 
-            double robotVelocity = Math.hypot(velocityModule.xVel, velocityModule.yVel);
-            double robotVelocityHeading = Math.atan2(velocityModule.yVel, velocityModule.xVel);
+            double robotVelocity = Math.hypot(velocityModule.getxVel(), velocityModule.getyVel());
+            double robotVelocityHeading = Math.atan2(velocityModule.getyVel(), velocityModule.getxVel());
             velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotVelocityHeading);
 
             double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
@@ -283,7 +279,6 @@ public class Drivetrain implements Module, TelemetryProvider {
         data.add("isBrake: " + isBrake);
         data.add("Brake Point: " + brakePoint);
         data.add("Brake heading: " + brakeHeading);
-        data.add("velocity along path: " + velocityAlongPath);
         data.add("non-lin momentum scale: " + scale);
         return data;
     }

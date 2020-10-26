@@ -23,7 +23,7 @@ public class Robot {
     public Drivetrain drivetrain;
     public ShooterModule shooterModule;
 
-    public long currentTimeMilli;
+    private long currentTimeMilli;
 
     public HardwareMap hardwareMap;
     private Telemetry telemetry;
@@ -152,6 +152,10 @@ public class Robot {
 
     public boolean isStopRequested() {
         return linearOpMode.isStopRequested();
+    }
+
+    public long getCurrentTimeMilli() {
+        return currentTimeMilli;
     }
 
     private void ಢ_ಢ() {
