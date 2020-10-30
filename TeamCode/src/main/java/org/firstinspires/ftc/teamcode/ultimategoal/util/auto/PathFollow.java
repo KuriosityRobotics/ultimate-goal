@@ -1,18 +1,20 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.closestPointOnLineToPoint;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.lineSegmentCircleIntersection;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.lineSegmentPointDistance;
 
-public class PathFollow implements TelemetryProvider {
+public class PathFollow implements TelemetryProvider, FileDumpProvider {
     Robot robot;
-    private static final boolean IS_FILE_DUMP = false;
+    private boolean isFileDump = false;
 
     Point clippedPoint = new Point(0, 0);
     Point targetPoint = new Point(0, 0);
@@ -42,7 +44,6 @@ public class PathFollow implements TelemetryProvider {
     }
 
     public void pathFollow(double direction, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading) {
-
         pathIndex = 0; // Reset pathIndex
         this.direction = direction;
         this.willAngleLock = willAngleLock;
@@ -61,23 +62,23 @@ public class PathFollow implements TelemetryProvider {
 
             if (isDone(path, robotPoint, robotHeading)) {
                 robot.drivetrain.setMovements(0, 0, 0);
+
+                robot.drivetrain.brakePoint = path[path.length - 1];
+                if (willAngleLock) {
+                    robot.drivetrain.brakeHeading = angleLockHeading;
+                }
+
                 return;
             }
         }
     }
 
-    private void pathFileDump(ArrayList<Waypoint> path) {
-        if (robot.WILL_FILE_DUMP) {
-            for (int i = 0; i < path.size(); i++) {
-                robot.fileDump.addData(description + "_path.txt", new StringBuilder().append(path.get(i).x).append(" ").append(path.get(i).y).toString());
-            }
-        }
+    public String getFileData() {
+        return Arrays.toString(path);
     }
 
-    private void fileDump() {
-        if (robot.WILL_FILE_DUMP) {
-            robot.fileDump.addData(description + "_target.txt", new StringBuilder().append(adjustedTargetPoint.x).append(" ").append(adjustedTargetPoint.y).toString());
-        }
+    public String getFileName() {
+        return description + ".path";
     }
 
     private Point clipToPath(Waypoint[] path, Point center) {
@@ -88,8 +89,8 @@ public class PathFollow implements TelemetryProvider {
 
         // only checks the current line and the next line (no skipping)
         for (int i = pathIndex; i < Math.min(path.length - 1, pathIndex + 2); i++) {
-            Point start = path[i].toPoint();
-            Point end = path[i + 1].toPoint();
+            Point start = path[i];
+            Point end = path[i + 1];
 
             double thisClipDist = lineSegmentPointDistance(center, start, end);
 
@@ -109,13 +110,13 @@ public class PathFollow implements TelemetryProvider {
     private Point findTarget(Waypoint[] path, Point center, double heading) {
         Point followPoint = new Point();
 
-        Point lineStartPoint = path[pathIndex].toPoint();
+        Point lineStartPoint = path[pathIndex];
         double distToFirst = Math.hypot(center.x - lineStartPoint.x, center.y - lineStartPoint.y);
 
         // only look at lines on current index or next index
         for (int i = pathIndex; i < Math.min(path.length - 1, pathIndex + 2); i++) {
-            Point start = path[i].toPoint();
-            Point end = path[i + 1].toPoint();
+            Point start = path[i];
+            Point end = path[i + 1];
 
             ArrayList<Point> intersections = lineSegmentCircleIntersection(center, FOLLOW_RADIUS, start, end);
 
@@ -136,7 +137,7 @@ public class PathFollow implements TelemetryProvider {
         }
 
         if (Math.hypot(center.x - path[path.length - 1].x, center.y - path[path.length - 1].y) < FOLLOW_RADIUS * 1.5 && pathIndex == path.length - 2) {
-            followPoint = path[path.length - 1].toPoint();
+            followPoint = path[path.length - 1];
             isTargetingLastPoint = true;
         }
 
@@ -146,8 +147,8 @@ public class PathFollow implements TelemetryProvider {
     private Point adjustTargetPoint(Point targetPoint) {
         double robotHeading = robot.drivetrain.getCurrentHeading();
 
-        double robotSlipX = SLIP_FACTOR * robot.velocityModule.xVel;
-        double robotSlipY = SLIP_FACTOR * robot.velocityModule.yVel;
+        double robotSlipX = SLIP_FACTOR * robot.drivetrain.velocityModule.getxVel();
+        double robotSlipY = SLIP_FACTOR * robot.drivetrain.velocityModule.getyVel();
 
         double slipX = robotSlipX * Math.cos(robotHeading) + robotSlipY * Math.sin(robotHeading);
         double slipY = robotSlipY * Math.cos(robotHeading) - robotSlipX * Math.sin(robotHeading);
@@ -156,13 +157,13 @@ public class PathFollow implements TelemetryProvider {
     }
 
     private boolean isDone(Waypoint[] path, Point center, double heading) {
-        Point endPoint = path[path.length - 1].toPoint();
+        Point endPoint = path[path.length - 1];
 
         return (Math.hypot(center.x - endPoint.x, center.y - endPoint.y) < DISTANCE_THRESHOLD) && (!willAngleLock || Math.abs(angleWrap(angleLockHeading - heading)) < ANGLE_THRESHOLD) && pathIndex == path.length - 2;
     }
 
     public boolean isFileDump() {
-        return IS_FILE_DUMP;
+        return isFileDump;
     }
 
     @Override

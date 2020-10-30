@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.TestOpModes;
+package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;

@@ -22,7 +22,7 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     // States
     public double flyWheelTargetSpeed;
-    public double shooterFlapPosition;
+    public double shooterFlapPosition = 0.71;
     public boolean indexRing;
 
     // Motors
@@ -65,7 +65,7 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         shooterFlap.setPosition(shooterFlapPosition);
 
-        long currentTime = robot.currentTimeMilli;
+        long currentTime = robot.getCurrentTimeMilli();
 
         boolean indexerReturned = currentTime > indexTime + 1200;
         if (indexRing && indexerReturned) {
@@ -102,11 +102,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         data.add("Will index: " + indexRing);
 
         return data;
-    }
-
-    @Override
-    public void fileDump() {
-        // TODO
     }
 
     public String getName() {

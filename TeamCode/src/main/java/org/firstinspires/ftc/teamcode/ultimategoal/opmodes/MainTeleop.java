@@ -15,28 +15,29 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
     Robot robot;
     long lastUpdateTime;
 
-    private double SLOW_MODE_SCALE_FACTOR = 0.3;
+    private static final double SLOW_MODE_SCALE_FACTOR = 0.3;
 
     private boolean lastArrowMoveState = false;
     private double arrowMoveAngle = 0;
 
     public void runOpMode() {
-        robot.telemetryDump.registerProvider(this);
-
         initRobot();
 
+        robot.telemetryDump.registerProvider(this);
         waitForStart();
 
         robot.startModules();
 
         while (opModeIsActive()) {
-//            updateDrivetrainStates();
+            updateDrivetrainStates();
             lastUpdateTime = SystemClock.elapsedRealtime();
         }
     }
 
     private void initRobot() {
         robot = new Robot(hardwareMap, telemetry,this);
+
+        robot.drivetrain.weakBrake = true;
     }
 
     private void updateDrivetrainStates() {
@@ -79,6 +80,7 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
             lastArrowMoveState = false;
         }
 
+        // TODO: use brakemode of branch AutoActions instead
         if (gamepad1.right_bumper) {
             xMovement *= SLOW_MODE_SCALE_FACTOR;
             yMovement *= SLOW_MODE_SCALE_FACTOR;

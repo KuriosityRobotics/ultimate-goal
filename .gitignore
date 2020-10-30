@@ -41,7 +41,6 @@ captures/
 # IntelliJ
 *.iml
 .idea/workspace.xml
-.idea/codeStyles/
 .idea/tasks.xml
 .idea/gradle.xml
 .idea/assetWizardSettings.xml
@@ -91,12 +90,13 @@ lint/tmp/
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff
-.idea/**/misc.xml
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+.idea/**/discord.xml
+.idea/**/compiler.xml
 
 # Generated files
 .idea/**/contentModel.xml

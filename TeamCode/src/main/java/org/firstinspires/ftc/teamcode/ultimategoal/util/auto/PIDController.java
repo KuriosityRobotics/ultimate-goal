@@ -9,36 +9,48 @@ public class PIDController implements TelemetryProvider {
     public double P;
     public double I;
     public double D;
-    Robot robot;
-    double integral, prevError;
-    public double scale;
 
-    public PIDController(double P, double I, double D, Robot robot){
+    double integral;
+    double prevError;
+    public double scale = 1;
+
+    public PIDController(double P, double I, double D, Robot robot) {
         robot.telemetryDump.registerProvider(this);
         this.P = P;
         this.I = I;
         this.D = D;
-        this.robot = robot;
+        
+        reset();
     }
 
-    public void PID(double distance, double targetDistance){
-        double error = targetDistance-distance;
-        integral += error*0.004;
-        double derivative = (error - prevError) / 0.004;
-        scale = P*error + I*integral + D*derivative;
+    public void reset() {
+        integral = 0;
+        prevError = 1000000;
     }
 
-    public void PID(Point current, Point target){
-        double error = Math.hypot(current.x-target.x,current.y-target.y);
-        integral += error*0.004;
+    public double calculatePID(double distance, double targetDistance) {
+        return calculatePID(targetDistance - distance);
+    }
+
+    public double calculatePID(Point current, Point target) {
+        return calculatePID(Math.hypot(current.x - target.x, current.y - target.y));
+    }
+
+    public double calculatePID(double error) {
+        integral += error * 0.004;
         double derivative = (error - prevError) / 0.004;
-        scale = P*error + I*integral + D*derivative;
+
+        scale = P * error + I * integral + D * derivative;
+
+        return scale;
     }
 
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("Scale: " + String.valueOf(this.scale));
+        data.add("Scale: " + this.scale);
+        data.add("Integral: " + this.integral);
+        data.add("prev error: " + prevError);
         return data;
     }
 

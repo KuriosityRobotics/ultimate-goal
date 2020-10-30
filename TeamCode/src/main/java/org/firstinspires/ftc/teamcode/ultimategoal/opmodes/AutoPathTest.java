@@ -38,7 +38,12 @@ public class AutoPathTest extends LinearOpMode {
         robot.startModules();
 
         pf1.pathFollow(0, 0.8, 0.8, true, 0);
+
+        sleep(5000);
+
         pf2.pathFollow(Math.PI, 0.8, 0.8, true, 0);
+
+        sleep(10000);
     }
 }
 

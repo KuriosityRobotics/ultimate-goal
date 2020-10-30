@@ -10,10 +10,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.Drivetrain;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ShooterModule;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.VelocityModule;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.Drivetrain;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
@@ -22,12 +21,11 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.shooter.AimBot;
 public class Robot {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
-    public VelocityModule velocityModule;
     public ShooterModule shooterModule;
 
     public AimBot aimBot;
 
-    public long currentTimeMilli;
+    private long currentTimeMilli;
 
     public HardwareMap hardwareMap;
     private Telemetry telemetry;
@@ -74,22 +72,31 @@ public class Robot {
                 } catch (Exception e) {
                     Log.d("Module", "Module couldn't update: " + module.getName());
                 }
-                if (WILL_FILE_DUMP) {
-                    module.fileDump();
-                }
             }
         }
         telemetryDump.update();
+
+        if (isStopRequested()) {
+            this.cleanUp();
+        }
+    }
+
+    private void cleanUp() {
+        this.fileDump.writeFilesToDevice();
+        try {
+            this.moduleExecutor.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initModules() {
         // Add individual modules into the array here
         this.drivetrain = new Drivetrain(this, true);
-        this.velocityModule = new VelocityModule(this, true);
         this.shooterModule = new ShooterModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.velocityModule, this.shooterModule
+                this.drivetrain, this.shooterModule
         };
 
         // Initialize modules
@@ -99,6 +106,9 @@ public class Robot {
 
         // Start the thread for executing modules.
         moduleExecutor = new ModuleExecutor(this);
+
+        // Tick telemetryDump once to get the lines to show up
+        telemetryDump.update();
 
         // Aimbot
         aimBot = new AimBot(this);
@@ -149,5 +159,18 @@ public class Robot {
 
     public boolean isStopRequested() {
         return linearOpMode.isStopRequested();
+    }
+
+    public long getCurrentTimeMilli() {
+        return currentTimeMilli;
+    }
+
+    private void ಢ_ಢ() {
+        throw new Error("ರ_ರ plz dont rely on finalize to cleanup");
+    }
+
+    public void finalize() {
+        this.cleanUp();
+        ಢ_ಢ();
     }
 }

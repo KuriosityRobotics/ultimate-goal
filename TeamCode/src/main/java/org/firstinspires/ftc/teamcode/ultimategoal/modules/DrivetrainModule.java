@@ -43,11 +43,7 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         fRight.setDirection(DcMotorSimple.Direction.FORWARD);
         bLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         bRight.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        // TODO: issue 15
-//        setDrivetrainZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
-
 
     // drivetrain update method applies the powers based on y x and turn movements
     public void update() {
@@ -70,6 +66,7 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         if (maxPower > 1.0) {
             scaleDown = 1.0 / maxPower;
         }
+
         fLPower *= scaleDown;
         fRPower *= scaleDown;
         bLPower *= scaleDown;
@@ -94,33 +91,18 @@ public class DrivetrainModule implements Module, TelemetryProvider {
     }
 
     private void setMotorPowers(double fLPower, double fRPower, double bLPower, double bRPower) {
-        fLeft.setPower(fLPower);
-        fRight.setPower(fRPower);
-        bLeft.setPower(bLPower);
-        bRight.setPower(bRPower);
+        setMotorPower(fLeft, fLPower);
+        setMotorPower(fRight, fRPower);
+        setMotorPower(bLeft, bLPower);
+        setMotorPower(bRight, bRPower);
     }
 
-    private void setDrivetrainZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
-        fLeft.setZeroPowerBehavior(zeroPowerBehavior);
-        fRight.setZeroPowerBehavior(zeroPowerBehavior);
-        bLeft.setZeroPowerBehavior(zeroPowerBehavior);
-        bRight.setZeroPowerBehavior(zeroPowerBehavior);
-    }
-
-    public DcMotor getfLeft() {
-        return fLeft;
-    }
-
-    public DcMotor getfRight() {
-        return fRight;
-    }
-
-    public DcMotor getbLeft() {
-        return bLeft;
-    }
-
-    public DcMotor getbRight() {
-        return bRight;
+    private void setMotorPower(DcMotor motor, double power) {
+        if (Math.abs(power) < 0.01) {
+            motor.setPower(0);
+        } else {
+            motor.setPower(power);
+        }
     }
 
     public boolean isOn() {

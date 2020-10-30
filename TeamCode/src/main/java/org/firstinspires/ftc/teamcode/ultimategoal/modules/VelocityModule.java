@@ -12,9 +12,9 @@ public class VelocityModule implements Module, TelemetryProvider {
     private boolean isOn;
 
     // in/s and rad/s
-    public double xVel;
-    public double yVel;
-    public double angleVel;
+    private double xVel;
+    private double yVel;
+    private double angleVel;
 
     private long oldUpdateTime;
     private long currentUpdateTime;
@@ -38,7 +38,7 @@ public class VelocityModule implements Module, TelemetryProvider {
         Point robotPosition = robot.drivetrain.getCurrentPosition();
         double robotHeading = robot.drivetrain.getCurrentHeading();
 
-        currentUpdateTime = robot.currentTimeMilli;
+        currentUpdateTime = robot.getCurrentTimeMilli();
 
         if (oldWorldPosition != null) {
             xVel = 1000 * (robotPosition.x - oldWorldPosition.x) / (currentUpdateTime - oldUpdateTime);
@@ -59,15 +59,23 @@ public class VelocityModule implements Module, TelemetryProvider {
         return data;
     }
 
-    public void fileDump(){
-
-    }
-
     public boolean isOn(){
         return isOn;
     }
 
     public String getName() {
         return "VelocityModule";
+    }
+
+    public double getxVel() {
+        return xVel;
+    }
+
+    public double getyVel() {
+        return yVel;
+    }
+
+    public double getAngleVel() {
+        return angleVel;
     }
 }

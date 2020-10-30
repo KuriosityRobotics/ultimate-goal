@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.util;
+package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import com.qualcomm.robotcore.util.Range;
 
@@ -6,17 +6,29 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.DrivetrainModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.VelocityModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PIDController;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
+import java.util.ArrayList;
+
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
 
-public class Drivetrain implements Module {
+public class Drivetrain implements Module, TelemetryProvider {
     Robot robot;
-    private boolean isOn;
+    public boolean isOn;
+    public boolean weakBrake = false;
 
     private DrivetrainModule drivetrainModule;
     private OdometryModule odometryModule;
+    public VelocityModule velocityModule;
+
+    // Non-linear momentum controller factors
+    private static final double NON_LINEAR_P = 0.19;
+    private static final double MOMENTUM_FACTOR = 0.0017;
+    private static final double INVERSE_DISTANCE_FACTOR = 0.5;
 
     // States
     public boolean zeroPowerBrake = true;
@@ -30,17 +42,22 @@ public class Drivetrain implements Module {
 
         drivetrainModule = new DrivetrainModule(robot, isOn);
         odometryModule = new OdometryModule(robot, isOn);
+        velocityModule = new VelocityModule(robot, isOn);
+
+        robot.telemetryDump.registerProvider(this);
     }
 
     @Override
     public void init() {
         drivetrainModule.init();
         odometryModule.init();
+        velocityModule.init();
     }
 
     @Override
     public void update() {
         odometryModule.update();
+        velocityModule.update();
 
         setDrivetrainMovements();
 
@@ -58,6 +75,16 @@ public class Drivetrain implements Module {
         this.xMovement = xMovement;
         this.yMovement = yMovement;
         this.turnMovement = turnMovement;
+
+        if (xMovement == 0 && yMovement == 0 && turnMovement == 0 && zeroPowerBrake) {
+            if (!isBrake) {
+                isBrake = true;
+                brakePoint = getCurrentPosition();
+                brakeHeading = getCurrentHeading();
+            }
+        } else {
+            isBrake = false;
+        }
     }
 
     /**
@@ -67,6 +94,10 @@ public class Drivetrain implements Module {
      */
     public Point getCurrentPosition() {
         return odometryModule.getCurrentPosition();
+    }
+
+    public double[] getEncoderPositions() {
+        return odometryModule.getEncoderPositions();
     }
 
     /**
@@ -79,25 +110,16 @@ public class Drivetrain implements Module {
     }
 
     boolean isBrake;
-    private Point brakePoint;
+    public Point brakePoint;
+    public double brakeHeading;
 
     /**
      * Set the movements of the drivetrain according to the target movement states of this module.
      * These two movements are different when braking must be applied.
      */
     private void setDrivetrainMovements() {
-        if (zeroPowerBrake) {
-            if (xMovement == 0 && yMovement == 0 && turnMovement == 0) {
-                if (!isBrake) {
-                    brakePoint = odometryModule.getCurrentPosition();
-                    isBrake = true;
-                }
-
-                setMovementsToBrakePoint();
-            } else {
-                isBrake = false;
-                drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
-            }
+        if (isBrake) {
+            setMovementsToBrakePosition();
         } else {
             drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
         }
@@ -106,19 +128,60 @@ public class Drivetrain implements Module {
     /**
      * Sets movement of drivetrain to try to stay on the brake point.
      */
-    private void setMovementsToBrakePoint() {
-        setMovementsToPoint(brakePoint);
+    public void setMovementsToBrakePosition() {
+        Point robotPosition = getCurrentPosition();
+        double robotHeading = getCurrentHeading();
+
+        double distanceToTarget = Math.hypot(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
+
+        if (weakBrake && distanceToTarget > .5) {
+            brakePoint = new Point((brakePoint.x + robotPosition.x) / 2, (brakePoint.y + robotPosition.y) / 2);
+
+            distanceToTarget = Math.hypot(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
+        }
+
+        double absoluteAngleToTarget = Math.atan2(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
+
+        double relativeAngleToPoint = absoluteAngleToTarget - robotHeading;
+        double relativeXToPoint = Math.sin(relativeAngleToPoint) * distanceToTarget;
+        double relativeYToPoint = Math.cos(relativeAngleToPoint) * distanceToTarget;
+
+        double relativeTurnAngle = angleWrap(relativeAngleToPoint);
+        relativeTurnAngle = angleWrap(brakeHeading - robotHeading);
+
+        double totalPower = Math.abs(relativeYToPoint) + Math.abs(relativeXToPoint);
+
+        double xPower = relativeXToPoint / totalPower;
+        double yPower = relativeYToPoint / totalPower;
+
+        double xMovement = xPower;
+        double yMovement = yPower;
+        double turnMovement = Range.clip(relativeTurnAngle / Math.toRadians(30), -1, 1);
+
+        double p = NON_LINEAR_P * Math.sqrt(distanceToTarget);
+
+        double robotVelocity = Math.hypot(velocityModule.getxVel(), velocityModule.getyVel());
+        double robotVelocityHeading = Math.atan2(velocityModule.getyVel(), velocityModule.getxVel());
+        velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotVelocityHeading);
+
+        double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
+        scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
+
+        xMovement = Range.clip(xPower * scale, -1, 1);
+        yMovement = Range.clip(yPower * scale, -1, 1);
+
+        if (weakBrake) {
+            xMovement *= 0.15;
+            yMovement *= 0.15;
+            turnMovement *= 0.15;
+        }
+
+        drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
     }
 
-    /**
-     * Set the movements of the drvetrain to go to a target point. Should be called over and over
-     * to adjust the movements until reaching the point.
-     *
-     * @param targetPoint The target point.
-     */
-    public void setMovementsToPoint(Point targetPoint) {
-        setMovementsToPoint(targetPoint, 1, 1, 0, false, 0, false, 0);
-    }
+    private Point lastTargetPoint = new Point();
+    double velocityAlongPath;
+    double scale;
 
     /**
      * Set the movements of the drivetrain to go to a target point. Should be called over and over
@@ -154,14 +217,22 @@ public class Drivetrain implements Module {
         double xPower = relativeXToPoint / totalPower;
         double yPower = relativeYToPoint / totalPower;
 
-        // lol p
         double xMovement = xPower * moveSpeed;
         double yMovement = yPower * moveSpeed;
         double turnMovement = Range.clip(relativeTurnAngle / Math.toRadians(30), -1, 1) * turnSpeed;
 
         if (isTargetingLastPoint) {
-            xMovement *= Range.clip(distanceToTarget / followRadius, 0.25, 1);
-            yMovement *= Range.clip(distanceToTarget / followRadius, 0.25, 1);
+            double p = NON_LINEAR_P * Math.sqrt(distanceToTarget);
+
+            double robotVelocity = Math.hypot(velocityModule.getxVel(), velocityModule.getyVel());
+            double robotVelocityHeading = Math.atan2(velocityModule.getyVel(), velocityModule.getxVel());
+            velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotVelocityHeading);
+
+            double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
+            scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
+
+            xMovement = Range.clip(xPower * scale, -moveSpeed, moveSpeed);
+            yMovement = Range.clip(yPower * scale, -moveSpeed, moveSpeed);
         }
 
         setMovements(xMovement, yMovement, turnMovement);
@@ -174,10 +245,6 @@ public class Drivetrain implements Module {
      */
     public void moveToPoint(Point point) {
         moveToPoint(point, 1, 1, 0, false, 0);
-    }
-
-    public void turnTo(double heading) {
-        moveToPoint(getCurrentPosition(), 1, 1, 0, true, heading);
     }
 
     /**
@@ -201,7 +268,20 @@ public class Drivetrain implements Module {
 
     @Override
     public boolean isOn() {
-        return false;
+        return isOn;
+    }
+
+    @Override
+    public ArrayList<String> getTelemetryData() {
+        ArrayList<String> data = new ArrayList<>();
+        data.add("xMovement: " + xMovement);
+        data.add("yMovement: " + yMovement);
+        data.add("turnMovement: " + turnMovement);
+        data.add("isBrake: " + isBrake);
+        data.add("Brake Point: " + brakePoint);
+        data.add("Brake heading: " + brakeHeading);
+        data.add("non-lin momentum scale: " + scale);
+        return data;
     }
 
     @Override
