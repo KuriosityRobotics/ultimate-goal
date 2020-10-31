@@ -79,7 +79,7 @@ public class Shooter implements Module, TelemetryProvider {
 
         // Set flap
         //  -0.00000548x^2 + 0.00107x + 0.59623
-        double distanceToTarget = distanceToTarget(target);
+        double distanceToTarget = distanceToTarget(target) - 9; // Account for half the robot
         shooterModule.shooterFlapPosition = (-0.00000548 * distanceToTarget * distanceToTarget) + (0.00107 * distanceToTarget) + 0.59623;
     }
 
