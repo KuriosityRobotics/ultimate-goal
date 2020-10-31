@@ -1,14 +1,23 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.util.shooter;
+package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.Drivetrain;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.TowerGoal;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
-public class AimBot {
+import java.util.ArrayList;
+
+public class Shooter implements Module, TelemetryProvider {
     Robot robot;
-    Drivetrain drivetrain;
-    VuforiaLocalizer vuforia;
+    boolean isOn;
+
+    private ShooterModule shooterModule;
+
+    private int queuedIndexes;
+
+    public TowerGoal target;
+    public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
+    private boolean activeToggle = false;
 
     // Position of goals, all in inches, from the origin of front blue corner (audience, left)
     private static final double HIGH_GOAL_CENTER_HEIGHT = 33.0 + (5.0 / 2) - 0.625;
@@ -18,25 +27,43 @@ public class AimBot {
     private static final double RED_GOAL_CENTER_X = 23.0 + (23.5 * 3) + (24.0 / 2);
     private static final double GOAL_CENTER_Y = 6 * 24.0 - (0.5 * 2); // Full length of 6 tiles, minus .5" for edge tile's tabs.
 
-    public AimBot(Robot robot) {
+    public Shooter(Robot robot, boolean isOn) {
         this.robot = robot;
+        this.isOn = isOn;
+
+        shooterModule = new ShooterModule(robot, isOn);
     }
 
-    /**
-     * Aim and shoot one ring into the target.
-     *
-     * @param target The target to shoot into.
-     */
-    public void shoot(TowerGoal target, int numRings) {
-        aimShooter(target);
+    public void init() {
+        shooterModule.init();
+    }
 
-        robot.shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
+    boolean weakBrakeOldState;
 
-        for (int i = 0; i < numRings; i++) {
-            robot.shooterModule.indexRing = true;
+    public void update() {
+        if (isAimBotActive && !activeToggle) {
+            activeToggle = true;
 
-            while (robot.shooterModule.indexRing) {
+            weakBrakeOldState = robot.drivetrain.weakBrake;
 
+            robot.drivetrain.weakBrake = false;
+        } else if (!isAimBotActive && activeToggle) {
+            activeToggle = false;
+
+            queuedIndexes = 0;
+
+            shooterModule.flyWheelTargetSpeed = 0;
+
+            robot.drivetrain.weakBrake = weakBrakeOldState;
+        }
+
+        if (activeToggle) {
+            aimShooter(target);
+            shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
+
+            if (queuedIndexes > 0 && !shooterModule.indexRing) {
+                shooterModule.indexRing = true;
+                queuedIndexes--;
             }
         }
     }
@@ -47,12 +74,16 @@ public class AimBot {
      * @param target The target to aim at.
      */
     public void aimShooter(TowerGoal target) {
-        // TODO: SET HEADING
+        turnToGoal(target);
 
         // Set flap
         //  -0.00000548x^2 + 0.00107x + 0.59623
         double distanceToTarget = distanceToTarget(target);
-        robot.shooterModule.shooterFlapPosition = (-0.00000548 * distanceToTarget * distanceToTarget) + (0.00107 * distanceToTarget) + 0.59623;
+        shooterModule.shooterFlapPosition = (-0.00000548 * distanceToTarget * distanceToTarget) + (0.00107 * distanceToTarget) + 0.59623;
+    }
+
+    private void turnToGoal(TowerGoal target) {
+        robot.drivetrain.setBrakeHeading(headingToTarget(target));
     }
 
     /**
@@ -124,7 +155,7 @@ public class AimBot {
      * @param targetPoint The point to aim at.
      */
     public double headingToTarget(Point targetPoint) {
-        Point robotPosition = drivetrain.getCurrentPosition();
+        Point robotPosition = robot.drivetrain.getCurrentPosition();
 
         double headingToTarget = Math.atan2(robotPosition.y - targetPoint.y, robotPosition.x - targetPoint.y);
 
@@ -150,12 +181,72 @@ public class AimBot {
      * @return The distance to that point.
      */
     public double distanceToTarget(Point targetPoint) {
-        Point currentPosition = drivetrain.getCurrentPosition();
+        Point currentPosition = robot.drivetrain.getCurrentPosition();
 
         double distanceToTarget = Math.hypot(currentPosition.x - targetPoint.x, currentPosition.y - targetPoint.y);
 
         // TODO: Vision correction
 
         return distanceToTarget;
+    }
+
+    /**
+     * Set the flap position of the shooter. Only sets the position of the aimbot is not active.
+     *
+     * @param flapPosition
+     * @see #isAimBotActive
+     */
+    public void setFlapPosition(double flapPosition) {
+        if (!isAimBotActive) {
+            shooterModule.shooterFlapPosition = flapPosition;
+        }
+    }
+
+    /**
+     * Set the flap position of the shooter. Only sets the position of the aimbot is not active.
+     *
+     * @param speed Target velocity of flywheels, in ticks per second.
+     * @see #isAimBotActive
+     */
+    public void setFlyWheelSpeed(double speed) {
+        if (!isAimBotActive) {
+            shooterModule.flyWheelTargetSpeed = speed;
+        }
+    }
+
+    /**
+     * Add one to the queue of indexes. Only has an effect if the aimbot is active.
+     */
+    public void queueRingIndex() {
+        if (isAimBotActive) {
+            queuedIndexes++;
+        }
+    }
+
+    /**
+     * Add to the queue of indexes. Only has an effect if the aimbot is active.
+     *
+     * @param numRings The number of rings to add to the queue
+     */
+    public void queueRingIndex(int numRings) {
+        queuedIndexes += numRings;
+    }
+
+    @Override
+    public boolean isOn() {
+        return isOn;
+    }
+
+    @Override
+    public ArrayList<String> getTelemetryData() {
+        ArrayList<String> data = new ArrayList<>();
+        data.add("Is active: " + isAimBotActive);
+        data.add("Queued indexes: " + queuedIndexes);
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return "Shooter";
     }
 }

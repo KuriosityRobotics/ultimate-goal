@@ -255,7 +255,7 @@ public class Drivetrain implements Module, TelemetryProvider {
      * @param turnSpeed        The speed at which to turn, from 0 to 1.
      * @param direction        The direction to follow the path.
      * @param willAngleLock    Whether or not to angle lock.
-     * @param angleLockHeading The heading to angle lock to. If willAnglelock is false, this does not matter.r
+     * @param angleLockHeading The heading to angle lock to. If willAnglelock is false, this does not matter.
      */
     public void moveToPoint(Point targetPoint, double moveSpeed, double turnSpeed, double direction, boolean willAngleLock, double angleLockHeading) {
         Point robotPosition = getCurrentPosition();
@@ -264,6 +264,15 @@ public class Drivetrain implements Module, TelemetryProvider {
                 || (!willAngleLock || (Math.abs(angleWrap(angleLockHeading - angleLockHeading)) > PathFollow.ANGLE_THRESHOLD))) {
             setMovementsToPoint(targetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, false, PathFollow.FOLLOW_RADIUS);
         }
+    }
+
+    public void setBrake(Point brakePoint, double brakeHeading) {
+        this.brakePoint = brakePoint;
+        this.brakeHeading = brakeHeading;
+    }
+
+    public void setBrakeHeading(double brakeHeading) {
+        this.brakeHeading = brakeHeading;
     }
 
     @Override

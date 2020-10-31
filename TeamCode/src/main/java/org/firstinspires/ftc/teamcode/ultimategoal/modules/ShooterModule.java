@@ -97,7 +97,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("Flywheel speed: " + robot.shooterModule.flyWheel1.getVelocity());
+        data.add("Flywheel speed: " + flyWheel1.getVelocity());
         data.add("Flap angle: " + shooterFlapPosition);
         data.add("Will index: " + indexRing);
 

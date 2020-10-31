@@ -16,14 +16,12 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.ShooterModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.shooter.AimBot;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
 
 public class Robot {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
-    public ShooterModule shooterModule;
-
-    public AimBot aimBot;
+    public Shooter shooter;
 
     private long currentTimeMilli;
 
@@ -93,10 +91,10 @@ public class Robot {
     private void initModules() {
         // Add individual modules into the array here
         this.drivetrain = new Drivetrain(this, true);
-        this.shooterModule = new ShooterModule(this, true);
+        this.shooter = new Shooter(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.shooterModule
+                this.drivetrain, this.shooter
         };
 
         // Initialize modules
@@ -109,9 +107,6 @@ public class Robot {
 
         // Tick telemetryDump once to get the lines to show up
         telemetryDump.update();
-
-        // Aimbot
-        aimBot = new AimBot(this);
     }
 
     /**
