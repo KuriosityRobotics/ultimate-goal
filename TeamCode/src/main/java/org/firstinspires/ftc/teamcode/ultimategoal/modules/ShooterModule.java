@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.os.SystemClock;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -17,13 +15,17 @@ public class ShooterModule implements Module, TelemetryProvider {
     boolean isOn;
 
     private static final int FLYWHEEL_SPEED_THRESHOLD = 90;
+
     private static final double INDEX_OPEN_POSITION = 0.75;
     private static final double INDEX_PUSH_POSITION = 0.15;
+
+    private static final int INDEXER_PUSHED_TIME_MS = 600;
+    private static final int INDEXER_RETURNED_TIME_MS = 1200;
 
     // States
     public double flyWheelTargetSpeed;
     public double shooterFlapPosition = 0.71;
-    public boolean indexRing;
+    private boolean indexRing;
 
     // Motors
     private DcMotorEx flyWheel1;
@@ -67,20 +69,31 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         long currentTime = robot.getCurrentTimeMilli();
 
-        boolean indexerReturned = currentTime > indexTime + 1200;
-        if (indexRing && indexerReturned) {
-            if (upToSpeed()) {
-                indexerServo.setPosition(INDEX_PUSH_POSITION);
-                indexTime = currentTime;
-                indexRing = false;
-            }
-        } else if (indexRing) {
+        boolean indexerReturned = currentTime > indexTime + INDEXER_RETURNED_TIME_MS;
+        if (indexRing && indexerReturned && upToSpeed()) {
+            indexerServo.setPosition(INDEX_PUSH_POSITION);
+            indexTime = currentTime;
             indexRing = false;
         }
 
-        boolean isDoneIndexing = currentTime > indexTime + 600;
+        boolean isDoneIndexing = currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
         if (isDoneIndexing) {
             indexerServo.setPosition(INDEX_OPEN_POSITION);
+        }
+    }
+
+    /**
+     * Attempt to index a ring. If the indexer is currently indexing, nothing will happen. Whether
+     * or not the command was successfully executed is returned.
+     *
+     * @return Whether or not the index command will be processed.
+     */
+    public boolean indexRing() {
+        if (robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS) {
+            indexRing = true;
+            return true;
+        } else {
+            return false;
         }
     }
 
