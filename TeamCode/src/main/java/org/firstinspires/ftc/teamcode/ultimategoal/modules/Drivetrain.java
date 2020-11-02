@@ -30,6 +30,11 @@ public class Drivetrain implements Module, TelemetryProvider {
     private static final double MOMENTUM_FACTOR = 0.0017;
     private static final double INVERSE_DISTANCE_FACTOR = 0.5;
 
+    // Non-linear angle controller factors
+    private static final double TURN_NON_LINEAR_P = 1;
+    private static final double TURN_MOMENTUM_FACTOR = 0;
+    private static final double INVERSE_TURN_FACTOR = 0;
+
     // States
     public boolean zeroPowerBrake = true;
     public double xMovement = 0;
@@ -141,13 +146,19 @@ public class Drivetrain implements Module, TelemetryProvider {
         }
 
         double absoluteAngleToTarget = Math.atan2(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
+        double relativeTurnAngle = angleWrap(brakeHeading - robotHeading);
+        double angleError = Math.abs(relativeTurnAngle);
+
+        if (weakBrake && angleError > .08) {
+            brakeHeading = robotHeading;
+
+            relativeTurnAngle = 0;
+            angleError = 0;
+        }
 
         double relativeAngleToPoint = absoluteAngleToTarget - robotHeading;
         double relativeXToPoint = Math.sin(relativeAngleToPoint) * distanceToTarget;
         double relativeYToPoint = Math.cos(relativeAngleToPoint) * distanceToTarget;
-
-        double relativeTurnAngle = angleWrap(relativeAngleToPoint);
-        relativeTurnAngle = angleWrap(brakeHeading - robotHeading);
 
         double totalPower = Math.abs(relativeYToPoint) + Math.abs(relativeXToPoint);
 
@@ -170,10 +181,15 @@ public class Drivetrain implements Module, TelemetryProvider {
         xMovement = Range.clip(xPower * scale, -1, 1);
         yMovement = Range.clip(yPower * scale, -1, 1);
 
+        double inverseTurnAngle = INVERSE_TURN_FACTOR * 1 / (angleError + .1);
+        turnScale = Range.clip((TURN_NON_LINEAR_P * ((Math.sqrt(angleError) * Math.abs(relativeTurnAngle)) / relativeTurnAngle)) - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
+
+        turnMovement = turnScale;
+
         if (weakBrake) {
-            xMovement *= 0.15;
-            yMovement *= 0.15;
-            turnMovement *= 0.15;
+            xMovement *= 0.65;
+            yMovement *= 0.65;
+            turnMovement *= 0.4;
         }
 
         drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
@@ -182,6 +198,7 @@ public class Drivetrain implements Module, TelemetryProvider {
     private Point lastTargetPoint = new Point();
     double velocityAlongPath;
     double scale;
+    double turnScale;
 
     /**
      * Set the movements of the drivetrain to go to a target point. Should be called over and over
@@ -286,10 +303,13 @@ public class Drivetrain implements Module, TelemetryProvider {
         data.add("xMovement: " + xMovement);
         data.add("yMovement: " + yMovement);
         data.add("turnMovement: " + turnMovement);
+        data.add("-");
         data.add("isBrake: " + isBrake);
         data.add("Brake Point: " + brakePoint);
         data.add("Brake heading: " + brakeHeading);
+        data.add("-");
         data.add("non-lin momentum scale: " + scale);
+        data.add("turning scale: " + turnScale);
         return data;
     }
 

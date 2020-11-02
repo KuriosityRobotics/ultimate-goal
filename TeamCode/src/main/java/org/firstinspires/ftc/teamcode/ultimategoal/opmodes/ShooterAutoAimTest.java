@@ -17,9 +17,7 @@ public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvide
     long lastUpdateTime;
 
     Toggle bToggle = new Toggle();
-
-    boolean isAimBotActive = false;
-    boolean toggleAimBot = false;
+    Toggle aToggle = new Toggle();
 
     private static final double SLOW_MODE_SCALE_FACTOR = 0.3;
 
@@ -36,17 +34,11 @@ public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvide
         robot.startModules();
 
         while (opModeIsActive()) {
-            if (gamepad1.a && !toggleAimBot) {
-                toggleAimBot = true;
-
-                robot.shooter.isAimBotActive = true;
-            } else if (!gamepad1.a && toggleAimBot) {
-                toggleAimBot = false;
-
-                robot.shooter.isAimBotActive = false;
+            if (aToggle.isToggled(gamepad1.a)) {
+                robot.shooter.isAimBotActive = !robot.shooter.isAimBotActive;
             }
 
-            if (toggleAimBot) {
+            if (robot.shooter.isAimBotActive) {
                 if (bToggle.isToggled(gamepad1.b)) {
                     robot.shooter.queueRingIndex();
                 }
@@ -128,7 +120,7 @@ public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvide
 
         ArrayList<String> data = new ArrayList<>();
         data.add("How to use: Begin the robot at the front blue corner of the field (away from the tower goal). Use gamepad1 to drive the robot. Press 'a' to toggle aiming mode, and then 'b' to queue a shot.");
-        data.add("TeleOp while loop update time: " + String.valueOf(currentTime - lastUpdateTime));
+        data.add("TeleOp while loop update time: " + (currentTime - lastUpdateTime));
         lastUpdateTime = currentTime;
 
         return data;

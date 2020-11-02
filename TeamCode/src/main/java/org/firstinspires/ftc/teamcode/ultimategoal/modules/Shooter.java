@@ -8,14 +8,14 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 import java.util.ArrayList;
 
 public class Shooter implements Module, TelemetryProvider {
-    Robot robot;
-    boolean isOn;
+    private Robot robot;
+    private boolean isOn;
 
     private ShooterModule shooterModule;
 
     private int queuedIndexes;
 
-    public TowerGoal target;
+    public TowerGoal target = TowerGoal.BLUE_HIGH;
     public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
     private boolean activeToggle = false;
 
@@ -28,6 +28,8 @@ public class Shooter implements Module, TelemetryProvider {
     private static final double GOAL_CENTER_Y = 6 * 24.0 - (0.5 * 2); // Full length of 6 tiles, minus .5" for edge tile's tabs.
 
     public Shooter(Robot robot, boolean isOn) {
+        robot.telemetryDump.registerProvider(this);
+
         this.robot = robot;
         this.isOn = isOn;
 
@@ -47,6 +49,8 @@ public class Shooter implements Module, TelemetryProvider {
             weakBrakeOldState = robot.drivetrain.weakBrake;
 
             robot.drivetrain.weakBrake = false;
+
+            robot.drivetrain.setMovements(0, 0, 0);
         } else if (!isAimBotActive && activeToggle) {
             activeToggle = false;
 
@@ -61,7 +65,7 @@ public class Shooter implements Module, TelemetryProvider {
             aimShooter(target);
             shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
 
-            if (shooterModule.indexRing()) {
+            if (shooterModule.indexRing() && queuedIndexes > 0) {
                 queuedIndexes--;
             }
         }
@@ -80,7 +84,7 @@ public class Shooter implements Module, TelemetryProvider {
         // Set flap
         //  -0.00000548x^2 + 0.00107x + 0.59623
         double distanceToTarget = distanceToTarget(target) - 9; // Account for half the robot
-        shooterModule.shooterFlapPosition = (-0.00000548 * distanceToTarget * distanceToTarget) + (0.00107 * distanceToTarget) + 0.59623;
+        shooterModule.shooterFlapPosition = (-0.00000548 * distanceToTarget * distanceToTarget) + (0.00107 * distanceToTarget) + 0.59623 + 0.1; // TODO: Revise for new servo positions
     }
 
     private void turnToGoal(TowerGoal target) {
@@ -158,7 +162,7 @@ public class Shooter implements Module, TelemetryProvider {
     public double headingToTarget(Point targetPoint) {
         Point robotPosition = robot.drivetrain.getCurrentPosition();
 
-        double headingToTarget = Math.atan2(robotPosition.y - targetPoint.y, robotPosition.x - targetPoint.y);
+        double headingToTarget = Math.toRadians(90) - Math.atan2(targetPoint.y - robotPosition.y, targetPoint.x - robotPosition.x);
 
         // TODO: vision magic for double checking
 
@@ -247,7 +251,7 @@ public class Shooter implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("Is active: " + isAimBotActive);
         data.add("Queued indexes: " + queuedIndexes);
-        return null;
+        return data;
     }
 
     @Override

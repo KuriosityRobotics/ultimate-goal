@@ -118,12 +118,13 @@ public class Robot {
 
     private void initHubs() {
         try {
-            revHub1 = hardwareMap.get(LynxModule.class, "Expansion Hub 3");
+            revHub1 = hardwareMap.get(LynxModule.class, "Expansion Hub 173");
             revHub1.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-            revHub2 = hardwareMap.get(LynxModule.class, "Expansion Hub 2");
+            revHub2 = hardwareMap.get(LynxModule.class, "Expansion Hub 1");
             revHub2.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         } catch (Exception e) {
-            throw new Error("One or more of the REV hubs could not be found. More info: " + e);
+//            throw new Error("One or more of the REV hubs could not be found. More info: " + e);
+            linearOpMode.stop();
         }
     }
 

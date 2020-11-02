@@ -29,6 +29,8 @@ public class TelemetryDump {
             for(String entry : provider.getTelemetryData()) {
                 out.append(entry).append("\n");
             }
+
+            out.append("\n");
         }
         telemetry.addLine(out.toString());
         telemetry.update();

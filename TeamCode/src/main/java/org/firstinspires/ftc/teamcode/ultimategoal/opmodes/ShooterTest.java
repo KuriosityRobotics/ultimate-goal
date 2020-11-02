@@ -29,8 +29,8 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
         robot.startModules();
 
         while (opModeIsActive()) {
-            flapPosition -= gamepad1.right_stick_y * 0.000001;
-            flyWheelSpeed -= gamepad1.left_stick_y * 0.01;
+            flapPosition += gamepad1.right_stick_y * 0.000001;
+            flyWheelSpeed -= gamepad1.left_stick_y * 0.001;
 
             if (flapPosition > 1) {
                 flapPosition = 1;
