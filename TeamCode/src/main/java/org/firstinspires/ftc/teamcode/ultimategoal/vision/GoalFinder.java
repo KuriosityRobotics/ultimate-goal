@@ -7,13 +7,19 @@ import org.apache.commons.math3.linear.RealVector;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
+import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.opencv.imgproc.Imgproc.*;
 
-public class GoalFinder {
+public class GoalFinder extends OpenCvPipeline {
+    public GoalLocationData getLocationData() {
+        return locationData;
+    }
+
+    private GoalLocationData locationData = new GoalLocationData(0, 0, 0, 0);
 
     static final double[][] CAMERA_MATRIX = {
             {1468, 0, 0},
@@ -106,7 +112,7 @@ public class GoalFinder {
      * @param input
      * @return an int which represents the calculated number of rings
      */
-    public static GoalLocationData processFrame(final Mat input) {
+    public Mat processFrame(final Mat input) {
         return processFrame(input, false);
     }
 
@@ -116,7 +122,7 @@ public class GoalFinder {
      * @param input frame input
      * @return an int which represents the calculated number of rings
      */
-    public static GoalLocationData processFrame(final Mat input, boolean shouldWriteToImage) {
+    public Mat processFrame(final Mat input, boolean shouldWriteToImage) {
         Imgproc.resize(input, input, new Size(480, 270));
 
         Point goalLocation = new Point(0, 0);
@@ -158,7 +164,8 @@ public class GoalFinder {
             }
         }
 
-        return loc;
+        this.locationData = loc;
+        return input;
     }
 }
 
