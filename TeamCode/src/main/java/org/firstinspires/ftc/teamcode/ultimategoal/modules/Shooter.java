@@ -137,7 +137,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private void aimFlapToTarget(double distanceToTarget) {
 //        double flapAngleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
         double flapPositionToShoot = 0.7188854 - 0.00123 * distanceToTarget + 0.00000567 * Math.pow(distanceToTarget, 2) + 0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12));
-        
+
         shooterModule.shooterFlapPosition = flapPositionToShoot;
     }
 

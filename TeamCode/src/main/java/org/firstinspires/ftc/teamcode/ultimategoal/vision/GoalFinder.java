@@ -4,7 +4,13 @@ import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.opencv.core.*;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 import org.openftc.easyopencv.OpenCvPipeline;
@@ -12,7 +18,13 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.opencv.imgproc.Imgproc.*;
+import static org.opencv.imgproc.Imgproc.CHAIN_APPROX_SIMPLE;
+import static org.opencv.imgproc.Imgproc.COLOR_HSV2RGB;
+import static org.opencv.imgproc.Imgproc.COLOR_RGB2HSV;
+import static org.opencv.imgproc.Imgproc.FONT_HERSHEY_TRIPLEX;
+import static org.opencv.imgproc.Imgproc.LINE_8;
+import static org.opencv.imgproc.Imgproc.RETR_EXTERNAL;
+import static org.opencv.imgproc.Imgproc.findContours;
 
 public class GoalFinder extends OpenCvPipeline {
     public GoalLocationData getLocationData() {
@@ -90,7 +102,7 @@ public class GoalFinder extends OpenCvPipeline {
 
 
     static int closestToPoint(final List<MatOfPoint> contours, Point point) {
-        if(contours.size() == 0)
+        if (contours.size() == 0)
             return -1;
 
         double closest = 0;
@@ -100,7 +112,7 @@ public class GoalFinder extends OpenCvPipeline {
             Moments moments = Imgproc.moments(contours.get(i));
             double distanceToCentre = Math.hypot(point.x - (moments.m10 / moments.m00), point.y - (moments.m01 / moments.m00));
 
-            if(closest > distanceToCentre) {
+            if (closest > distanceToCentre) {
                 closest = distanceToCentre;
                 maxValIdx = i;
             }
@@ -150,7 +162,7 @@ public class GoalFinder extends OpenCvPipeline {
      */
     public Mat processFrame(Mat input, boolean shouldWriteToImage, boolean isBlue) {
         Imgproc.resize(input, input, new Size(480, 270));
-        input = input.submat(new Rect(new Point(0, 0), new Point(input.width(), 2*(input.height()/3f))));
+        input = input.submat(new Rect(new Point(0, 0), new Point(input.width(), 2 * (input.height() / 3f))));
 
         Imgproc.cvtColor(input, input, COLOR_RGB2HSV);
 
