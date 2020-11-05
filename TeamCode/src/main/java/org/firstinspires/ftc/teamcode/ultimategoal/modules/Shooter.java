@@ -4,6 +4,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TowerGoal;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.vision.GoalFinder;
 
 import java.util.ArrayList;
 
@@ -90,9 +91,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
-            aimShooter(target);
-
-            shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
+            aimShooter(target, robot.visionModule.getLocationData());
+            shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
             if (queuedIndexes > 0) {
                 if (hopperModule.requestRingIndex()) {
@@ -113,7 +113,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      *
      * @param target The target to aim at.
      */
-    public void aimShooter(TowerGoal target) {
+
+    public void aimShooter(TowerGoal target, GoalFinder.GoalLocationData loc) {
         double distanceToTargetCenterRobot = distanceToTarget(target);
         double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
         robot.drivetrain.setBrakeHeading(angleWrap(headingToTarget(target) + angleOffset));
@@ -132,7 +133,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private void aimFlapToTarget(double distanceToTarget) {
 //        double flapAngleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
         double flapPositionToShoot = 0.7188854 - 0.00123 * distanceToTarget + 0.00000567 * Math.pow(distanceToTarget, 2) + 0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12));
-
+        
         shooterModule.shooterFlapPosition = flapPositionToShoot;
     }
 
