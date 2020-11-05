@@ -4,6 +4,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TowerGoal;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.vision.GoalFinder;
 
 import java.util.ArrayList;
 
@@ -40,10 +41,10 @@ public class Shooter implements Module, TelemetryProvider {
     private static final double HIGH_GOAL_CENTER_HEIGHT = 33.0 + (5.0 / 2) - 0.625;
     private static final double MIDDLE_GOAL_CENTER_HEIGHT = 21.0 + (12.0 / 2) - 0.625;
     private static final double LOW_GOAL_CENTER_HEIGHT = 13.0 + (8.0 / 2) - 0.625; // Subtract to account for thickness of mat
-//    private static final double BLUE_GOAL_CENTER_X = 23.0 + (24.0 / 2) - 9; // Subtract to account for center of robot
+    //    private static final double BLUE_GOAL_CENTER_X = 23.0 + (24.0 / 2) - 9; // Subtract to account for center of robot
     private static final double BLUE_GOAL_CENTER_X = 27; // Subtract to account for center of robot
     private static final double RED_GOAL_CENTER_X = 23.0 + (23.5 * 3) + (24.0 / 2) - 9;
-//    private static final double GOAL_CENTER_Y = 6 * 24.0 - (0.5 * 2) - 9;
+    //    private static final double GOAL_CENTER_Y = 6 * 24.0 - (0.5 * 2) - 9;
     private static final double GOAL_CENTER_Y = (24 * 6) - 9;
 
     public Shooter(Robot robot, boolean isOn) {
@@ -83,9 +84,8 @@ public class Shooter implements Module, TelemetryProvider {
         if (activeToggle) {
             robot.drivetrain.setMovements(0, 0, 0);
 
-            aimShooter(target);
-
-            shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
+            aimShooter(target, robot.visionModule.getLocationData());
+            shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
             if (queuedIndexes > 0) {
                 if (shooterModule.requestRingIndex()) {
@@ -104,13 +104,12 @@ public class Shooter implements Module, TelemetryProvider {
      *
      * @param target The target to aim at.
      */
-    public void aimShooter(TowerGoal target) {
+    public void aimShooter(TowerGoal target, GoalFinder.GoalLocationData loc) {
         distanceToTarget = distanceToTarget(target) - 9;
 
         double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
 //        double angleOffset = 0;
         robot.drivetrain.setBrakeHeading(angleWrap(headingToTarget(target) + angleOffset));
-
         // Set flap
         double flapAngleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
         shooterModule.shooterFlapPosition = flapAngleToPosition(flapAngleToShoot);
