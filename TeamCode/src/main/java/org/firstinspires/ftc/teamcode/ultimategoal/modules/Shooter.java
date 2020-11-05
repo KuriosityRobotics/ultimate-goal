@@ -4,6 +4,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TowerGoal;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.vision.GoalFinder;
 
 import java.util.ArrayList;
 
@@ -62,8 +63,9 @@ public class Shooter implements Module, TelemetryProvider {
         }
 
         if (activeToggle) {
-            aimShooter(target);
-            shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
+
+            aimShooter(target, robot.visionModule.getLocationData());
+            shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
             if (shooterModule.indexRing() && queuedIndexes > 0) {
                 queuedIndexes--;
@@ -78,8 +80,8 @@ public class Shooter implements Module, TelemetryProvider {
      *
      * @param target The target to aim at.
      */
-    public void aimShooter(TowerGoal target) {
-        turnToGoal(target);
+    public void aimShooter(TowerGoal target, GoalFinder.GoalLocationData loc) {
+        turnToGoal(target, loc);
 
         // Set flap
         //  -0.00000548x^2 + 0.00107x + 0.59623
@@ -87,7 +89,11 @@ public class Shooter implements Module, TelemetryProvider {
         shooterModule.shooterFlapPosition = (-0.00000548 * distanceToTarget * distanceToTarget) + (0.00107 * distanceToTarget) + 0.59623 + 0.1; // TODO: Revise for new servo positions
     }
 
-    private void turnToGoal(TowerGoal target) {
+    private void turnToGoal(TowerGoal target, GoalFinder.GoalLocationData loc) {
+        switch(target) {
+            case RED_LOW, RED_MIDDLE, RED_HIGH:
+                
+        }
         robot.drivetrain.setBrakeHeading(headingToTarget(target));
     }
 

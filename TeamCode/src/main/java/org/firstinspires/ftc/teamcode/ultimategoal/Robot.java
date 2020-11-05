@@ -13,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Drivetrain;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ShooterModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.VisionModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
@@ -22,6 +23,7 @@ public class Robot {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
     public Shooter shooter;
+    public VisionModule visionModule;
 
     private long currentTimeMilli;
 
@@ -92,9 +94,10 @@ public class Robot {
         // Add individual modules into the array here
         this.drivetrain = new Drivetrain(this, true);
         this.shooter = new Shooter(this, true);
+        this.visionModule = new VisionModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.shooter
+                this.drivetrain, this.shooter, this.visionModule
         };
 
         // Initialize modules
