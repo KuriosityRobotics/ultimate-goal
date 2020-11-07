@@ -19,13 +19,25 @@ public class Shooter implements Module, TelemetryProvider {
     public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
     private boolean activeToggle = false;
 
+    // Flap angle to position constants
+    private static final double FLAP_ANGLE_TO_POSITION_LINEAR_TERM = -0.0026;
+    private static final double FLAP_ANGLE_TO_POSITION_CONSTANT_TERM = 0.808;
+
+    // Distance to goal to flap angle constants
+    private static final double DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM = 0.00282;
+    private static final double DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM = -0.615;
+    private static final double DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM = 50;
+
+    // Distance to goal to angle offset constant
+    private static final double DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 0.00165;
+
     // Position of goals, all in inches, from the origin of front blue corner (audience, left)
     private static final double HIGH_GOAL_CENTER_HEIGHT = 33.0 + (5.0 / 2) - 0.625;
     private static final double MIDDLE_GOAL_CENTER_HEIGHT = 21.0 + (12.0 / 2) - 0.625;
     private static final double LOW_GOAL_CENTER_HEIGHT = 13.0 + (8.0 / 2) - 0.625; // Subtract to account for thickness of mat
-    private static final double BLUE_GOAL_CENTER_X = 23.0 + (24.0 / 2);
-    private static final double RED_GOAL_CENTER_X = 23.0 + (23.5 * 3) + (24.0 / 2);
-    private static final double GOAL_CENTER_Y = 6 * 24.0 - (0.5 * 2); // Full length of 6 tiles, minus .5" for edge tile's tabs.
+    private static final double BLUE_GOAL_CENTER_X = 23.0 + (24.0 / 2) - 9;
+    private static final double RED_GOAL_CENTER_X = 23.0 + (23.5 * 3) + (24.0 / 2) - 9;
+    private static final double GOAL_CENTER_Y = 6 * 23.0 + (0.5 * 5) - 9;
 
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -65,13 +77,17 @@ public class Shooter implements Module, TelemetryProvider {
             aimShooter(target);
             shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
 
-            if (shooterModule.indexRing() && queuedIndexes > 0) {
-                queuedIndexes--;
+            if (queuedIndexes > 0) {
+                if (shooterModule.indexRing()) {
+                    queuedIndexes--;
+                }
             }
         }
 
         shooterModule.update();
     }
+
+    double distanceToTarget;
 
     /**
      * Aim the shooter at the target specified.
@@ -79,12 +95,23 @@ public class Shooter implements Module, TelemetryProvider {
      * @param target The target to aim at.
      */
     public void aimShooter(TowerGoal target) {
-        turnToGoal(target);
+        distanceToTarget = distanceToTarget(target) - 9;
+
+        robot.drivetrain.setBrakeHeading(headingToTarget(target) + (distanceToTarget * DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM));
 
         // Set flap
-        //  -0.00000548x^2 + 0.00107x + 0.59623
-        double distanceToTarget = distanceToTarget(target) - 9; // Account for half the robot
-        shooterModule.shooterFlapPosition = (-0.00000548 * distanceToTarget * distanceToTarget) + (0.00107 * distanceToTarget) + 0.59623 + 0.1; // TODO: Revise for new servo positions
+        double angleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
+        shooterModule.shooterFlapPosition = (angleToShoot * FLAP_ANGLE_TO_POSITION_LINEAR_TERM) + FLAP_ANGLE_TO_POSITION_CONSTANT_TERM;
+    }
+
+    /**
+     * Convert an angle, in degrees, to flap position.
+     *
+     * @param angle Desired angle of flap servo, in degrees
+     * @return Position to set servo to to achieve angle
+     */
+    private double flapAngleToPosition(double angle) {
+        return (FLAP_ANGLE_TO_POSITION_LINEAR_TERM * angle) + FLAP_ANGLE_TO_POSITION_CONSTANT_TERM;
     }
 
     private void turnToGoal(TowerGoal target) {
@@ -176,7 +203,13 @@ public class Shooter implements Module, TelemetryProvider {
      * @return The distance to that goal.
      */
     public double distanceToTarget(TowerGoal targetGoal) {
-        return distanceToTarget(towerGoalPosition(targetGoal));
+        Point currentPosition = robot.drivetrain.getCurrentPosition();
+//        currentPosition = new Point(currentPosition.x - 9, currentPosition.y - 9);
+        Point targetPoint = towerGoalPosition(targetGoal);
+
+        double distanceToTarget = Math.hypot(currentPosition.x - targetPoint.x, currentPosition.y - targetPoint.y);
+
+        return distanceToTarget;
     }
 
     /**
@@ -189,8 +222,6 @@ public class Shooter implements Module, TelemetryProvider {
         Point currentPosition = robot.drivetrain.getCurrentPosition();
 
         double distanceToTarget = Math.hypot(currentPosition.x - targetPoint.x, currentPosition.y - targetPoint.y);
-
-        // TODO: Vision correction
 
         return distanceToTarget;
     }
@@ -251,6 +282,7 @@ public class Shooter implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("Is active: " + isAimBotActive);
         data.add("Queued indexes: " + queuedIndexes);
+        data.add("Distance to target: " + distanceToTarget);
         return data;
     }
 

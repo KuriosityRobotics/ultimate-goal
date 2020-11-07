@@ -14,7 +14,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
-    private static final int FLYWHEEL_SPEED_THRESHOLD = 90;
+    private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
 
     private static final double INDEX_OPEN_POSITION = 0.3;
     private static final double INDEX_PUSH_POSITION = 0.15;
