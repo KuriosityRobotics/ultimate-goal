@@ -21,8 +21,8 @@ jobs:
 
     environment:
       # Customize the JVM maximum heap limit
-      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=90
-      JVM_OPTS: -XX:MaxRAMPercentage=90
+      JAVA_TOOL_OPTIONS: -Xmx3900m
+#      JVM_OPTS: -Xmx3000m
       TERM: dumb
 
     steps:
