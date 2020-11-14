@@ -19,7 +19,7 @@ public class GoalFinder extends OpenCvPipeline {
         return locationData;
     }
 
-    private GoalLocationData locationData = new GoalLocationData(0, 0, 0, 0);
+    private GoalLocationData locationData = null;
 
     static final double[][] CAMERA_MATRIX = {
             {1468, 0, 0},
