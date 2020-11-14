@@ -159,6 +159,10 @@ public class Robot {
         return currentTimeMilli;
     }
 
+    public void opModeSleep(long milliseconds) {
+        linearOpMode.sleep(milliseconds);
+    }
+
     private void ಢ_ಢ() {
         throw new Error("ರ_ರ plz dont rely on finalize to cleanup");
     }
