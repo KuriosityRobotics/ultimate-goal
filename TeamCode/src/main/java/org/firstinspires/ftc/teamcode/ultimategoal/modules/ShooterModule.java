@@ -16,25 +16,14 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
 
-    private static final double INDEX_OPEN_POSITION = .85;
-    private static final double INDEX_PUSH_POSITION = .68;
-
-    private static final int INDEXER_PUSHED_TIME_MS = 600;
-    private static final int INDEXER_RETURNED_TIME_MS = 1200;
-
-    private static final double HOPPER_UP_POSITION = 0.96;
-
     // States
     public double flyWheelTargetSpeed;
     public double shooterFlapPosition = 0.63;
-    private boolean indexRing;
 
     // Motors
     private DcMotorEx flyWheel1;
     private DcMotorEx flyWheel2;
     private Servo shooterFlap;
-    private Servo indexerServo;
-    private Servo hopperLinkage;
 
     public ShooterModule(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -51,8 +40,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel2.setDirection(DcMotorSimple.Direction.FORWARD);
 
         shooterFlap = robot.getServo("shooterFlap");
-        indexerServo = robot.getServo("indexerServo");
-        hopperLinkage = robot.getServo("hopperLinkage");
 
         flyWheel1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -61,8 +48,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    private long indexTime = 0;
-
     @Override
     public void update() {
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
@@ -70,39 +55,9 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel2.setVelocity(flyWheelTargetSpeed);
 
         shooterFlap.setPosition(shooterFlapPosition);
-
-        hopperLinkage.setPosition(HOPPER_UP_POSITION);
-
-        long currentTime = robot.getCurrentTimeMilli();
-
-        boolean indexerReturned = currentTime > indexTime + INDEXER_RETURNED_TIME_MS;
-        if (indexRing && indexerReturned && isUpToSpeed()) {
-            indexerServo.setPosition(INDEX_PUSH_POSITION);
-            indexTime = currentTime;
-            indexRing = false;
-        }
-
-        if (currentTime > indexTime + INDEXER_PUSHED_TIME_MS) {
-            indexerServo.setPosition(INDEX_OPEN_POSITION);
-        }
     }
 
-    /**
-     * Attempt to index a ring. If the indexer is currently indexing, nothing will happen. Whether
-     * or not the command was successfully executed is returned.
-     *
-     * @return Whether or not the index command will be processed.
-     */
-    public boolean requestRingIndex() {
-        if (robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS && isUpToSpeed()) {
-            indexRing = true;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean isUpToSpeed() {
+    public boolean isUpToSpeed() {
         return Math.abs(flyWheel1.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD
                 && Math.abs(flyWheel2.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD;
     }
@@ -117,7 +72,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("Flywheel speed: " + flyWheel1.getVelocity());
         data.add("Flap angle: " + shooterFlapPosition);
-        data.add("Will index: " + indexRing);
 
         return data;
     }

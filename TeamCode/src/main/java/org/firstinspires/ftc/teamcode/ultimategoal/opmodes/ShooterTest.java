@@ -42,7 +42,7 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
             robot.shooter.setFlyWheelSpeed(flyWheelSpeed);
 
             if (a.isToggled(gamepad1.a)) {
-                robot.shooter.indexRing();
+                robot.shooter.requestRingIndex();
             }
         }
     }
