@@ -16,11 +16,13 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
 
-    private static final double INDEX_OPEN_POSITION = 0.3;
-    private static final double INDEX_PUSH_POSITION = 0.15;
+    private static final double INDEX_OPEN_POSITION = 0.8;
+    private static final double INDEX_PUSH_POSITION = 0.95;
 
     private static final int INDEXER_PUSHED_TIME_MS = 600;
     private static final int INDEXER_RETURNED_TIME_MS = 1200;
+
+    private static final double HOPPER_UP_POSITION = 0.96;
 
     // States
     public double flyWheelTargetSpeed;
@@ -32,6 +34,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     private DcMotorEx flyWheel2;
     private Servo shooterFlap;
     private Servo indexerServo;
+    private Servo hopperLinkage;
 
     public ShooterModule(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -45,10 +48,11 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel2 = (DcMotorEx) robot.getDcMotor("flyWheel2");
 
         flyWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
-        flyWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
+        flyWheel2.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        shooterFlap = robot.getServo("shooterFlap"); // In degrees
+        shooterFlap = robot.getServo("shooterFlap");
         indexerServo = robot.getServo("indexerServo");
+        hopperLinkage = robot.getServo("hopperLinkage");
 
         flyWheel1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -66,6 +70,8 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel2.setVelocity(flyWheelTargetSpeed);
 
         shooterFlap.setPosition(shooterFlapPosition);
+
+        hopperLinkage.setPosition(HOPPER_UP_POSITION);
 
         long currentTime = robot.getCurrentTimeMilli();
 
