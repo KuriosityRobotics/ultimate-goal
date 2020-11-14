@@ -19,9 +19,9 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     // States
     public TowerGoal target = TowerGoal.BLUE_HIGH;
-    public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
-    public int queuedIndexes = 0;
+    private int queuedIndexes;
 
+    public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
     private boolean activeToggle = false;
 
     // Flap angle to position constants 2.5E-03*x + 0.607
@@ -92,7 +92,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
             aimShooter(target, robot.visionModule.getLocationData());
-            shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
+            //           shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
             if (queuedIndexes > 0) {
                 if (hopperModule.requestRingIndex()) {
@@ -113,11 +113,10 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      *
      * @param target The target to aim at.
      */
-
     public void aimShooter(TowerGoal target, GoalFinder.GoalLocationData loc) {
         double distanceToTargetCenterRobot = distanceToTarget(target);
         double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
-        robot.drivetrain.setBrakeHeading(angleWrap(headingToTarget(target) + angleOffset));
+        turnToGoal(loc);
 
         double distanceToTarget = distanceToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
         distanceSam = distanceToTarget;
@@ -145,6 +144,15 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      */
     private double flapAngleToPosition(double angle) {
         return (FLAP_ANGLE_TO_POSITION_LINEAR_TERM * angle) + FLAP_ANGLE_TO_POSITION_CONSTANT_TERM;
+    }
+
+    private double calculateAngleDelta(double yaw) {
+        return yaw > 0.1 ? Math.tanh(Math.pow(yaw, 3)) : 0;
+    }
+
+    private void turnToGoal(GoalFinder.GoalLocationData loc) {
+        if(loc != null)
+            robot.drivetrain.setBrakeHeading(calculateAngleDelta(loc.getYaw()));
     }
 
     /**
