@@ -116,7 +116,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public void aimShooter(TowerGoal target, GoalFinder.GoalLocationData loc) {
         double distanceToTargetCenterRobot = distanceToTarget(target);
         double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
-        turnToGoal(loc);
+        turnToGoal(loc, angleOffset);
 
         double distanceToTarget = distanceToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
         distanceSam = distanceToTarget;
@@ -150,7 +150,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         return yaw > 0.1 ? Math.tanh(Math.pow(yaw, 3)) : 0;
     }
 
-    private void turnToGoal(GoalFinder.GoalLocationData loc) {
+    private void turnToGoal(GoalFinder.GoalLocationData loc, double offset) {
         if(loc != null)
             robot.drivetrain.setBrakeHeading(calculateAngleDelta(loc.getYaw()));
     }
