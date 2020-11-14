@@ -155,9 +155,11 @@ public class GoalFinder extends OpenCvPipeline {
      * processes the frame, returns goallocationdata which has a bunch of cool stuff about goal location data
      *
      * @param input              frame input
+     * @param input              frame input
      * @param shouldWriteToImage If debug data should be written to the image or not (default/overloaded true)
      * @param isBlue             If true, look for blue goals instead of red
      * @return an int which represents the calculated number of rings
+     * @see GoalLocationData
      * @see GoalLocationData
      */
     public Mat processFrame(Mat input, boolean shouldWriteToImage, boolean isBlue) {
