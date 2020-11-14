@@ -7,6 +7,8 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 import java.util.ArrayList;
 
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
+
 public class Shooter implements Module, TelemetryProvider {
     private Robot robot;
     private boolean isOn;
@@ -29,13 +31,17 @@ public class Shooter implements Module, TelemetryProvider {
     private static final double DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM = 50;
 
     // Distance to goal to angle offset constant
-    private static final double DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 0.00165;
+    // -0.503 + 0.0118x + -5.61E-05x^2
+//    private static final double DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -5.61e-5;
+    private static final double DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -0.0000561;
+    private static final double DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 0.0118;
+    private static final double DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.503;
 
-    // Position of goals, all in inches, from the origin of front blue corner (audience, left)
+    // Position of goals, all in inches, from the center of the robot at the front blue corner (audience, left)
     private static final double HIGH_GOAL_CENTER_HEIGHT = 33.0 + (5.0 / 2) - 0.625;
     private static final double MIDDLE_GOAL_CENTER_HEIGHT = 21.0 + (12.0 / 2) - 0.625;
     private static final double LOW_GOAL_CENTER_HEIGHT = 13.0 + (8.0 / 2) - 0.625; // Subtract to account for thickness of mat
-    private static final double BLUE_GOAL_CENTER_X = 23.0 + (24.0 / 2) - 9;
+    private static final double BLUE_GOAL_CENTER_X = 23.0 + (24.0 / 2) - 9; // Subtract to account for center of robot
     private static final double RED_GOAL_CENTER_X = 23.0 + (23.5 * 3) + (24.0 / 2) - 9;
     private static final double GOAL_CENTER_Y = 6 * 23.0 + (0.5 * 5) - 9;
 
@@ -74,7 +80,10 @@ public class Shooter implements Module, TelemetryProvider {
         }
 
         if (activeToggle) {
+            robot.drivetrain.setMovements(0, 0, 0);
+
             aimShooter(target);
+
             shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
 
             if (queuedIndexes > 0) {
@@ -97,11 +106,12 @@ public class Shooter implements Module, TelemetryProvider {
     public void aimShooter(TowerGoal target) {
         distanceToTarget = distanceToTarget(target) - 9;
 
-        robot.drivetrain.setBrakeHeading(headingToTarget(target) + (distanceToTarget * DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM));
+        double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+        robot.drivetrain.setBrakeHeading(angleWrap(headingToTarget(target) + angleOffset));
 
         // Set flap
-        double angleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
-        shooterModule.shooterFlapPosition = (angleToShoot * FLAP_ANGLE_TO_POSITION_LINEAR_TERM) + FLAP_ANGLE_TO_POSITION_CONSTANT_TERM;
+        double flapAngleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
+        shooterModule.shooterFlapPosition = flapAngleToPosition(flapAngleToShoot);
     }
 
     /**
@@ -112,10 +122,6 @@ public class Shooter implements Module, TelemetryProvider {
      */
     private double flapAngleToPosition(double angle) {
         return (FLAP_ANGLE_TO_POSITION_LINEAR_TERM * angle) + FLAP_ANGLE_TO_POSITION_CONSTANT_TERM;
-    }
-
-    private void turnToGoal(TowerGoal target) {
-        robot.drivetrain.setBrakeHeading(headingToTarget(target));
     }
 
     /**
@@ -189,7 +195,7 @@ public class Shooter implements Module, TelemetryProvider {
     public double headingToTarget(Point targetPoint) {
         Point robotPosition = robot.drivetrain.getCurrentPosition();
 
-        double headingToTarget = Math.toRadians(90) - Math.atan2(targetPoint.y - robotPosition.y, targetPoint.x - robotPosition.x);
+        double headingToTarget = angleWrap(Math.toRadians(90) - Math.atan2(targetPoint.y - robotPosition.y, targetPoint.x - robotPosition.x));
 
         // TODO: vision magic for double checking
 
@@ -203,13 +209,7 @@ public class Shooter implements Module, TelemetryProvider {
      * @return The distance to that goal.
      */
     public double distanceToTarget(TowerGoal targetGoal) {
-        Point currentPosition = robot.drivetrain.getCurrentPosition();
-//        currentPosition = new Point(currentPosition.x - 9, currentPosition.y - 9);
-        Point targetPoint = towerGoalPosition(targetGoal);
-
-        double distanceToTarget = Math.hypot(currentPosition.x - targetPoint.x, currentPosition.y - targetPoint.y);
-
-        return distanceToTarget;
+        return distanceToTarget(towerGoalPosition(targetGoal));
     }
 
     /**
