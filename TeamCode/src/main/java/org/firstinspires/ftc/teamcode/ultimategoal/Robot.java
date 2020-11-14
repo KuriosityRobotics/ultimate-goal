@@ -25,8 +25,7 @@ public class Robot {
     private long currentTimeMilli;
 
     public HardwareMap hardwareMap;
-    private Telemetry telemetry;
-    private LinearOpMode linearOpMode;
+    private final LinearOpMode linearOpMode;
 
     public TelemetryDump telemetryDump;
     public FileDump fileDump;
@@ -45,7 +44,6 @@ public class Robot {
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode) {
         this.hardwareMap = hardwareMap;
-        this.telemetry = telemetry;
         this.linearOpMode = linearOpMode;
 
         this.telemetryDump = new TelemetryDump(telemetry);
@@ -111,6 +109,9 @@ public class Robot {
      */
     public void startModules() {
         moduleExecutor.start();
+        for (Module module : modules) {
+            module.update();
+        }
     }
 
     private void initHubs() {
