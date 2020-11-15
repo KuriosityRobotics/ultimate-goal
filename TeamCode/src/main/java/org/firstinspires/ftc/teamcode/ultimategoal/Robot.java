@@ -95,6 +95,7 @@ public class Robot {
         // Initialize modules
         for (Module module : modules) {
             module.init();
+            module.update();
         }
 
         // Start the thread for executing modules.
@@ -109,9 +110,6 @@ public class Robot {
      */
     public void startModules() {
         moduleExecutor.start();
-        for (Module module : modules) {
-            module.update();
-        }
     }
 
     private void initHubs() {
