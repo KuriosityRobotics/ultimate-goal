@@ -16,8 +16,8 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
 
-    private static final double INDEX_OPEN_POSITION = 0.8;
-    private static final double INDEX_PUSH_POSITION = 0.95;
+    private static final double INDEX_OPEN_POSITION = .85;
+    private static final double INDEX_PUSH_POSITION = .68;
 
     private static final int INDEXER_PUSHED_TIME_MS = 600;
     private static final int INDEXER_RETURNED_TIME_MS = 1200;
@@ -26,7 +26,7 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     // States
     public double flyWheelTargetSpeed;
-    public double shooterFlapPosition = 0.71;
+    public double shooterFlapPosition = 0.63;
     private boolean indexRing;
 
     // Motors
@@ -95,7 +95,7 @@ public class ShooterModule implements Module, TelemetryProvider {
      * @return Whether or not the index command will be processed.
      */
     public boolean indexRing() {
-        if (robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS) {
+        if (robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS && upToSpeed()) {
             indexRing = true;
             return true;
         } else {

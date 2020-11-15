@@ -21,9 +21,9 @@ public class Shooter implements Module, TelemetryProvider {
     public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
     private boolean activeToggle = false;
 
-    // Flap angle to position constants
-    private static final double FLAP_ANGLE_TO_POSITION_LINEAR_TERM = -0.0026;
-    private static final double FLAP_ANGLE_TO_POSITION_CONSTANT_TERM = 0.808;
+    // Flap angle to position constants 2.5E-03*x + 0.607
+    private static final double FLAP_ANGLE_TO_POSITION_LINEAR_TERM = 0.0025;
+    private static final double FLAP_ANGLE_TO_POSITION_CONSTANT_TERM = 0.607;
 
     // Distance to goal to flap angle constants
     private static final double DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM = 0.00282;
@@ -31,19 +31,20 @@ public class Shooter implements Module, TelemetryProvider {
     private static final double DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM = 50;
 
     // Distance to goal to angle offset constant
-    // -0.503 + 0.0118x + -5.61E-05x^2
-//    private static final double DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -5.61e-5;
-    private static final double DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -0.0000561;
-    private static final double DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 0.0118;
-    private static final double DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.503;
+    // -0.0372 + 2.79E-03x + -1.31E-05x^2
+    private static final double DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -1.31E-05;
+    private static final double DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
+    private static final double DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0322; // -0.0372
 
     // Position of goals, all in inches, from the center of the robot at the front blue corner (audience, left)
     private static final double HIGH_GOAL_CENTER_HEIGHT = 33.0 + (5.0 / 2) - 0.625;
     private static final double MIDDLE_GOAL_CENTER_HEIGHT = 21.0 + (12.0 / 2) - 0.625;
     private static final double LOW_GOAL_CENTER_HEIGHT = 13.0 + (8.0 / 2) - 0.625; // Subtract to account for thickness of mat
-    private static final double BLUE_GOAL_CENTER_X = 23.0 + (24.0 / 2) - 9; // Subtract to account for center of robot
+//    private static final double BLUE_GOAL_CENTER_X = 23.0 + (24.0 / 2) - 9; // Subtract to account for center of robot
+    private static final double BLUE_GOAL_CENTER_X = 27; // Subtract to account for center of robot
     private static final double RED_GOAL_CENTER_X = 23.0 + (23.5 * 3) + (24.0 / 2) - 9;
-    private static final double GOAL_CENTER_Y = 6 * 23.0 + (0.5 * 5) - 9;
+//    private static final double GOAL_CENTER_Y = 6 * 24.0 - (0.5 * 2) - 9;
+    private static final double GOAL_CENTER_Y = (24 * 6) - 9;
 
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -107,6 +108,7 @@ public class Shooter implements Module, TelemetryProvider {
         distanceToTarget = distanceToTarget(target) - 9;
 
         double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+//        double angleOffset = 0;
         robot.drivetrain.setBrakeHeading(angleWrap(headingToTarget(target) + angleOffset));
 
         // Set flap
@@ -195,7 +197,7 @@ public class Shooter implements Module, TelemetryProvider {
     public double headingToTarget(Point targetPoint) {
         Point robotPosition = robot.drivetrain.getCurrentPosition();
 
-        double headingToTarget = angleWrap(Math.toRadians(90) - Math.atan2(targetPoint.y - robotPosition.y, targetPoint.x - robotPosition.x));
+        double headingToTarget = angleWrap(Math.atan2(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y));
 
         // TODO: vision magic for double checking
 
