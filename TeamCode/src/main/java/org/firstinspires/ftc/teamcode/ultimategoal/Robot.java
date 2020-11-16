@@ -25,8 +25,7 @@ public class Robot {
     private long currentTimeMilli;
 
     public HardwareMap hardwareMap;
-    private Telemetry telemetry;
-    private LinearOpMode linearOpMode;
+    private final LinearOpMode linearOpMode;
 
     public TelemetryDump telemetryDump;
     public FileDump fileDump;
@@ -45,7 +44,6 @@ public class Robot {
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode) {
         this.hardwareMap = hardwareMap;
-        this.telemetry = telemetry;
         this.linearOpMode = linearOpMode;
 
         this.telemetryDump = new TelemetryDump(telemetry);
@@ -97,6 +95,7 @@ public class Robot {
         // Initialize modules
         for (Module module : modules) {
             module.init();
+            module.update(); // Update modules once to let them set actuators
         }
 
         // Start the thread for executing modules.
