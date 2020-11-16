@@ -95,7 +95,7 @@ public class Robot {
         // Initialize modules
         for (Module module : modules) {
             module.init();
-            module.update();
+            module.update(); // Update modules once to let them set actuators
         }
 
         // Start the thread for executing modules.
