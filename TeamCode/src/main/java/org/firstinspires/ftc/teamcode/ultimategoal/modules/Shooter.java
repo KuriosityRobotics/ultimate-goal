@@ -81,7 +81,7 @@ public class Shooter implements Module, TelemetryProvider {
      * @param target The target to aim at.
      */
     public void aimShooter(TowerGoal target, GoalFinder.GoalLocationData loc) {
-        turnToGoal(loc);
+        turnToGoal(target, loc);
 
         // Set flap
         //  -0.00000548x^2 + 0.00107x + 0.59623
@@ -93,9 +93,11 @@ public class Shooter implements Module, TelemetryProvider {
         return yaw > 0.1 ? Math.tanh(Math.pow(yaw, 3)) : 0;
     }
 
-    private void turnToGoal(GoalFinder.GoalLocationData loc) {
+    private void turnToGoal(TowerGoal target, GoalFinder.GoalLocationData loc) {
         if(loc != null)
             robot.drivetrain.setBrakeHeading(calculateAngleDelta(loc.getYaw()));
+        else
+            robot.drivetrain.setBrakeHeading(headingToTarget(target));
     }
 
     /**
