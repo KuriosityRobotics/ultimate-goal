@@ -106,10 +106,9 @@ public class Shooter implements Module, TelemetryProvider {
      */
     public void aimShooter(TowerGoal target, GoalFinder.GoalLocationData loc) {
         distanceToTarget = distanceToTarget(target) - 9;
-
         double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
 //        double angleOffset = 0;
-        turnToGoal(loc, angleOffset);
+        turnToGoal(target, loc, angleOffset);
         // Set flap
         double flapAngleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
         shooterModule.shooterFlapPosition = flapAngleToPosition(flapAngleToShoot);
@@ -129,9 +128,12 @@ public class Shooter implements Module, TelemetryProvider {
         return yaw > 0.1 ? Math.tanh(Math.pow(yaw, 3)) : 0;
     }
 
-    private void turnToGoal(GoalFinder.GoalLocationData loc, double offset) {
+
+    private void turnToGoal(TowerGoal target, GoalFinder.GoalLocationData loc, double offset) {
         if(loc != null)
-            robot.drivetrain.setBrakeHeading(calculateAngleDelta(loc.getYaw()));
+            robot.drivetrain.setBrakeHeading(calculateAngleDelta(loc.getYaw() + offset));
+        else
+            robot.drivetrain.setBrakeHeading(headingToTarget(target) + offset);
     }
 
     /**
