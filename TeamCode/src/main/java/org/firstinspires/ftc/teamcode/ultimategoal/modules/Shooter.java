@@ -92,7 +92,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
             aimShooter(target, robot.visionModule.getLocationData());
-            //           shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
+            shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
             if (queuedIndexes > 0) {
                 if (hopperModule.requestRingIndex()) {
