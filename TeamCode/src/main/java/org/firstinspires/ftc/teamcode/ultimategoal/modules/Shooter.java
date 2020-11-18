@@ -88,7 +88,7 @@ public class Shooter implements Module, TelemetryProvider {
             shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
 
             if (queuedIndexes > 0) {
-                if (shooterModule.indexRing()) {
+                if (shooterModule.requestRingIndex()) {
                     queuedIndexes--;
                 }
             }
@@ -262,7 +262,7 @@ public class Shooter implements Module, TelemetryProvider {
     }
 
     public void indexRing() {
-        shooterModule.indexRing();
+        shooterModule.requestRingIndex();
     }
 
     /**

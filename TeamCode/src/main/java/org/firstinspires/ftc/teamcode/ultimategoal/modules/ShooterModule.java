@@ -76,14 +76,13 @@ public class ShooterModule implements Module, TelemetryProvider {
         long currentTime = robot.getCurrentTimeMilli();
 
         boolean indexerReturned = currentTime > indexTime + INDEXER_RETURNED_TIME_MS;
-        if (indexRing && indexerReturned && upToSpeed()) {
+        if (indexRing && indexerReturned && isUpToSpeed()) {
             indexerServo.setPosition(INDEX_PUSH_POSITION);
             indexTime = currentTime;
             indexRing = false;
         }
 
-        boolean isDoneIndexing = currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
-        if (isDoneIndexing) {
+        if (currentTime > indexTime + INDEXER_PUSHED_TIME_MS) {
             indexerServo.setPosition(INDEX_OPEN_POSITION);
         }
     }
@@ -94,8 +93,8 @@ public class ShooterModule implements Module, TelemetryProvider {
      *
      * @return Whether or not the index command will be processed.
      */
-    public boolean indexRing() {
-        if (robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS && upToSpeed()) {
+    public boolean requestRingIndex() {
+        if (robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS && isUpToSpeed()) {
             indexRing = true;
             return true;
         } else {
@@ -103,7 +102,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         }
     }
 
-    private boolean upToSpeed() {
+    private boolean isUpToSpeed() {
         return Math.abs(flyWheel1.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD
                 && Math.abs(flyWheel2.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD;
     }
