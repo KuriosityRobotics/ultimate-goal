@@ -19,7 +19,7 @@ public class GoalFinder extends OpenCvPipeline {
         return locationData;
     }
 
-    private GoalLocationData locationData = null;
+    private GoalLocationData locationData = new GoalLocationData(0, 0, 0, 0);
 
     static final double[][] CAMERA_MATRIX = {
             {1468, 0, 0},
@@ -127,7 +127,7 @@ public class GoalFinder extends OpenCvPipeline {
 
         Point goalLocation = new Point(0, 0);
         Point centre = new Point(input.width() / 2d, input.height() / 2d);
-        GoalLocationData loc = null;
+        GoalLocationData loc = new GoalLocationData(0, 0, 0, 0);
 
         Mat mask = new Mat(); // This mask will reflect whether or not each pixel in it is yellow enough
         Mat hierarchy = new Mat(); // we don't need to use this, but opencv requires it
