@@ -23,17 +23,14 @@ public class VisionModule implements Module {
     @Override
     public void init() {
         goalFinder = new GoalFinder();
-        try {
-            webcam = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, "Webcam 1"));
-            webcam.setPipeline(goalFinder);
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, "Webcam 1"));
 
-            webcam.setViewportRenderingPolicy(OpenCvWebcam.ViewportRenderingPolicy.OPTIMIZE_VIEW);
-            webcam.openCameraDeviceAsync(() -> {
-                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-            });
-        } catch (Throwable ignored) { // If this fails, it's okay; the default value is null, and the robot will try to work out how to aim w/o the cam
+        webcam.setPipeline(goalFinder);
 
-        }
+        webcam.setViewportRenderingPolicy(OpenCvWebcam.ViewportRenderingPolicy.OPTIMIZE_VIEW);
+        webcam.openCameraDeviceAsync(() -> {
+            webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+        });
     }
 
     @Override
