@@ -16,7 +16,7 @@ public class Shooter implements Module, TelemetryProvider {
 
     private int queuedIndexes;
 
-    public TowerGoal target = TowerGoal.RED_HIGH;
+    public TowerGoal target = TowerGoal.BLUE_HIGH;
     public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
     private boolean activeToggle = false;
 
@@ -65,7 +65,7 @@ public class Shooter implements Module, TelemetryProvider {
         if (activeToggle) {
 
             aimShooter(target, robot.visionModule.getLocationData());
-            //           shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
+            shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
             if (shooterModule.indexRing() && queuedIndexes > 0) {
                 queuedIndexes--;
@@ -86,18 +86,15 @@ public class Shooter implements Module, TelemetryProvider {
         // Set flap
         //  -0.00000548x^2 + 0.00107x + 0.59623
         double distanceToTarget = distanceToTarget(target) - 9; // Account for half the robot
-        //     shooterModule.shooterFlapPosition = (-0.00000548 * distanceToTarget * distanceToTarget) + (0.00107 * distanceToTarget) + 0.59623 + 0.1; // TODO: Revise for new servo positions
-    }
-
-    private double calculateAngleDelta(double yaw) {
-        return yaw > 0.1 ? Math.tanh(Math.pow(yaw, 3)) : 0;
+        shooterModule.shooterFlapPosition = (-0.00000548 * distanceToTarget * distanceToTarget) + (0.00107 * distanceToTarget) + 0.59623 + 0.1; // TODO: Revise for new servo positions
     }
 
     private void turnToGoal(TowerGoal target, GoalFinder.GoalLocationData loc) {
-        if(loc != null)
-            robot.drivetrain.setBrakeHeading(calculateAngleDelta(loc.getYaw()));
-        else
-            robot.drivetrain.setBrakeHeading(headingToTarget(target));
+        switch(target) {
+            case RED_LOW, RED_MIDDLE, RED_HIGH:
+                
+        }
+        robot.drivetrain.setBrakeHeading(headingToTarget(target));
     }
 
     /**
