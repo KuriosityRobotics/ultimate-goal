@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.os.SystemClock;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -16,20 +14,27 @@ public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
-    private static final int FLYWHEEL_SPEED_THRESHOLD = 90;
-    private static final double INDEX_OPEN_POSITION = 0.75;
-    private static final double INDEX_PUSH_POSITION = 0.15;
+    private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
+
+    private static final double INDEX_OPEN_POSITION = .85;
+    private static final double INDEX_PUSH_POSITION = .68;
+
+    private static final int INDEXER_PUSHED_TIME_MS = 600;
+    private static final int INDEXER_RETURNED_TIME_MS = 1200;
+
+    private static final double HOPPER_UP_POSITION = 0.96;
 
     // States
     public double flyWheelTargetSpeed;
-    public double shooterFlapPosition = 0.71;
-    public boolean indexRing;
+    public double shooterFlapPosition = 0.63;
+    private boolean indexRing;
 
     // Motors
     private DcMotorEx flyWheel1;
     private DcMotorEx flyWheel2;
     private Servo shooterFlap;
     private Servo indexerServo;
+    private Servo hopperLinkage;
 
     public ShooterModule(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -43,10 +48,11 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel2 = (DcMotorEx) robot.getDcMotor("flyWheel2");
 
         flyWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
-        flyWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
+        flyWheel2.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        shooterFlap = robot.getServo("shooterFlap"); // In degrees
+        shooterFlap = robot.getServo("shooterFlap");
         indexerServo = robot.getServo("indexerServo");
+        hopperLinkage = robot.getServo("hopperLinkage");
 
         flyWheel1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -65,26 +71,38 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         shooterFlap.setPosition(shooterFlapPosition);
 
+        hopperLinkage.setPosition(HOPPER_UP_POSITION);
+
         long currentTime = robot.getCurrentTimeMilli();
 
-        boolean indexerReturned = currentTime > indexTime + 1200;
-        if (indexRing && indexerReturned) {
-            if (upToSpeed()) {
-                indexerServo.setPosition(INDEX_PUSH_POSITION);
-                indexTime = currentTime;
-                indexRing = false;
-            }
-        } else if (indexRing) {
+        boolean indexerReturned = currentTime > indexTime + INDEXER_RETURNED_TIME_MS;
+        if (indexRing && indexerReturned && isUpToSpeed()) {
+            indexerServo.setPosition(INDEX_PUSH_POSITION);
+            indexTime = currentTime;
             indexRing = false;
         }
 
-        boolean isDoneIndexing = currentTime > indexTime + 600;
-        if (isDoneIndexing) {
+        if (currentTime > indexTime + INDEXER_PUSHED_TIME_MS) {
             indexerServo.setPosition(INDEX_OPEN_POSITION);
         }
     }
 
-    private boolean upToSpeed() {
+    /**
+     * Attempt to index a ring. If the indexer is currently indexing, nothing will happen. Whether
+     * or not the command was successfully executed is returned.
+     *
+     * @return Whether or not the index command will be processed.
+     */
+    public boolean requestRingIndex() {
+        if (robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS && isUpToSpeed()) {
+            indexRing = true;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isUpToSpeed() {
         return Math.abs(flyWheel1.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD
                 && Math.abs(flyWheel2.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD;
     }
@@ -97,7 +115,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("Flywheel speed: " + robot.shooterModule.flyWheel1.getVelocity());
+        data.add("Flywheel speed: " + flyWheel1.getVelocity());
         data.add("Flap angle: " + shooterFlapPosition);
         data.add("Will index: " + indexRing);
 

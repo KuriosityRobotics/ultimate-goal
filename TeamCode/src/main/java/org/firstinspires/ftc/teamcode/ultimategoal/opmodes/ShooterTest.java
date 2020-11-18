@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.ToggleButton;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
 import java.util.ArrayList;
 
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     Robot robot;
 
-    ToggleButton a = new ToggleButton();
+    Toggle a = new Toggle();
 
     // States
     double flapPosition = 0.74; // In degrees
@@ -29,8 +29,8 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
         robot.startModules();
 
         while (opModeIsActive()) {
-            flapPosition -= gamepad1.right_stick_y * 0.000001;
-            flyWheelSpeed -= gamepad1.left_stick_y * 0.01;
+            flapPosition -= gamepad1.right_stick_y * 0.0000001;
+            flyWheelSpeed -= gamepad1.left_stick_y * 0.001;
 
             if (flapPosition > 1) {
                 flapPosition = 1;
@@ -38,11 +38,11 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
                 flapPosition = 0;
             }
 
-            robot.shooterModule.shooterFlapPosition = flapPosition;
-            robot.shooterModule.flyWheelTargetSpeed = flyWheelSpeed;
+            robot.shooter.setFlapPosition(flapPosition);
+            robot.shooter.setFlyWheelSpeed(flyWheelSpeed);
 
             if (a.isToggled(gamepad1.a)) {
-                robot.shooterModule.indexRing = true;
+                robot.shooter.indexRing();
             }
         }
     }

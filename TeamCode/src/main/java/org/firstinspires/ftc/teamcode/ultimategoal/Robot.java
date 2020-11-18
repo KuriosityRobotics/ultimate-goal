@@ -10,17 +10,18 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.Drivetrain;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ShooterModule;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.Drivetrain;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
 
 public class Robot {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
-    public ShooterModule shooterModule;
+    public Shooter shooter;
 
     private long currentTimeMilli;
 
@@ -40,7 +41,9 @@ public class Robot {
     private LynxModule revHub1;
     private LynxModule revHub2;
 
-    public final boolean WILL_FILE_DUMP = false;
+    // Constants
+    public final static int FLY_WHEEL_SPEED = 1550;
+    public final static boolean WILL_FILE_DUMP = false;
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode) {
         this.hardwareMap = hardwareMap;
@@ -69,7 +72,7 @@ public class Robot {
         }
         telemetryDump.update();
 
-        if(isStopRequested()) {
+        if (isStopRequested()) {
             this.cleanUp();
         }
     }
@@ -86,10 +89,10 @@ public class Robot {
     private void initModules() {
         // Add individual modules into the array here
         this.drivetrain = new Drivetrain(this, true);
-        this.shooterModule = new ShooterModule(this, true);
+        this.shooter = new Shooter(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.shooterModule
+                this.drivetrain, this.shooter
         };
 
         // Initialize modules
@@ -114,7 +117,7 @@ public class Robot {
 
     private void initHubs() {
         try {
-            revHub1 = hardwareMap.get(LynxModule.class, "Expansion Hub 3");
+            revHub1 = hardwareMap.get(LynxModule.class, "Expansion Hub 173");
             revHub1.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
             revHub2 = hardwareMap.get(LynxModule.class, "Expansion Hub 2");
             revHub2.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
@@ -159,6 +162,7 @@ public class Robot {
     private void ಢ_ಢ() {
         throw new Error("ರ_ರ plz dont rely on finalize to cleanup");
     }
+
     public void finalize() {
         this.cleanUp();
         ಢ_ಢ();

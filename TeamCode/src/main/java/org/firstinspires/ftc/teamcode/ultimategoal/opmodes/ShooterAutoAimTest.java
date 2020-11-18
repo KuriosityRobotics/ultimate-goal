@@ -7,13 +7,17 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
 import java.util.ArrayList;
 
 @TeleOp
-public class MainTeleop extends LinearOpMode implements TelemetryProvider {
+public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvider {
     Robot robot;
     long lastUpdateTime;
+
+    Toggle bToggle = new Toggle();
+    Toggle aToggle = new Toggle();
 
     private static final double SLOW_MODE_SCALE_FACTOR = 0.3;
 
@@ -24,12 +28,24 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
         initRobot();
 
         robot.telemetryDump.registerProvider(this);
+
         waitForStart();
 
         robot.startModules();
 
         while (opModeIsActive()) {
-            updateDrivetrainStates();
+            if (aToggle.isToggled(gamepad1.a)) {
+                robot.shooter.isAimBotActive = !robot.shooter.isAimBotActive;
+            }
+
+            if (robot.shooter.isAimBotActive) {
+                if (bToggle.isToggled(gamepad1.b)) {
+                    robot.shooter.queueRingIndex();
+                }
+            } else {
+                updateDrivetrainStates();
+            }
+
             lastUpdateTime = SystemClock.elapsedRealtime();
         }
     }
@@ -103,13 +119,14 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
         long currentTime = SystemClock.elapsedRealtime();
 
         ArrayList<String> data = new ArrayList<>();
-        data.add("TeleOp while loop update time: " + String.valueOf(currentTime - lastUpdateTime));
+        data.add("How to use: Begin the robot at the front blue corner of the field (away from the tower goal). Use gamepad1 to drive the robot. Press 'a' to toggle aiming mode, and then 'b' to queue a shot.");
+        data.add("TeleOp while loop update time: " + (currentTime - lastUpdateTime));
         lastUpdateTime = currentTime;
 
         return data;
     }
 
     public String getName() {
-        return "MainTeleOp";
+        return "ShooterAutoAim";
     }
 }

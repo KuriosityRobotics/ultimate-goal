@@ -80,6 +80,10 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         setMotorPowers(fLPower, fRPower, bLPower, bRPower);
     }
 
+    public void fileDump() {
+
+    }
+
     public void setMovements(double xMovement, double yMovement, double turnMovement) {
         this.xMovement = xMovement;
         this.yMovement = yMovement;
@@ -94,7 +98,7 @@ public class DrivetrainModule implements Module, TelemetryProvider {
     }
 
     private void setMotorPower(DcMotor motor, double power) {
-        if (Math.abs(power) < 0.01) {
+        if (Math.abs(power) < 0.06) {
             motor.setPower(0);
         } else {
             motor.setPower(power);

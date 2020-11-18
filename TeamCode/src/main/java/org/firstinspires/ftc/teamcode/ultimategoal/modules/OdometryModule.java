@@ -10,6 +10,8 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.StringHelper.concat;
+
 public class OdometryModule implements Module, TelemetryProvider, FileDumpProvider {
     private Robot robot;
     private boolean isOn;
@@ -72,6 +74,10 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         data.add("worldX: " + worldX);
         data.add("worldY: " + worldY);
         data.add("heading: " + worldAngleRad);
+//        data.add("--");
+//        data.add("left: " + leftPodKnownPosition);
+//        data.add("right: " + rightPodKnownPosition);
+//        data.add("mecanum: " + mecanumPodKnownPosition);
         return data;
     }
 
