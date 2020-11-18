@@ -18,7 +18,7 @@ public class Shooter implements Module, TelemetryProvider {
 
     private int queuedIndexes;
 
-    public TowerGoal target = TowerGoal.RED_HIGH;
+    public TowerGoal target = TowerGoal.BLUE_HIGH;
     public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
     private boolean activeToggle = false;
 
@@ -85,7 +85,7 @@ public class Shooter implements Module, TelemetryProvider {
             robot.drivetrain.setMovements(0, 0, 0);
 
             aimShooter(target, robot.visionModule.getLocationData());
-            //           shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
+            shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
             if (queuedIndexes > 0) {
                 if (shooterModule.requestRingIndex()) {
