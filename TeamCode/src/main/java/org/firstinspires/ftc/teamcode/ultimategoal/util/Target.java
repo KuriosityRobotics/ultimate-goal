@@ -4,7 +4,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 /**
  * Powershot goals are numbered where the first is the closest to the centre of its colour <br/>
- * <strong>the following code will take you on an emotional rollercoaster</strong><br/>
+ * <strong>the following code will take you on an emotional roller coaster</strong><br/>
  * <i>this is your last chance to turn back and not read the file</i>
  */
 
@@ -24,13 +24,15 @@ public class Target {
     public interface ITarget {
         /**
          * Our next target (for toggling)
-         * In order: HIGH, MIDDLE, LOW, POWERSHOT1, POWERSHOT2, POWERSHOT3
+         * In order: HIGH, POWERSHOT1, POWERSHOT2, POWERSHOT3
+         *
          * @return The next target
          */
         ITarget next();
 
         /**
          * Returns an enum of the same goal selected, but for the opposite alliance colour
+         *
          * @return
          */
         ITarget switchColour();
@@ -43,29 +45,56 @@ public class Target {
          * @see Point
          */
         Point getLocation();
+
+        /**
+         * Returns whether this target is a powershot or not
+         *
+         * @return whether this target is a powershot or not
+         */
+        boolean isPowershot();
     }
 
     public enum Red implements ITarget {
-        RED_HIGH(new Point(RED_GOAL_CENTER_X, HIGH_GOAL_CENTER_HEIGHT)),
-        RED_MIDDLE(new Point(RED_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_HEIGHT)),
-        RED_LOW(new Point(RED_GOAL_CENTER_X, LOW_GOAL_CENTER_HEIGHT)),
+        RED_HIGH(new Point(RED_GOAL_CENTER_X, HIGH_GOAL_CENTER_HEIGHT), false),
+        RED_MIDDLE(new Point(RED_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_HEIGHT), false),
+        RED_LOW(new Point(RED_GOAL_CENTER_X, LOW_GOAL_CENTER_HEIGHT), false),
 
-        RED_POWERSHOT1(new Point(POWERSHOT_CENTRE_X + SHOT1_OFFSET, POWERSHOT_CENTRE_Y)),
-        RED_POWERSHOT2(new Point(POWERSHOT_CENTRE_X + SHOT2_OFFSET, POWERSHOT_CENTRE_Y)),
-        RED_POWERSHOT3(new Point(POWERSHOT_CENTRE_X + SHOT3_OFFSET, POWERSHOT_CENTRE_Y));
+        RED_POWERSHOT1(new Point(POWERSHOT_CENTRE_X + SHOT1_OFFSET, POWERSHOT_CENTRE_Y), true),
+        RED_POWERSHOT2(new Point(POWERSHOT_CENTRE_X + SHOT2_OFFSET, POWERSHOT_CENTRE_Y), true),
+        RED_POWERSHOT3(new Point(POWERSHOT_CENTRE_X + SHOT3_OFFSET, POWERSHOT_CENTRE_Y), true);
 
         private final Point location;
-        Red(Point location) {
+        private final boolean isPowershot;
+
+        private Red(Point location, boolean isPowershot) {
             this.location = location;
+            this.isPowershot = isPowershot;
         }
+
         @Override
         public Point getLocation() {
             return location;
         }
 
-        Red[] vals = values();
+        public boolean isPowershot() {
+            return isPowershot;
+        }
+
         public ITarget next() {
-            return vals[(this.ordinal() + 1) % vals.length];
+            ITarget target;
+            switch (name()) {
+                case "RED_HIGH":
+                    target = RED_POWERSHOT1;
+                case "RED_POWERSHOT1":
+                    target = RED_POWERSHOT2;
+                case "RED_POWERSHOT2":
+                    target = RED_POWERSHOT3;
+                case "RED_POWERSHOT3":
+                    target = RED_HIGH;
+                default:
+                    target = RED_HIGH;
+            }
+            return target;
         }
 
         public ITarget switchColour() {
@@ -74,26 +103,47 @@ public class Target {
     }
 
     public enum Blue implements ITarget {
-        BLUE_HIGH(new Point(BLUE_GOAL_CENTER_X, HIGH_GOAL_CENTER_HEIGHT)),
-        BLUE_MIDDLE(new Point(BLUE_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_HEIGHT)),
-        BLUE_LOW(new Point(BLUE_GOAL_CENTER_X, LOW_GOAL_CENTER_HEIGHT)),
-        BLUE_POWERSHOT1(new Point(POWERSHOT_CENTRE_X - SHOT1_OFFSET, POWERSHOT_CENTRE_Y)),
-        BLUE_POWERSHOT2(new Point(POWERSHOT_CENTRE_X - SHOT2_OFFSET, POWERSHOT_CENTRE_Y)),
-        BLUE_POWERSHOT3((new Point(POWERSHOT_CENTRE_X - SHOT3_OFFSET, POWERSHOT_CENTRE_Y)));
+        BLUE_HIGH(new Point(BLUE_GOAL_CENTER_X, HIGH_GOAL_CENTER_HEIGHT), false),
+        BLUE_MIDDLE(new Point(BLUE_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_HEIGHT), false),
+        BLUE_LOW(new Point(BLUE_GOAL_CENTER_X, LOW_GOAL_CENTER_HEIGHT), false),
+
+        BLUE_POWERSHOT1(new Point(POWERSHOT_CENTRE_X - SHOT1_OFFSET, POWERSHOT_CENTRE_Y), true),
+        BLUE_POWERSHOT2(new Point(POWERSHOT_CENTRE_X - SHOT2_OFFSET, POWERSHOT_CENTRE_Y), true),
+        BLUE_POWERSHOT3((new Point(POWERSHOT_CENTRE_X - SHOT3_OFFSET, POWERSHOT_CENTRE_Y)), true);
 
         private final Point location;
-        Blue(Point location) {
+        private final boolean isPowershot;
+
+        Blue(Point location, boolean isPowershot) {
             this.location = location;
+            this.isPowershot = isPowershot;
         }
+
         @Override
         public Point getLocation() {
             return location;
         }
 
-        Blue[] vals = values();
+        @Override
+        public boolean isPowershot() {
+            return isPowershot;
+        }
 
         public ITarget next() {
-            return vals[(this.ordinal() + 1) % vals.length];
+            ITarget target;
+            switch(name()) {
+                case "BLUE_HIGH":
+                    target = BLUE_POWERSHOT1;
+                case "BLUE_POWERSHOT1":
+                    target = BLUE_POWERSHOT2;
+                case "BLUE_POWERSHOT2":
+                    target = BLUE_POWERSHOT3;
+                case "BLUE_POWERSHOT3":
+                    target = BLUE_HIGH;
+                default:
+                    target = BLUE_HIGH;
+            }
+            return target;
         }
 
         public ITarget switchColour() {

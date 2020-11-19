@@ -14,7 +14,8 @@ import java.util.ArrayList;
 public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     Robot robot;
 
-    Toggle a = new Toggle();
+    final Toggle a = new Toggle();
+    final Toggle buttonBToggleTarget = new Toggle();
 
     // States
     double flapPosition = 0.74; // In degrees
@@ -47,6 +48,9 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
             if (a.isToggled(gamepad1.a)) {
                 robot.shooter.requestRingIndex();
             }
+            if(gamepad1.b)
+                robot.shooter.nextTarget();
+
         }
     }
 
