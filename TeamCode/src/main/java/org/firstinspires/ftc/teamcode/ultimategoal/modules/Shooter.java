@@ -2,22 +2,23 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.TowerGoal;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 import java.util.ArrayList;
 
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.ITarget;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
 
 public class Shooter extends ModuleCollection implements Module, TelemetryProvider {
-    private Robot robot;
+    private final Robot robot;
     private boolean isOn;
 
-    private ShooterModule shooterModule;
-    private HopperModule hopperModule;
+    private final ShooterModule shooterModule;
+    private final HopperModule hopperModule;
 
     // States
-    public TowerGoal target = TowerGoal.BLUE_HIGH;
+    public ITarget target = BLUE_HIGH;
     public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
     public int queuedIndexes = 0;
 
@@ -38,15 +39,6 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private static final double DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
     private static final double DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0372
 
-    // Position of goals, all in inches, from the center of the robot at the front blue corner (audience, left)
-    private static final double HIGH_GOAL_CENTER_HEIGHT = 33.0 + (5.0 / 2) - 0.625;
-    private static final double MIDDLE_GOAL_CENTER_HEIGHT = 21.0 + (12.0 / 2) - 0.625;
-    private static final double LOW_GOAL_CENTER_HEIGHT = 13.0 + (8.0 / 2) - 0.625; // Subtract to account for thickness of mat
-    //    private static final double BLUE_GOAL_CENTER_X = 23.0 + (24.0 / 2) - 9; // Subtract to account for center of robot
-    private static final double BLUE_GOAL_CENTER_X = 27; // Subtract to account for center of robot
-    private static final double RED_GOAL_CENTER_X = 23.0 + (23.5 * 3) + (24.0 / 2) - 9;
-    //    private static final double GOAL_CENTER_Y = 6 * 24.0 - (0.5 * 2) - 9;
-    private static final double GOAL_CENTER_Y = (24 * 6) - 9;
     public double distanceSam;
 
     public Shooter(Robot robot, boolean isOn) {
@@ -113,7 +105,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      *
      * @param target The target to aim at.
      */
-    public void aimShooter(TowerGoal target) {
+    public void aimShooter(ITarget target) {
         double distanceToTargetCenterRobot = distanceToTarget(target);
         double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
         robot.drivetrain.setBrakeHeading(angleWrap(headingToTarget(target) + angleOffset));
@@ -123,7 +115,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         aimFlapToTarget(distanceToTarget);
     }
 
-    private void aimFlapToTarget(TowerGoal target) {
+    private void aimFlapToTarget(ITarget target) {
         double distanceToTarget = distanceToTarget(target);
 
         aimFlapToTarget(distanceToTarget);
@@ -147,66 +139,12 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     }
 
     /**
-     * Returns the position of the given goal, relative to (0,0) being the bottom left (blue and audience side)
-     * of the field.
-     *
-     * @param towerGoal The target goal.
-     * @return The position of that goal, as a Point.
-     * @see Point
-     */
-    public Point towerGoalPosition(TowerGoal towerGoal) {
-        Point targetPoint = new Point();
-
-        switch (towerGoal) {
-            case RED_HIGH:
-            case RED_LOW:
-            case RED_MIDDLE:
-                targetPoint = new Point(RED_GOAL_CENTER_X, GOAL_CENTER_Y);
-                break;
-            case BLUE_HIGH:
-            case BLUE_MIDDLE:
-            case BLUE_LOW:
-                targetPoint = new Point(BLUE_GOAL_CENTER_X, GOAL_CENTER_Y);
-                break;
-        }
-
-        return targetPoint;
-    }
-
-    /**
-     * Returns the height of the given goal, relative to the top of the mats.
-     *
-     * @param towerGoal The target goal.
-     * @return The height of that goal.
-     */
-    public double towerGoalHeight(TowerGoal towerGoal) {
-        double height = 0;
-
-        switch (towerGoal) {
-            case RED_HIGH:
-            case BLUE_HIGH:
-                height = HIGH_GOAL_CENTER_HEIGHT;
-                break;
-            case RED_MIDDLE:
-            case BLUE_MIDDLE:
-                height = MIDDLE_GOAL_CENTER_HEIGHT;
-                break;
-            case RED_LOW:
-            case BLUE_LOW:
-                height = LOW_GOAL_CENTER_HEIGHT;
-                break;
-        }
-
-        return height;
-    }
-
-    /**
      * Calculate what heading we have to turn the robot to hit the target, incorporating vision.
      *
      * @param targetGoal The target to aim at.
      */
-    public double headingToTarget(TowerGoal targetGoal) {
-        return headingToTarget(towerGoalPosition(targetGoal));
+    public double headingToTarget(ITarget targetGoal) {
+        return headingToTarget(targetGoal.getLocation());
     }
 
     /**
@@ -230,8 +168,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      * @param targetGoal The target goal.
      * @return The distance to that goal.
      */
-    public double distanceToTarget(TowerGoal targetGoal, double heading) {
-        return distanceToTarget(towerGoalPosition(targetGoal), heading);
+    public double distanceToTarget(ITarget targetGoal, double heading) {
+        return distanceToTarget(targetGoal.getLocation(), heading);
     }
 
     /**
@@ -254,8 +192,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         return distanceToTarget;
     }
 
-    public double distanceToTarget(TowerGoal targetGoal) {
-        return distanceToTarget(towerGoalPosition(targetGoal));
+    public double distanceToTarget(ITarget targetGoal) {
+        return distanceToTarget(targetGoal.getLocation());
     }
 
     public double distanceToTarget(Point targetPoint) {
