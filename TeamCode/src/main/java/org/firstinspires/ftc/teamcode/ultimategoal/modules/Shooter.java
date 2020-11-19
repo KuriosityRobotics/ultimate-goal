@@ -105,6 +105,24 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         shooterModule.update();
     }
 
+    double distanceToTarget;
+
+    public void toggleColour() {
+        target = target.switchColour();
+    }
+
+    public void nextTarget() {
+        target = target.next();
+    }
+
+    private double getHeadingForGoal(double distanceToTarget, double headingToTarget) {
+        return angleWrap(headingToTarget + (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
+    }
+
+    private double getFlapAngleForGoal(double distanceToTarget) {
+        return (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
+    }
+
     /**
      * Aim the shooter at the target specified.
      *

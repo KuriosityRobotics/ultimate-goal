@@ -18,6 +18,7 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     Toggle b = new Toggle();
     Toggle x = new Toggle();
 
+
     // States
     final double FLAP_MAX = 0.71;
     double flapPosition = 0.355; // In degrees
@@ -56,6 +57,9 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
             if (a.isToggled(gamepad1.a)) {
                 robot.shooter.requestRingIndex();
             }
+            if(gamepad1.b)
+                robot.shooter.nextTarget();
+
         }
     }
 
