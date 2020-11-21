@@ -115,8 +115,15 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         target = target.next();
     }
 
-    private double getHeadingForGoal(double distanceToTarget, double headingToTarget) {
-        return angleWrap(headingToTarget + (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
+    private double getHeadingForGoal(double distanceToTarget, Point targetPoint, Point robotPosition) {
+        double headingToTarget = angleWrap(Math.atan2(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y));
+
+        double headingOffset =
+                headingToTarget
+                        + (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget)
+                        + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget)
+                        + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+        return angleWrap(headingOffset);
     }
 
     private double getFlapAngleForGoal(double distanceToTarget) {
@@ -221,6 +228,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         return headingToTarget;
     }
+
 
     /**
      * Calculate the distance from the target goal.
