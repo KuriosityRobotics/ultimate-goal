@@ -10,14 +10,14 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 public class Target {
     // Position of goals, all in inches, from the center of the robot at the front blue corner (audience, left)
-    private static final double HIGH_GOAL_CENTER_HEIGHT = 33.0 + (5.0 / 2) - 0.625;
-    private static final double MIDDLE_GOAL_CENTER_HEIGHT = 21.0 + (12.0 / 2) - 0.625;
-    private static final double LOW_GOAL_CENTER_HEIGHT = 13.0 + (8.0 / 2) - 0.625; // Subtract to account for thickness of mat
+    private static final double HIGH_GOAL_CENTER_Y = 33.0 + (5.0 / 2) - 0.625;
+    private static final double MIDDLE_GOAL_CENTER_Y = 21.0 + (12.0 / 2) - 0.625;
+    private static final double LOW_GOAL_CENTER_Y = 13.0 + (8.0 / 2) - 0.625; // Subtract to account for thickness of mat
     private static final double BLUE_GOAL_CENTER_X = 27; // Subtract to account for center of robot
     private static final double RED_GOAL_CENTER_X = 23.0 + (23.5 * 3) + (24.0 / 2) - 9;
 
     private static final double POWERSHOT_CENTRE_Y = 21;
-    private static final double POWERSHOT_CENTRE_X = 48.75; // lol this needs to be checked, GM (i don't think) had this specific measurement, and this calculation might be off
+    private static final double POWERSHOT_CENTRE_X = (24 - 0.5) * 3;
     // these are abs of dist from centre (for each powershot)
     private static final double SHOT1_OFFSET = 3.5, SHOT2_OFFSET = 11, SHOT3_OFFSET = 18.5;
 
@@ -56,9 +56,9 @@ public class Target {
     }
 
     public enum Red implements ITarget {
-        RED_HIGH(new Point(RED_GOAL_CENTER_X, HIGH_GOAL_CENTER_HEIGHT), false),
-        RED_MIDDLE(new Point(RED_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_HEIGHT), false),
-        RED_LOW(new Point(RED_GOAL_CENTER_X, LOW_GOAL_CENTER_HEIGHT), false),
+        RED_HIGH(new Point(RED_GOAL_CENTER_X, HIGH_GOAL_CENTER_Y), false),
+        RED_MIDDLE(new Point(RED_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_Y), false),
+        RED_LOW(new Point(RED_GOAL_CENTER_X, LOW_GOAL_CENTER_Y), false),
 
         RED_POWERSHOT1(new Point(POWERSHOT_CENTRE_X + SHOT1_OFFSET, POWERSHOT_CENTRE_Y), true),
         RED_POWERSHOT2(new Point(POWERSHOT_CENTRE_X + SHOT2_OFFSET, POWERSHOT_CENTRE_Y), true),
@@ -104,9 +104,9 @@ public class Target {
     }
 
     public enum Blue implements ITarget {
-        BLUE_HIGH(new Point(BLUE_GOAL_CENTER_X, HIGH_GOAL_CENTER_HEIGHT), false),
-        BLUE_MIDDLE(new Point(BLUE_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_HEIGHT), false),
-        BLUE_LOW(new Point(BLUE_GOAL_CENTER_X, LOW_GOAL_CENTER_HEIGHT), false),
+        BLUE_HIGH(new Point(BLUE_GOAL_CENTER_X, HIGH_GOAL_CENTER_Y), false),
+        BLUE_MIDDLE(new Point(BLUE_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_Y), false),
+        BLUE_LOW(new Point(BLUE_GOAL_CENTER_X, LOW_GOAL_CENTER_Y), false),
 
         BLUE_POWERSHOT1(new Point(POWERSHOT_CENTRE_X - SHOT1_OFFSET, POWERSHOT_CENTRE_Y), true),
         BLUE_POWERSHOT2(new Point(POWERSHOT_CENTRE_X - SHOT2_OFFSET, POWERSHOT_CENTRE_Y), true),
