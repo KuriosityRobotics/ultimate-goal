@@ -92,7 +92,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
             aimShooter(target, robot.visionModule.getLocationData());
-            shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
+            //           shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
             if (queuedIndexes > 0) {
                 if (hopperModule.requestRingIndex()) {
@@ -152,7 +152,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
 
     private void turnToGoal(TowerGoal target, GoalFinder.GoalLocationData loc, double offset) {
-        if(loc != null)
+        if (loc != null)
             robot.drivetrain.setBrakeHeading(calculateAngleDelta(loc.getYaw() + offset));
         else
             robot.drivetrain.setBrakeHeading(headingToTarget(target) + offset);
