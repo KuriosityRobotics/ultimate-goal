@@ -86,14 +86,19 @@ public class Target {
             switch (name()) {
                 case "RED_HIGH":
                     target = RED_POWERSHOT1;
+                    break;
                 case "RED_POWERSHOT1":
                     target = RED_POWERSHOT2;
+                    break;
                 case "RED_POWERSHOT2":
                     target = RED_POWERSHOT3;
+                    break;
                 case "RED_POWERSHOT3":
                     target = RED_HIGH;
+                    break;
                 default:
                     target = RED_HIGH;
+                    break;
             }
             return target;
         }
@@ -135,14 +140,19 @@ public class Target {
             switch(name()) {
                 case "BLUE_HIGH":
                     target = BLUE_POWERSHOT1;
+                    break;
                 case "BLUE_POWERSHOT1":
                     target = BLUE_POWERSHOT2;
+                    break;
                 case "BLUE_POWERSHOT2":
                     target = BLUE_POWERSHOT3;
+                    break;
                 case "BLUE_POWERSHOT3":
                     target = BLUE_HIGH;
+                    break;
                 default:
                     target = BLUE_HIGH;
+                    break;
             }
             return target;
         }
