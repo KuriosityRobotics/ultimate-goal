@@ -167,7 +167,7 @@ public class Drivetrain implements Module, TelemetryProvider {
 
         double xMovement = xPower;
         double yMovement = yPower;
-        double turnMovement = Math.tanh(relativeTurnAngle);
+        double turnMovement = Range.clip(relativeTurnAngle / Math.toRadians(30), -1, 1);
 
         double p = NON_LINEAR_P * Math.sqrt(distanceToTarget);
 
@@ -182,10 +182,10 @@ public class Drivetrain implements Module, TelemetryProvider {
         yMovement = Range.clip(yPower * scale, -1, 1);
 
         double inverseTurnAngle = INVERSE_TURN_FACTOR * 1 / (angleError + .1);
-//        turnScale = Range.clip((TURN_NON_LINEAR_P * ((Math.sqrt(angleError) * Math.abs(relativeTurnAngle)) / relativeTurnAngle))
-//                - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
+        turnScale = Range.clip((TURN_NON_LINEAR_P * ((Math.sqrt(angleError) * Math.abs(relativeTurnAngle)) / relativeTurnAngle))
+               - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
 
-
+            turnMovement = turnScale;
 
         if (weakBrake) {
             xMovement *= 0.65;

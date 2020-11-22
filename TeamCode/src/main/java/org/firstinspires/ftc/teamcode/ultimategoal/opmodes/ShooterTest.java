@@ -14,10 +14,14 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     Robot robot;
 
     Toggle a = new Toggle();
+    Toggle b = new Toggle();
+    Toggle x = new Toggle();
 
     // States
-    double flapPosition = 0.74; // In degrees
+    final double FLAP_MAX = 0.71;
+    double flapPosition = 0.355; // In degrees
     double flyWheelSpeed = 1550; // In ticks per second
+    
 
     @Override
     public void runOpMode() {
@@ -40,6 +44,12 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
 
             robot.shooter.setFlapPosition(flapPosition);
             robot.shooter.setFlyWheelSpeed(flyWheelSpeed);
+
+            if(b.isToggled(gamepad1.b)) {
+                flapPosition = flapPosition + ((FLAP_MAX - flapPosition) / 2);
+            }
+            else if(x.isToggled(gamepad1.y))
+                flapPosition /= 2;
 
             if (a.isToggled(gamepad1.a)) {
                 robot.shooter.indexRing();

@@ -125,7 +125,7 @@ public class Shooter implements Module, TelemetryProvider {
     }
 
     private double calculateAngleDelta(double yaw) {
-        return yaw > 0.1 ? Math.tanh(Math.pow(yaw, 3)) : 0;
+        return yaw > 0.1 ? Math.tanh(Math.tanh(Math.pow(yaw, 3))) : 0;
     }
 
 
