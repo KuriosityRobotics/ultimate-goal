@@ -69,7 +69,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel1.setVelocity(flyWheelTargetSpeed);
         flyWheel2.setVelocity(flyWheelTargetSpeed);
 
-        shooterFlap.setPosition(shooterFlapPosition);
+        //     shooterFlap.setPosition(shooterFlapPosition);
 
         hopperLinkage.setPosition(HOPPER_UP_POSITION);
 

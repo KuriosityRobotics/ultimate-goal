@@ -113,7 +113,7 @@ public class GoalFinder extends OpenCvPipeline {
      * @return an int which represents the calculated number of rings
      */
     public Mat processFrame(final Mat input) {
-        return processFrame(input, false);
+        return processFrame(input, true);
     }
 
     /**
@@ -124,21 +124,27 @@ public class GoalFinder extends OpenCvPipeline {
      */
     public Mat processFrame(final Mat input, boolean shouldWriteToImage) {
         Imgproc.resize(input, input, new Size(480, 270));
+        Imgproc.cvtColor(input, input, COLOR_RGB2HSV);
 
-        Point goalLocation = new Point(0, 0);
+        Point goalLocation;
         Point centre = new Point(input.width() / 2d, input.height() / 2d);
         GoalLocationData loc = null;
 
-        Mat mask = new Mat(); // This mask will reflect whether or not each pixel in it is yellow enough
+        Mat mask1 = new Mat(), mask2 = new Mat(), mask = new Mat();
         Mat hierarchy = new Mat(); // we don't need to use this, but opencv requires it
 
-        Core.inRange(input, new Scalar(60, 60, 200), new Scalar(100, 100, 255), mask); // We now take inputHSV, and work out what is within our colour range that's acceptable. For each pixel, if it is within the range, it will be white; otherwise, it will be black
+        Core.inRange(input, new Scalar(0, 70, 50), new Scalar(10, 255, 255), mask1);
+        Core.inRange(input, new Scalar(170, 70, 50), new Scalar(180, 255, 255), mask2);
+        Core.bitwise_or(mask1, mask2, mask);
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>(); // List for storing contours
         findContours(mask, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE); // Find all the contours (edges) on the mask
         int largestContourIndex = largestContour(contours); // Find the index of contours of the largest contour
 
-        if (contours.get(largestContourIndex) != null) { // Do we even have contours?
+        Imgproc.cvtColor(input, input, COLOR_HSV2RGB);
+
+
+        if (largestContourIndex > -1 && largestContourIndex < contours.size() && contours.get(largestContourIndex) != null) { // Do we even have contours?
             Rect contourBoundingBox = Imgproc.boundingRect(contours.get(largestContourIndex)); // Draw a bounding box around the largest contour
             if (contourBoundingBox.area() > 0.0008 * input.size().area()) { // Min size of contour relative to area of image. Using area of BB because mat.size.area is slow
                 Moments moments = Imgproc.moments(contours.get(largestContourIndex)); // Calculate the average "centre of mass" of the enclosed area
@@ -151,7 +157,6 @@ public class GoalFinder extends OpenCvPipeline {
                 double yaw = (70.42/input.width()) * (goalLocation.x - centre.x); // TODO: this is pepega
                 double pitch = (43.30/input.width()) * (goalLocation.y - centre.y);
 
-
                 loc = new GoalLocationData(yaw, pitch, goalLocation.x, goalLocation.y);
 
                 if (shouldWriteToImage) {
@@ -163,6 +168,11 @@ public class GoalFinder extends OpenCvPipeline {
                 }
             }
         }
+        hierarchy.release();
+        mask.release();
+        mask1.release();
+        mask2.release();
+        contours.forEach(Mat::release);
 
         this.locationData = loc;
         return input;
