@@ -186,9 +186,9 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         double inverseTurnAngle = INVERSE_TURN_FACTOR * 1 / (angleError + .1);
         turnScale = Range.clip((TURN_NON_LINEAR_P * ((Math.sqrt(angleError) * Math.abs(relativeTurnAngle)) / relativeTurnAngle))
-               - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
+                - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
 
-            turnMovement = turnScale;
+        turnMovement = turnScale;
 
         if (weakBrake) {
             xMovement *= 0.65;
