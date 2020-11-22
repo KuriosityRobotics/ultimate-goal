@@ -130,6 +130,7 @@ public class Robot extends ModuleCollection {
             revHub2 = hardwareMap.get(LynxModule.class, "Expansion Hub 2");
             revHub2.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         } catch (Exception e) {
+            linearOpMode.stop();
             throw new Error("One or more of the REV hubs could not be found. More info: " + e);
         }
     }
