@@ -20,7 +20,6 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public TowerGoal target = TowerGoal.BLUE_HIGH;
     public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
     public int queuedIndexes = 0;
-    public HopperModule.HopperPosition hopperPosition = HopperModule.HopperPosition.RAISED;
 
     private boolean activeToggle = false;
 
@@ -86,7 +85,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         if (activeToggle) {
             robot.drivetrain.setMovements(0, 0, 0);
 
-            hopperPosition = HopperModule.HopperPosition.RAISED;
+            hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
             aimShooter(target);
 
@@ -100,9 +99,6 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         } else {
             aimFlapToTarget(target);
         }
-
-        // Set hopper position
-        hopperModule.hopperPosition = hopperPosition;
 
         // Update both modules
         hopperModule.update();
@@ -118,7 +114,6 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         double distanceToTarget = distanceToTarget(target) - 9;
 
         double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
-//        double angleOffset = 0;
         robot.drivetrain.setBrakeHeading(angleWrap(headingToTarget(target) + angleOffset));
 
         aimFlapToTarget(distanceToTarget);
@@ -295,6 +290,18 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      */
     public void queueRingIndex(int numRings) {
         queuedIndexes += numRings;
+    }
+
+    public void setHopperPosition(HopperModule.HopperPosition hopperPosition) {
+        hopperModule.hopperPosition = hopperPosition;
+    }
+
+    public HopperModule.HopperPosition getHopperPosition() {
+        return hopperModule.hopperPosition;
+    }
+
+    public void switchHopperPosition() {
+        hopperModule.switchHopperPosition();
     }
 
     @Override
