@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Drivetrain;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ModuleCollection;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
@@ -22,6 +23,7 @@ public class Robot extends ModuleCollection {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
     public Shooter shooter;
+    public IntakeModule intakeModule;
 
     private long currentTimeMilli;
 
