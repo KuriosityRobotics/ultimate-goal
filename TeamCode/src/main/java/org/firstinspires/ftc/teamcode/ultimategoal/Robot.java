@@ -89,14 +89,15 @@ public class Robot extends ModuleCollection {
         // Add individual modules into the array here
         this.drivetrain = new Drivetrain(this, true);
         this.shooter = new Shooter(this, true);
+        this.intakeModule = new IntakeModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.shooter
+                this.drivetrain, this.shooter, this.intakeModule
         };
 
         // Initialize modules
         initModules(); // Initial init
-        initCycle(); // Any cycle logic for init
+        while (!initCycle()) {} // Cycle init
 
         // Start the thread for executing modules.
         moduleExecutor = new ModuleExecutor(this);

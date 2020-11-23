@@ -20,6 +20,16 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private OdometryModule odometryModule;
     public VelocityModule velocityModule;
 
+    // States
+    public boolean zeroPowerBrake = true;
+    public boolean isSlowMode;
+    public double xMovement = 0;
+    public double yMovement = 0;
+    public double turnMovement = 0;
+
+    // Constants
+    private final static double SLOW_MODE_FACTOR = 0.3;
+
     // Non-linear momentum controller factors
     private static final double NON_LINEAR_P = 0.19;
     private static final double MOMENTUM_FACTOR = 0.0017;
@@ -29,12 +39,6 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private static final double TURN_NON_LINEAR_P = 1;
     private static final double TURN_MOMENTUM_FACTOR = 0;
     private static final double INVERSE_TURN_FACTOR = 0;
-
-    // States
-    public boolean zeroPowerBrake = true;
-    public double xMovement = 0;
-    public double yMovement = 0;
-    public double turnMovement = 0;
 
     public Drivetrain(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -116,14 +120,18 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         if (isBrake) {
             setMovementsToBrakePosition();
         } else {
-            drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
+            if (isSlowMode) {
+                drivetrainModule.setMovements(xMovement * SLOW_MODE_FACTOR, yMovement * SLOW_MODE_FACTOR, turnMovement * SLOW_MODE_FACTOR);
+            } else {
+                drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
+            }
         }
     }
 
     /**
      * Sets movement of drivetrain to try to stay on the brake point.
      */
-    public void setMovementsToBrakePosition() {
+    private void setMovementsToBrakePosition() {
         Point robotPosition = getCurrentPosition();
         double robotHeading = getCurrentHeading();
 
@@ -168,8 +176,13 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
         scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
 
-        xMovement = Range.clip(xPower * scale, -1, 1);
-        yMovement = Range.clip(yPower * scale, -1, 1);
+        if (isSlowMode) {
+            xMovement = Range.clip(xPower * scale, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
+            yMovement = Range.clip(yPower * scale, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
+        } else {
+            xMovement = Range.clip(xPower * scale, -1, 1);
+            yMovement = Range.clip(yPower * scale, -1, 1);
+        }
 
         double inverseTurnAngle = INVERSE_TURN_FACTOR * 1 / (angleError + .1);
         turnScale = Range.clip((TURN_NON_LINEAR_P * ((Math.sqrt(angleError) * Math.abs(relativeTurnAngle)) / relativeTurnAngle)) - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
@@ -218,6 +231,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         if (willAngleLock && isTargetingLastPoint) {
             relativeTurnAngle = angleWrap(angleLockHeading - robotHeading);
         }
+        double angleError = Math.abs(relativeTurnAngle);
 
         double totalPower = Math.abs(relativeYToPoint) + Math.abs(relativeXToPoint);
 
@@ -238,8 +252,18 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
             double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
             scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
 
-            xMovement = Range.clip(xPower * scale, -moveSpeed, moveSpeed);
-            yMovement = Range.clip(yPower * scale, -moveSpeed, moveSpeed);
+            if (isSlowMode) {
+                xMovement = Range.clip(((xPower * scale) > SLOW_MODE_FACTOR ? 1 : ((xPower * scale) / SLOW_MODE_FACTOR)), -moveSpeed, moveSpeed);
+                yMovement = Range.clip(((yPower * scale) > SLOW_MODE_FACTOR ? 1 : ((yPower * scale) / SLOW_MODE_FACTOR)), -moveSpeed, moveSpeed);
+            } else {
+                xMovement = Range.clip(xPower * scale, -moveSpeed, moveSpeed);
+                yMovement = Range.clip(yPower * scale, -moveSpeed, moveSpeed);
+            }
+
+            double inverseTurnAngle = INVERSE_TURN_FACTOR * 1 / (angleError + .1);
+            turnScale = Range.clip((TURN_NON_LINEAR_P * ((Math.sqrt(angleError) * Math.abs(relativeTurnAngle)) / relativeTurnAngle)) - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
+
+            turnMovement = turnScale;
         }
 
         setMovements(xMovement, yMovement, turnMovement);
@@ -293,6 +317,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         data.add("xMovement: " + xMovement);
         data.add("yMovement: " + yMovement);
         data.add("turnMovement: " + turnMovement);
+        data.add("isSlowMode: " + isSlowMode);
         data.add("-");
         data.add("isBrake: " + isBrake);
         data.add("Brake Point: " + brakePoint);

@@ -17,7 +17,9 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
     long lastUpdateTime;
 
     Toggle g2a = new Toggle();
-    Toggle g2b = new Toggle();
+    Toggle g2y = new Toggle();
+    Toggle g2RTrigger = new Toggle();
+    Toggle g2RBumper = new Toggle();
 
     private static final double SLOW_MODE_SCALE_FACTOR = 0.3;
 
@@ -47,22 +49,54 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
         robot.drivetrain.weakBrake = true;
     }
 
+
+    int numIndexes = 0;
     private void updateHopperStates() {
         if (g2a.isToggled(gamepad2.a)) {
             robot.shooter.switchHopperPosition();
         }
-    }
 
-    private void updateShooterStates() {
-        robot.shooter.setFlyWheelSpeed(robot.FLY_WHEEL_SPEED);
+        if (g2RTrigger.isToggled(gamepad2.right_trigger)) {
+            numIndexes = 3;
+        }
 
-        if (g2b.isToggled(gamepad2.b)) {
-            robot.shooter.requestRingIndex();
+        if (g2RBumper.isToggled(gamepad2.right_bumper)) {
+            numIndexes = 1;
+        }
+
+        if (numIndexes > 0) {
+            if (robot.shooter.requestRingIndex()) {
+                numIndexes--;
+            }
         }
     }
 
+    double flapPosition = 0.63;
+    boolean isFlyWheelOn = false;
+    private void updateShooterStates() {
+        flapPosition -= gamepad2.right_stick_y * 0.0000001;
+
+        if (flapPosition > 1) {
+            flapPosition = 1;
+        } else if (flapPosition < 0) {
+            flapPosition = 0;
+        }
+
+        if (g2y.isToggled(gamepad2.y)) {
+            isFlyWheelOn = !isFlyWheelOn;
+        }
+
+        if (isFlyWheelOn) {
+            robot.shooter.setFlyWheelSpeed(robot.FLY_WHEEL_SPEED);
+        } else {
+            robot.shooter.setFlyWheelSpeed(0);
+        }
+
+        robot.shooter.setFlapPosition(flapPosition);
+    }
+
     private void updateIntakeStates() {
-        robot.intakeModule.intakePower = gamepad2.left_stick_y;
+        robot.intakeModule.intakePower = gamepad2.left_stick_y * 2;
     }
 
     private void updateDrivetrainStates() {
