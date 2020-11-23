@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
 import java.util.ArrayList;
 
@@ -14,6 +15,9 @@ import java.util.ArrayList;
 public class MainTeleop extends LinearOpMode implements TelemetryProvider {
     Robot robot;
     long lastUpdateTime;
+
+    Toggle g2a = new Toggle();
+    Toggle g2b = new Toggle();
 
     private static final double SLOW_MODE_SCALE_FACTOR = 0.3;
 
@@ -30,6 +34,9 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
 
         while (opModeIsActive()) {
             updateDrivetrainStates();
+            updateIntakeStates();
+            updateHopperStates();
+            updateShooterStates();
             lastUpdateTime = SystemClock.elapsedRealtime();
         }
     }
@@ -38,6 +45,24 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
         robot = new Robot(hardwareMap, telemetry,this);
 
         robot.drivetrain.weakBrake = true;
+    }
+
+    private void updateHopperStates() {
+        if (g2a.isToggled(gamepad2.a)) {
+            robot.shooter.switchHopperPosition();
+        }
+    }
+
+    private void updateShooterStates() {
+        robot.shooter.setFlyWheelSpeed(robot.FLY_WHEEL_SPEED);
+
+        if (g2b.isToggled(gamepad2.b)) {
+            robot.shooter.requestRingIndex();
+        }
+    }
+
+    private void updateIntakeStates() {
+        robot.intakeModule.intakePower = gamepad2.left_stick_y;
     }
 
     private void updateDrivetrainStates() {
@@ -103,7 +128,7 @@ public class MainTeleop extends LinearOpMode implements TelemetryProvider {
         long currentTime = SystemClock.elapsedRealtime();
 
         ArrayList<String> data = new ArrayList<>();
-        data.add("TeleOp while loop update time: " + String.valueOf(currentTime - lastUpdateTime));
+        data.add("TeleOp while loop update time: " + (currentTime - lastUpdateTime));
         lastUpdateTime = currentTime;
 
         return data;

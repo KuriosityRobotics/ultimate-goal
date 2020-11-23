@@ -48,15 +48,10 @@ public class HopperModule implements Module, TelemetryProvider {
     public void initModules() {
         indexerServo = robot.getServo("indexerServo");
         hopperLinkage = robot.getServo("hopperLinkage");
-
-        indexerServo.setPosition(INDEX_OPEN_POSITION);
-
-        robot.opModeSleep(INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS); // potentially controversial
-
-        hopperLinkage.setPosition(HOPPER_LOWERED_POSITION);
     }
 
     long initStartTime = 0;
+
     public boolean initCycle() {
         long currentTime = SystemClock.elapsedRealtime();
 
@@ -111,6 +106,14 @@ public class HopperModule implements Module, TelemetryProvider {
             if (isDoneIndexing) {
                 indexerServo.setPosition(INDEX_OPEN_POSITION);
             }
+        }
+    }
+
+    public void switchHopperPosition() {
+        if (hopperPosition == HopperPosition.LOWERED) {
+            hopperPosition = HopperPosition.RAISED;
+        } else {
+            hopperPosition = HopperPosition.LOWERED;
         }
     }
 
