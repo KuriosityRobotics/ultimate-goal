@@ -36,8 +36,8 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel1 = (DcMotorEx) robot.getDcMotor("flyWheel1");
         flyWheel2 = (DcMotorEx) robot.getDcMotor("flyWheel2");
 
-        flyWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
-        flyWheel2.setDirection(DcMotorSimple.Direction.FORWARD);
+        flyWheel1.setDirection(DcMotorSimple.Direction.FORWARD);
+        flyWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         shooterFlap = robot.getServo("shooterFlap");
 

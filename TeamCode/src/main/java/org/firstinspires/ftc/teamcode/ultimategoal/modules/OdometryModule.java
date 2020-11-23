@@ -103,9 +103,9 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
      * Calculates the robot's position.
      */
     private void calculateRobotPosition() {
-        double leftPodNewPosition = yLeftEncoder.getCurrentPosition();
-        double rightPodNewPosition = yRightEncoder.getCurrentPosition();
-        double mecanumPodNewPosition = -1 * mecanumEncoder.getCurrentPosition();
+        double leftPodNewPosition = - yLeftEncoder.getCurrentPosition();
+        double rightPodNewPosition = - yRightEncoder.getCurrentPosition();
+        double mecanumPodNewPosition = mecanumEncoder.getCurrentPosition();
 
         double leftPodDelta = leftPodNewPosition - leftPodKnownPosition;
         double rightPodDelta = rightPodNewPosition - rightPodKnownPosition;

@@ -22,14 +22,14 @@ public class HopperModule implements Module, TelemetryProvider {
     private Servo hopperLinkage;
 
     // Constants
-    private static final double INDEX_OPEN_POSITION = .85;
-    private static final double INDEX_PUSH_POSITION = .68;
+    private static final double INDEX_OPEN_POSITION = 0.2075;
+    private static final double INDEX_PUSH_POSITION = 0.0668;
 
     private static final int INDEXER_PUSHED_TIME_MS = 600;
     private static final int INDEXER_RETURNED_TIME_MS = 1200;
 
     private static final double HOPPER_RAISED_POSITION = 0.96;
-    private static final double HOPPER_LOWERED_POSITION = 0.96; // TODO find pos
+    private static final double HOPPER_LOWERED_POSITION = 0.63; // TODO find pos
 
     private static final int HOPPER_RAISE_TIME_MS = 2000;
     private static final int HOPPER_LOWER_TIME_MS = 2000;
@@ -62,8 +62,6 @@ public class HopperModule implements Module, TelemetryProvider {
             initStartTime = currentTime;
         } else if (currentTime > initStartTime + (INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS)) {
             hopperLinkage.setPosition(HOPPER_LOWERED_POSITION);
-
-            initStartTime = currentTime;
         }
 
         if (currentTime > initStartTime + (INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS) + HOPPER_LOWER_TIME_MS) {
@@ -138,7 +136,7 @@ public class HopperModule implements Module, TelemetryProvider {
      * @return Whether or not the index command will be processed.
      */
     public boolean requestRingIndex() {
-        if (robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS && robot.shooter.isUpToSpeed()) {
+        if (robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS && robot.shooter.isUpToSpeed() && !indexRing) {
             indexRing = true;
             return true;
         } else {
