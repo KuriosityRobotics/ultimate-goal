@@ -32,7 +32,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     @Override
-    public void init() {
+    public void initModules() {
         flyWheel1 = (DcMotorEx) robot.getDcMotor("flyWheel1");
         flyWheel2 = (DcMotorEx) robot.getDcMotor("flyWheel2");
 
@@ -46,6 +46,11 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         flyWheel1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    @Override
+    public boolean initCycle() {
+        return true; // No iterative init required
     }
 
     @Override

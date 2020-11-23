@@ -27,8 +27,13 @@ public class VelocityModule implements Module, TelemetryProvider {
         this.isOn = isOn;
     }
 
-    public void init() {
+    public void initModules() {
         oldUpdateTime = SystemClock.elapsedRealtime();
+    }
+
+    @Override
+    public boolean initCycle() {
+        return true; // No iterative init required
     }
 
     private Point oldWorldPosition;

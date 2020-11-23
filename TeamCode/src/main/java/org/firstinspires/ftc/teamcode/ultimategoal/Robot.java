@@ -12,13 +12,13 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Drivetrain;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.ShooterModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.ModuleCollection;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
 
-public class Robot {
+public class Robot extends ModuleCollection {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
     public Shooter shooter;
@@ -33,9 +33,6 @@ public class Robot {
 
     // New thread that updates modules
     ModuleExecutor moduleExecutor;
-
-    // Array that all modules will be loaded into for easier access
-    private Module[] modules;
 
     // REV Hubs
     private LynxModule revHub1;
@@ -53,7 +50,7 @@ public class Robot {
         fileDump = new FileDump();
 
         initHubs();
-        initModules();
+        initialize();
     }
 
     public void update() {
@@ -86,7 +83,7 @@ public class Robot {
         }
     }
 
-    private void initModules() {
+    private void initialize() {
         // Add individual modules into the array here
         this.drivetrain = new Drivetrain(this, true);
         this.shooter = new Shooter(this, true);
@@ -96,10 +93,8 @@ public class Robot {
         };
 
         // Initialize modules
-        for (Module module : modules) {
-            module.init();
-            module.update(); // Update modules once to let them set actuators
-        }
+        initModules(); // Initial init
+        initCycle(); // Any cycle logic for init
 
         // Start the thread for executing modules.
         moduleExecutor = new ModuleExecutor(this);
@@ -170,5 +165,15 @@ public class Robot {
     public void finalize() {
         this.cleanUp();
         ಢ_ಢ();
+    }
+
+    @Override
+    public boolean isOn() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return "Robot";
     }
 }

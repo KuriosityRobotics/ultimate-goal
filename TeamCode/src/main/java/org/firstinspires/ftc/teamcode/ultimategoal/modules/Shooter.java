@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
 
-public class Shooter implements Module, TelemetryProvider {
+public class Shooter extends ModuleCollection implements Module, TelemetryProvider {
     private Robot robot;
     private boolean isOn;
 
@@ -56,11 +56,9 @@ public class Shooter implements Module, TelemetryProvider {
         this.isOn = isOn;
 
         shooterModule = new ShooterModule(robot, isOn);
-    }
+        hopperModule = new HopperModule(robot, isOn);
 
-    public void init() {
-        hopperModule.init();
-        shooterModule.init();
+        modules = new Module[]{shooterModule, hopperModule};
     }
 
     boolean weakBrakeOldState;
