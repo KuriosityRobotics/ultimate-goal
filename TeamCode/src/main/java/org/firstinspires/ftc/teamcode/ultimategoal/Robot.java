@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.err.KuriousErrorHandler;
 
 public class Robot {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
@@ -52,8 +53,12 @@ public class Robot {
         this.telemetryDump = new TelemetryDump(telemetry);
         fileDump = new FileDump();
 
+        Thread.UncaughtExceptionHandler exceptionHandler = new KuriousErrorHandler(linearOpMode);
+        https://docs.oracle.com/javase/1.5.0/docs/api/java/lang/Thread.html#setDefaultUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)
+        Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
         initHubs();
         initModules();
+        moduleExecutor.setUncaughtExceptionHandler(exceptionHandler);
     }
 
     public void update() {
