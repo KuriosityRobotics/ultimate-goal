@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.os.SystemClock;
+
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
@@ -43,7 +45,7 @@ public class HopperModule implements Module, TelemetryProvider {
     }
 
     @Override
-    public void init() {
+    public void initModules() {
         indexerServo = robot.getServo("indexerServo");
         hopperLinkage = robot.getServo("hopperLinkage");
 
@@ -52,6 +54,28 @@ public class HopperModule implements Module, TelemetryProvider {
         robot.opModeSleep(INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS); // potentially controversial
 
         hopperLinkage.setPosition(HOPPER_LOWERED_POSITION);
+    }
+
+    long initStartTime = 0;
+    public boolean initCycle() {
+        long currentTime = SystemClock.elapsedRealtime();
+
+        if (initStartTime == 0) {
+            hopperLinkage.setPosition(HOPPER_RAISED_POSITION);
+            indexerServo.setPosition(INDEX_OPEN_POSITION);
+
+            initStartTime = currentTime;
+        } else if (currentTime > initStartTime + (INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS)) {
+            hopperLinkage.setPosition(HOPPER_LOWERED_POSITION);
+
+            initStartTime = currentTime;
+        }
+
+        if (currentTime > initStartTime + (INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS) + HOPPER_LOWER_TIME_MS) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private long indexTime = 0;

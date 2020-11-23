@@ -38,7 +38,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         this.isOn = isOn;
     }
 
-    public void init() {
+    public void initModules() {
         yLeftEncoder = robot.getDcMotor("fLeft");
         yRightEncoder = robot.getDcMotor("fRight");
         mecanumEncoder = robot.getDcMotor("bLeft");
@@ -50,6 +50,11 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         yLeftEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         yRightEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         mecanumEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    @Override
+    public boolean initCycle() {
+        return true; // No iterative init required
     }
 
     public void update() {
