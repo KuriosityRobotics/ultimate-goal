@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
 public abstract class ModuleCollection implements Module {
     protected Module[] modules;
@@ -21,9 +22,10 @@ public abstract class ModuleCollection implements Module {
             toInitModules = new ArrayList<>(Arrays.asList(modules));
         }
 
-        for (Module module : toInitModules) {
-            if (module.initCycle()) {
-                toInitModules.remove(module);
+        Iterator<Module> itr = toInitModules.iterator();
+        while (itr.hasNext()) {
+            if (itr.next().initCycle()) {
+                itr.remove();
             }
         }
 
