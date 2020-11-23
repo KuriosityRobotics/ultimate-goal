@@ -7,7 +7,14 @@ public interface Module {
     /**
      * Initializes the module. This includes setting up all motors/servos
      * */
-    public void init();
+    public void initModules();
+
+    /**
+     * Any logic for initialization that requires repetitive calling should go here.
+     *
+     * @return whether or not the module has completed initializing, so that this method can stop being called
+     */
+    public boolean initCycle();
 
     /**
      * Updates the module, executing all the tasks it should complete on every iteration,

@@ -33,7 +33,7 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         this.isOn = isOn;
     }
 
-    public void init() {
+    public void initModules() {
         fLeft = robot.getDcMotor("fLeft");
         fRight = robot.getDcMotor("fRight");
         bLeft = robot.getDcMotor("bLeft");
@@ -43,6 +43,11 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         fRight.setDirection(DcMotorSimple.Direction.FORWARD);
         bLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         bRight.setDirection(DcMotorSimple.Direction.FORWARD);
+    }
+
+    @Override
+    public boolean initCycle() {
+        return true; // No iterative init required
     }
 
     // drivetrain update method applies the powers based on y x and turn movements

@@ -3,12 +3,7 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.DrivetrainModule;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.VelocityModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PIDController;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
@@ -16,7 +11,7 @@ import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
 
-public class Drivetrain implements Module, TelemetryProvider {
+public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     Robot robot;
     public boolean isOn;
     public boolean weakBrake = false;
@@ -49,14 +44,9 @@ public class Drivetrain implements Module, TelemetryProvider {
         odometryModule = new OdometryModule(robot, isOn);
         velocityModule = new VelocityModule(robot, isOn);
 
-        robot.telemetryDump.registerProvider(this);
-    }
+        modules = new Module[]{drivetrainModule, odometryModule, velocityModule};
 
-    @Override
-    public void init() {
-        drivetrainModule.init();
-        odometryModule.init();
-        velocityModule.init();
+        robot.telemetryDump.registerProvider(this);
     }
 
     @Override
