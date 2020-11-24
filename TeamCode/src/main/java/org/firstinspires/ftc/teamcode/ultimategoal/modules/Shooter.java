@@ -36,7 +36,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     // -0.0372 + 2.79E-03x + -1.31E-05x^2
     private static final double DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -1.31E-05;
     private static final double DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
-    private static final double DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0322; // -0.0372
+    private static final double DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0372
 
     // Position of goals, all in inches, from the center of the robot at the front blue corner (audience, left)
     private static final double HIGH_GOAL_CENTER_HEIGHT = 33.0 + (5.0 / 2) - 0.625;
@@ -81,6 +81,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             shooterModule.flyWheelTargetSpeed = 0;
 
             robot.drivetrain.weakBrake = weakBrakeOldState;
+
+            robot.shooter.setHopperPosition(HopperModule.HopperPosition.LOWERED);
         }
 
         if (activeToggle) {
@@ -92,7 +94,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
 
-            if (queuedIndexes > 0 && shooterModule.isUpToSpeed()) {
+            if (queuedIndexes > 0) {
                 if (hopperModule.requestRingIndex()) {
                     queuedIndexes--;
                 }
@@ -116,7 +118,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
         robot.drivetrain.setBrakeHeading(angleWrap(headingToTarget(target) + angleOffset));
 
-        double distanceToTarget = distanceToTarget(target,angleWrap(headingToTarget(target) + angleOffset));
+        double distanceToTarget = distanceToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
         distanceSam = distanceToTarget;
         aimFlapToTarget(distanceToTarget);
     }
@@ -129,9 +131,9 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     private void aimFlapToTarget(double distanceToTarget) {
 //        double flapAngleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
-        double flapAngleToShoot = 0.7188854 - 0.00123*distanceToTarget + 0.00000567*Math.pow(distanceToTarget,2) + 0.002*Math.cos((6.28*distanceToTarget-628)/(0.00066*Math.pow(distanceToTarget,2) + 12));
+        double flapPositionToShoot = 0.7188854 - 0.00123 * distanceToTarget + 0.00000567 * Math.pow(distanceToTarget, 2) + 0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12));
 
-        shooterModule.shooterFlapPosition = flapAngleToShoot;
+        shooterModule.shooterFlapPosition = flapPositionToShoot;
     }
 
     /**
@@ -240,10 +242,10 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      */
     public double distanceToTarget(Point targetPoint, double heading) {
         Point currentPosition = robot.drivetrain.getCurrentPosition();
-        double globalAngle = Math.atan2(9.0,5.0)-heading;
-        double hypot = Math.hypot(5.0,9.0);
-        double deltaX = hypot*Math.cos(globalAngle);
-        double deltaY = hypot*Math.sin(globalAngle);
+        double globalAngle = Math.atan2(9.0, 5.0) - heading;
+        double hypot = Math.hypot(5.0, 9.0);
+        double deltaX = hypot * Math.cos(globalAngle);
+        double deltaY = hypot * Math.sin(globalAngle);
 
         currentPosition.x += deltaX;
         currentPosition.y += deltaY;
@@ -286,6 +288,10 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         if (!isAimBotActive) {
             shooterModule.flyWheelTargetSpeed = speed;
         }
+    }
+
+    public double getFlyWheelTargetSpeed() {
+        return shooterModule.flyWheelTargetSpeed;
     }
 
     /**
