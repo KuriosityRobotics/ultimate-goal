@@ -19,15 +19,15 @@ public class AutoActionsTest extends LinearOpMode {
 
         PathFollow pf1 = new PathFollow(new Waypoint[]{
                 new Waypoint(0, 0),
-                new Waypoint(0, 24, new Action(ActionType.SLOW_MODE)),
-                new Waypoint(0, 60)
+                new Waypoint(12, 24, new Action(ActionType.SHOOT_RING_BLUE_HIGH)),
+                new Waypoint(12, 60)
         }, robot, "test");
 
         waitForStart();
 
         robot.startModules();
 
-        pf1.pathFollow(0, 1, 1, false, 0);
+        pf1.pathFollow(0, 1, 1, true, 0);
 
         sleep(5000);
     }
