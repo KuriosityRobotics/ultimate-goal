@@ -77,7 +77,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("Flywheel speed: " + flyWheel1.getVelocity());
         data.add("Flap angle: " + shooterFlapPosition);
-
         return data;
     }
 

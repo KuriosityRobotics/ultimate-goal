@@ -47,6 +47,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private static final double RED_GOAL_CENTER_X = 23.0 + (23.5 * 3) + (24.0 / 2) - 9;
     //    private static final double GOAL_CENTER_Y = 6 * 24.0 - (0.5 * 2) - 9;
     private static final double GOAL_CENTER_Y = (24 * 6) - 9;
+    public double distanceSam;
 
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -111,23 +112,26 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      * @param target The target to aim at.
      */
     public void aimShooter(TowerGoal target) {
-        double distanceToTarget = distanceToTarget(target) - 9;
-
-        double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+        double distanceToTargetCenterRobot = distanceToTarget(target);
+        double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
         robot.drivetrain.setBrakeHeading(angleWrap(headingToTarget(target) + angleOffset));
 
+        double distanceToTarget = distanceToTarget(target,angleWrap(headingToTarget(target) + angleOffset));
+        distanceSam = distanceToTarget;
         aimFlapToTarget(distanceToTarget);
     }
 
     private void aimFlapToTarget(TowerGoal target) {
-        double distanceToTarget = distanceToTarget(target) - 9;
+        double distanceToTarget = distanceToTarget(target);
 
         aimFlapToTarget(distanceToTarget);
     }
 
     private void aimFlapToTarget(double distanceToTarget) {
-        double flapAngleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
-        shooterModule.shooterFlapPosition = flapAngleToPosition(flapAngleToShoot);
+//        double flapAngleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
+        double flapAngleToShoot = 0.7188854 - 0.00123*distanceToTarget + 0.00000567*Math.pow(distanceToTarget,2) + 0.002*Math.cos((6.28*distanceToTarget-628)/(0.00066*Math.pow(distanceToTarget,2) + 12));
+
+        shooterModule.shooterFlapPosition = flapAngleToShoot;
     }
 
     /**
@@ -224,8 +228,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      * @param targetGoal The target goal.
      * @return The distance to that goal.
      */
-    public double distanceToTarget(TowerGoal targetGoal) {
-        return distanceToTarget(towerGoalPosition(targetGoal));
+    public double distanceToTarget(TowerGoal targetGoal, double heading) {
+        return distanceToTarget(towerGoalPosition(targetGoal), heading);
     }
 
     /**
@@ -234,6 +238,24 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      * @param targetPoint The target point.
      * @return The distance to that point.
      */
+    public double distanceToTarget(Point targetPoint, double heading) {
+        Point currentPosition = robot.drivetrain.getCurrentPosition();
+        double globalAngle = Math.atan2(9.0,5.0)-heading;
+        double hypot = Math.hypot(5.0,9.0);
+        double deltaX = hypot*Math.cos(globalAngle);
+        double deltaY = hypot*Math.sin(globalAngle);
+
+        currentPosition.x += deltaX;
+        currentPosition.y += deltaY;
+        double distanceToTarget = Math.hypot(currentPosition.x - targetPoint.x, currentPosition.y - targetPoint.y);
+
+        return distanceToTarget;
+    }
+
+    public double distanceToTarget(TowerGoal targetGoal) {
+        return distanceToTarget(towerGoalPosition(targetGoal));
+    }
+
     public double distanceToTarget(Point targetPoint) {
         Point currentPosition = robot.drivetrain.getCurrentPosition();
 
@@ -271,7 +293,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      */
     public void queueRingIndex() {
         if (isAimBotActive) {
-            queuedIndexes++;
+//            queuedIndexes++;
+            queuedIndexes = 3;
         }
     }
 
@@ -314,6 +337,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         ArrayList<String> data = new ArrayList<>();
         data.add("Is active: " + isAimBotActive);
         data.add("Queued indexes: " + queuedIndexes);
+        data.add("Distance: d" + distanceSam);
         return data;
     }
 
