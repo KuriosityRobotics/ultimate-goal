@@ -1,9 +1,10 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
+package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.HopperModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
@@ -29,6 +30,8 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
         robot.startModules();
 
         while (opModeIsActive()) {
+            robot.shooter.setHopperPosition(HopperModule.HopperPosition.RAISED);
+
             flapPosition -= gamepad1.right_stick_y * 0.0000001;
             flyWheelSpeed -= gamepad1.left_stick_y * 0.001;
 
