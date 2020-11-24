@@ -23,7 +23,6 @@ public class HopperModule implements Module, TelemetryProvider {
 
     // Constants
     private static final double INDEX_OPEN_POSITION = 0.2075;
-
     private static final double INDEX_PUSH_POSITION = 0.083546;
 
     private static final int INDEXER_PUSHED_TIME_MS = 400;
