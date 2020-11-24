@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
+package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -13,6 +14,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.Locale;
 
+@Disabled
 @TeleOp
 public class VisionTest extends LinearOpMode {
     OpenCvWebcam webcam;

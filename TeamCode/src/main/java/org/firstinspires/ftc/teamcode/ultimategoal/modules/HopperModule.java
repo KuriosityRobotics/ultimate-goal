@@ -31,8 +31,8 @@ public class HopperModule implements Module, TelemetryProvider {
     private static final double HOPPER_RAISED_POSITION = 0.96;
     private static final double HOPPER_LOWERED_POSITION = 0.63; // TODO find pos
 
-    private static final int HOPPER_RAISE_TIME_MS = 2000;
-    private static final int HOPPER_LOWER_TIME_MS = 2000;
+    private static final int HOPPER_RAISE_TIME_MS = 1000;
+    private static final int HOPPER_LOWER_TIME_MS = 1000;
 
     // Hopper position enum
     public enum HopperPosition {RAISED, LOWERED}
