@@ -38,6 +38,7 @@ public class VisionModule implements Module {
 
     @Override
     public void update() {
+        goalFinder.isBlue = robot.shooter.target.name().contains("BLUE");
     }
 
     @Override
