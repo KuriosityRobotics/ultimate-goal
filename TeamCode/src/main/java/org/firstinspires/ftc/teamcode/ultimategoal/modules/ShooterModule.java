@@ -16,14 +16,27 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
 
+    private static final double INDEX_OPEN_POSITION = .85;
+    private static final double INDEX_PUSH_POSITION = .68;
+
+    private static final int INDEXER_PUSHED_TIME_MS = 600;
+    private static final int INDEXER_RETURNED_TIME_MS = 1200;
+
+    private static final double HOPPER_UP_POSITION = 0.96;
+
     // States
     public double flyWheelTargetSpeed;
     public double shooterFlapPosition = 0.63;
+    private boolean indexRing;
 
     // Motors
     private DcMotorEx flyWheel1;
     private DcMotorEx flyWheel2;
     private Servo shooterFlap;
+    private Servo indexerServo;
+    private Servo hopperLinkage;
+
+    private long indexTime = 0;
 
     public ShooterModule(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
