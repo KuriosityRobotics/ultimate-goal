@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.HopperModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
@@ -34,22 +36,39 @@ public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvide
         robot.startModules();
 
         while (opModeIsActive()) {
-            if (aToggle.isToggled(gamepad1.a)) {
+            if (aToggle.isToggled(gamepad2.a)) {
                 robot.shooter.isAimBotActive = !robot.shooter.isAimBotActive;
             }
 
             if (robot.shooter.isAimBotActive) {
-                if (bToggle.isToggled(gamepad1.b)) {
+                if (bToggle.isToggled(gamepad2.b)) {
                     robot.shooter.queueRingIndex();
                 }
             } else {
                 updateDrivetrainStates();
             }
+            if(gamepad2.x){
+                robot.shooter.setFlyWheelSpeed(1550);
+            }
+            if(gamepad1.x){
+                robot.wobbleModule.clawPosition = WobbleModule.ClawPosition.CLAMP;
+            }
+            if(gamepad1.y){
+                robot.wobbleModule.clawPosition = WobbleModule.ClawPosition.OPEN;
+            }
+            if(!robot.shooter.isAimBotActive) {
+                robot.shooter.setHopperPosition(HopperModule.HopperPosition.LOWERED);
+            }
+            robot.wobbleModule.wobblePower = gamepad2.right_stick_y/2.5;
+
+            updateIntakeStates();
 
             lastUpdateTime = SystemClock.elapsedRealtime();
         }
     }
-
+    private void updateIntakeStates() {
+        robot.intakeModule.intakePower = gamepad2.left_stick_y * 2;
+    }
     private void initRobot() {
         robot = new Robot(hardwareMap, telemetry,this);
 
