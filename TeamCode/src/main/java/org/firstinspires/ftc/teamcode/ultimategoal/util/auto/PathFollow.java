@@ -41,6 +41,8 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
         this.path = path;
         this.robot = robot;
         this.description = description;
+
+        robot.telemetryDump.registerProvider(this);
     }
 
     public void pathFollow(double direction, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading) {
@@ -187,6 +189,6 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     }
 
     public String getName() {
-        return "PathFollower";
+        return "PathFollower" + description;
     }
 }

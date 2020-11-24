@@ -32,7 +32,7 @@ public class ActionExecutor implements TelemetryProvider {
                 action.state = ActionState.EXECUTING;
             }
 
-            switch(action.type) {
+            switch (action.type) {
                 case SLOW_MODE:
                     drivetrainSlowMode(true);
 
@@ -55,6 +55,8 @@ public class ActionExecutor implements TelemetryProvider {
                     while (robot.shooter.awaitingIndexes()) {
                         // Wait for shooter to finish shooting
                     }
+
+                    robot.opModeSleep(1000);
 
                     robot.shooter.isAimBotActive = false;
 
@@ -100,7 +102,7 @@ public class ActionExecutor implements TelemetryProvider {
      * @param isSlowMode whether or not to have slowMode on.
      */
     private void drivetrainSlowMode(boolean isSlowMode) {
-        robot.drivetrain.setSlowMode(isSlowMode);
+        robot.drivetrain.isSlowMode = isSlowMode;
     }
 
     @Override
