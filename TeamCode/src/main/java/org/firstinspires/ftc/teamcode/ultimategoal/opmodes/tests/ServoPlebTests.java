@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
+package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -8,6 +9,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
 import java.util.ArrayList;
 
+@Disabled
 @TeleOp
 public class ServoPlebTests extends LinearOpMode {
     Servo leftLock;
