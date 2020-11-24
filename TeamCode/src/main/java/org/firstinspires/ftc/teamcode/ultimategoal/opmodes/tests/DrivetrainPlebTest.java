@@ -1,11 +1,13 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
+package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
+@Disabled
 @TeleOp
 public class DrivetrainPlebTest extends LinearOpMode {
     DcMotor fLeft;

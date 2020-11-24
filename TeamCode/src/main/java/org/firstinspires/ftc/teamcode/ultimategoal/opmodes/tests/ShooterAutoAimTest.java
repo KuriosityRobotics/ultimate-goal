@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
+package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
 import android.os.SystemClock;
 

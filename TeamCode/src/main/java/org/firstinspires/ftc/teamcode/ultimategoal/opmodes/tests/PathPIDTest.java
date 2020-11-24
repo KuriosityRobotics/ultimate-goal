@@ -1,6 +1,7 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
+package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
@@ -8,6 +9,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 
 import java.util.ArrayList;
 
+@Disabled
 @Autonomous
 public class PathPIDTest extends LinearOpMode {
 
