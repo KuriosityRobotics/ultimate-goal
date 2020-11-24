@@ -1,10 +1,7 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
-
-import android.os.SystemClock;
+package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.TowerGoal;
 
 import java.util.ArrayList;
 
@@ -15,7 +12,7 @@ public class ActionExecutor implements TelemetryProvider {
     public ActionExecutor(Robot robot) {
         robot.telemetryDump.registerProvider(this);
 
-        executingActions = new ArrayList<Action>();
+        executingActions = new ArrayList<>();
 
         this.robot = robot;
     }
@@ -25,47 +22,7 @@ public class ActionExecutor implements TelemetryProvider {
      */
     public void updateExecution() {
         for (Action action : executingActions) {
-            long currentTime = SystemClock.elapsedRealtime();
-
-            if (action.state == ActionState.PENDING_START) {
-                action.beginExecutionTime = currentTime;
-                action.state = ActionState.EXECUTING;
-            }
-
-            switch (action.type) {
-                case SLOW_MODE:
-                    drivetrainSlowMode(true);
-
-                    action.state = ActionState.COMPLETE;
-
-                    break;
-                case FULL_SPEED:
-                    drivetrainSlowMode(false);
-
-                    action.state = ActionState.COMPLETE;
-
-                    break;
-                case SHOOT_RING_BLUE_HIGH:
-                    robot.drivetrain.setMovements(0, 0, 0);
-
-                    robot.shooter.target = TowerGoal.BLUE_HIGH;
-                    robot.shooter.isAimBotActive = true;
-                    robot.shooter.queueRingIndex(3);
-
-                    while (robot.shooter.awaitingIndexes()) {
-                        // Wait for shooter to finish shooting
-                    }
-
-                    robot.opModeSleep(1000);
-
-                    robot.shooter.isAimBotActive = false;
-
-                    action.state = ActionState.COMPLETE;
-
-                    break;
-            }
-
-            if (action.state == ActionState.COMPLETE) {
+            if (action.executeAction(robot)) {
                 executingActions.remove(action);
             }
         }
@@ -96,22 +53,13 @@ public class ActionExecutor implements TelemetryProvider {
         executingActions.add(action);
     }
 
-    /**
-     * Toggle the drivetrain slowMode state.
-     *
-     * @param isSlowMode whether or not to have slowMode on.
-     */
-    private void drivetrainSlowMode(boolean isSlowMode) {
-        robot.drivetrain.isSlowMode = isSlowMode;
-    }
-
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         String executingActions = "Actions being executed: ";
 
         for (int i = 0; i < this.executingActions.size(); i++) {
-            executingActions = executingActions + this.executingActions.get(i).type.name();
+            executingActions = executingActions + this.executingActions.get(i).getName();
 
             if (i != this.executingActions.size()) {
                 executingActions = executingActions + ", ";
