@@ -13,10 +13,8 @@ public class WobbleModule implements Module, TelemetryProvider {
     boolean isOn;
 
     // States
-    public ClawPosition clawPosition = ClawPosition.OPEN;
-    public double wobblePower;
-
-    public enum ClawPosition {CLAMP, OPEN}
+    public boolean isClawClamped;
+    public int wobbleTargetPosition;
 
     // Actuators
     DcMotor wobbleMotor;
@@ -36,6 +34,11 @@ public class WobbleModule implements Module, TelemetryProvider {
     public void initModules() {
         wobbleMotor = robot.getDcMotor("wobbleMotor");
 
+        wobbleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        wobbleMotor.setTargetPosition(0);
+        wobbleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         wobbleClaw = robot.getServo("wobbleClaw");
     }
 
@@ -43,21 +46,14 @@ public class WobbleModule implements Module, TelemetryProvider {
         return true;
     }
 
-    long startTime = 0;
-
-    private ClawPosition oldHopperPosition = ClawPosition.OPEN;
-
     public void update() {
-        if (clawPosition != oldHopperPosition) {
-            if (clawPosition == ClawPosition.CLAMP) {
-                wobbleClaw.setPosition(CLAW_CLAMP_POSITION);
-            } else {
-                wobbleClaw.setPosition(CLAW_OPEN_POSITION);
-            }
-
-            oldHopperPosition = clawPosition;
+        if (isClawClamped) {
+            wobbleClaw.setPosition(CLAW_CLAMP_POSITION);
+        } else {
+            wobbleClaw.setPosition(CLAW_OPEN_POSITION);
         }
-        wobbleMotor.setPower(wobblePower);
+
+        wobbleMotor.setTargetPosition(wobbleTargetPosition);
     }
 
     public boolean isOn() {
@@ -66,6 +62,8 @@ public class WobbleModule implements Module, TelemetryProvider {
 
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
+        data.add("Wobble target position: " + wobbleTargetPosition);
+        data.add("Is claw clamped: " + isClawClamped);
         return data;
     }
 

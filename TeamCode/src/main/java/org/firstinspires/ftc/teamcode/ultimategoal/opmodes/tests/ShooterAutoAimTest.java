@@ -16,10 +16,14 @@ import java.util.ArrayList;
 @TeleOp
 public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvider {
     Robot robot;
-    long lastUpdateTime;
 
-    Toggle bToggle = new Toggle();
-    Toggle aToggle = new Toggle();
+    long lastUpdateTime = 0;
+    long loopTime;
+
+    Toggle g1x = new Toggle();
+    Toggle g2a = new Toggle();
+    Toggle g2b = new Toggle();
+    Toggle g2x = new Toggle();
 
     private static final double SLOW_MODE_SCALE_FACTOR = 0.3;
 
@@ -36,41 +40,57 @@ public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvide
         robot.startModules();
 
         while (opModeIsActive()) {
-            if (aToggle.isToggled(gamepad2.a)) {
-                robot.shooter.isAimBotActive = !robot.shooter.isAimBotActive;
-            }
+            updateShooterStates();
 
-            if (robot.shooter.isAimBotActive) {
-                if (bToggle.isToggled(gamepad2.b)) {
-                    robot.shooter.queueRingIndex();
-                }
-            } else {
+            if (!robot.shooter.isAimBotActive) {
                 updateDrivetrainStates();
-            }
-            if(gamepad2.x){
-                robot.shooter.setFlyWheelSpeed(1550);
-            }
-            if(gamepad1.x){
-                robot.wobbleModule.clawPosition = WobbleModule.ClawPosition.CLAMP;
-            }
-            if(gamepad1.y){
-                robot.wobbleModule.clawPosition = WobbleModule.ClawPosition.OPEN;
-            }
-            if(!robot.shooter.isAimBotActive) {
                 robot.shooter.setHopperPosition(HopperModule.HopperPosition.LOWERED);
             }
-            robot.wobbleModule.wobblePower = gamepad2.right_stick_y/2.5;
+
+            updateWobbleStates();
 
             updateIntakeStates();
 
-            lastUpdateTime = SystemClock.elapsedRealtime();
+            long currentTime = SystemClock.elapsedRealtime();
+            loopTime = currentTime - lastUpdateTime;
+            lastUpdateTime = currentTime;
         }
     }
+
+    private void updateShooterStates() {
+        if (g2a.isToggled(gamepad2.a)) {
+            robot.shooter.isAimBotActive = !robot.shooter.isAimBotActive;
+        }
+
+        if (robot.shooter.isAimBotActive) {
+            if (g2b.isToggled(gamepad2.b)) {
+                robot.shooter.queueRingIndex();
+            }
+        } else {
+            if (g2x.isToggled(gamepad2.x)) {
+                if (robot.shooter.getFlyWheelTargetSpeed() > 0) {
+                    robot.shooter.setFlyWheelSpeed(0);
+                } else {
+                    robot.shooter.setFlyWheelSpeed(robot.FLY_WHEEL_SPEED);
+                }
+            }
+        }
+    }
+
+    private void updateWobbleStates() {
+        if (g1x.isToggled(gamepad1.x)) {
+            robot.wobbleModule.isClawClamped = !robot.wobbleModule.isClawClamped;
+        }
+
+        robot.wobbleModule.wobbleTargetPosition -= gamepad2.right_stick_y;
+    }
+
     private void updateIntakeStates() {
         robot.intakeModule.intakePower = gamepad2.left_stick_y * 2;
     }
+
     private void initRobot() {
-        robot = new Robot(hardwareMap, telemetry,this);
+        robot = new Robot(hardwareMap, telemetry, this);
 
         robot.drivetrain.weakBrake = true;
     }
@@ -135,12 +155,9 @@ public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvide
 
     @Override
     public ArrayList<String> getTelemetryData() {
-        long currentTime = SystemClock.elapsedRealtime();
-
         ArrayList<String> data = new ArrayList<>();
         data.add("How to use: Begin the robot at the front blue corner of the field (away from the tower goal). Use gamepad1 to drive the robot. Press 'a' to toggle aiming mode, and then 'b' to queue a shot.");
-        data.add("TeleOp while loop update time: " + (currentTime - lastUpdateTime));
-        lastUpdateTime = currentTime;
+        data.add("TeleOp while loop update time: " + loopTime);
 
         return data;
     }
