@@ -50,6 +50,8 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     @Override
     public boolean initCycle() {
+        flyWheel1.setVelocityPIDFCoefficients(4, 0.3, 0, 11.7);
+        flyWheel2.setVelocityPIDFCoefficients(4, 0.3, 0, 11.7);
         return true; // No iterative init required
     }
 
@@ -58,7 +60,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
         flyWheel1.setVelocity(flyWheelTargetSpeed);
         flyWheel2.setVelocity(flyWheelTargetSpeed);
-
         shooterFlap.setPosition(shooterFlapPosition);
     }
 
@@ -77,6 +78,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("Flywheel speed: " + flyWheel1.getVelocity());
         data.add("Flap angle: " + shooterFlapPosition);
+        data.add("PID coeefs: " + flyWheel1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER).p);
         return data;
     }
 

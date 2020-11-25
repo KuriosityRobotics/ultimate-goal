@@ -58,16 +58,16 @@ public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvide
     }
 
     private void updateShooterStates() {
-        if (g2a.isToggled(gamepad2.a)) {
+        if (g2a.isToggled(gamepad1.a)) {
             robot.shooter.isAimBotActive = !robot.shooter.isAimBotActive;
         }
 
         if (robot.shooter.isAimBotActive) {
-            if (g2b.isToggled(gamepad2.b)) {
+            if (g2b.isToggled(gamepad1.b)) {
                 robot.shooter.queueRingIndex();
             }
         } else {
-            if (g2x.isToggled(gamepad2.x)) {
+            if (g2x.isToggled(gamepad1.x)) {
                 if (robot.shooter.getFlyWheelTargetSpeed() > 0) {
                     robot.shooter.setFlyWheelSpeed(0);
                 } else {
