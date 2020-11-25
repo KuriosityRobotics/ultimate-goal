@@ -64,11 +64,7 @@ public class HopperModule implements Module, TelemetryProvider {
             hopperLinkage.setPosition(HOPPER_LOWERED_POSITION);
         }
 
-        if (currentTime > initStartTime + (INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS) + HOPPER_LOWER_TIME_MS) {
-            return true;
-        } else {
-            return false;
-        }
+        return currentTime > initStartTime + (INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS) + HOPPER_LOWER_TIME_MS;
     }
 
     private long indexTime = 0;
