@@ -24,6 +24,9 @@ public class WobbleModule implements Module, TelemetryProvider {
     private static final double CLAW_CLAMP_POSITION = 0.67;
     private static final double CLAW_OPEN_POSITION = 0.2;
 
+    public static final int WOBBLE_RAISED_POSITION = 0; // TODO tune
+    public static final int WOBBLE_LOWERED_POSITION = 100;
+
     public WobbleModule(Robot robot, boolean isOn) {
         this.robot = robot;
         this.isOn = isOn;
@@ -54,6 +57,14 @@ public class WobbleModule implements Module, TelemetryProvider {
         }
 
         wobbleMotor.setTargetPosition(wobbleTargetPosition);
+    }
+
+    public void setWobbleArmPosition(boolean lowerWobble) {
+        if (lowerWobble) {
+            wobbleTargetPosition = WOBBLE_LOWERED_POSITION;
+        } else {
+            wobbleTargetPosition = WOBBLE_RAISED_POSITION;
+        }
     }
 
     public boolean isOn() {
