@@ -33,8 +33,6 @@ public class ShooterModule implements Module, TelemetryProvider {
     private DcMotorEx flyWheel1;
     private DcMotorEx flyWheel2;
     private Servo shooterFlap;
-    private Servo indexerServo;
-    private Servo hopperLinkage;
 
     private long indexTime = 0;
 
@@ -74,21 +72,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel1.setVelocity(flyWheelTargetSpeed);
         flyWheel2.setVelocity(flyWheelTargetSpeed);
         shooterFlap.setPosition(shooterFlapPosition);
-
-        hopperLinkage.setPosition(HOPPER_UP_POSITION);
-
-        long currentTime = robot.getCurrentTimeMilli();
-
-        boolean indexerReturned = currentTime > indexTime + INDEXER_RETURNED_TIME_MS;
-        if (indexRing && indexerReturned && isUpToSpeed()) {
-            indexerServo.setPosition(INDEX_PUSH_POSITION);
-            indexTime = currentTime;
-            indexRing = false;
-        }
-
-        if (currentTime > indexTime + INDEXER_PUSHED_TIME_MS) {
-            indexerServo.setPosition(INDEX_OPEN_POSITION);
-        }
     }
 
     public boolean isUpToSpeed() {
