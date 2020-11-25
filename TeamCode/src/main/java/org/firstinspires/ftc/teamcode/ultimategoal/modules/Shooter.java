@@ -49,6 +49,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     //    private static final double GOAL_CENTER_Y = 6 * 24.0 - (0.5 * 2) - 9;
     private static final double GOAL_CENTER_Y = (24 * 6) - 9;
     public double distanceSam;
+    public double angleOffset;
 
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -73,7 +74,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             robot.drivetrain.weakBrake = false;
 
-            robot.drivetrain.setMovements(0, 0, 0);
+        //    robot.drivetrain.setMovements(0, 0, 0);
         } else if (!isAimBotActive && activeToggle) {
             activeToggle = false;
 
@@ -85,7 +86,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         }
 
         if (activeToggle) {
-            robot.drivetrain.setMovements(0, 0, 0);
+    //        robot.drivetrain.setMovements(0, 0, 0);
 
             hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
@@ -113,8 +114,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      */
     public void aimShooter(TowerGoal target, GoalFinder.GoalLocationData loc) {
         double distanceToTargetCenterRobot = distanceToTarget(target);
-        double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
-        turnToGoal(target, loc, angleOffset);
+        angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+        turnToGoal(target, loc, 0);
 
         double distanceToTarget = distanceToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
         distanceSam = distanceToTarget;
@@ -145,15 +146,17 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     }
 
     private double calculateAngleDelta(double yaw) {
-        return yaw > 0.1 ? Math.tanh(Math.tanh(Math.pow(yaw, 3))) : 0;
+        return  Math.toDegrees(yaw) > 1 ? Math.tanh(Math.toDegrees(yaw)) : 0;
     }
 
 
     private void turnToGoal(TowerGoal target, GoalFinder.GoalLocationData loc, double offset) {
-        if (loc != null)
-            robot.drivetrain.setBrakeHeading(calculateAngleDelta(loc.getYaw() + offset));
-        else
-            robot.drivetrain.setBrakeHeading(headingToTarget(target) + offset);
+        if (loc != null) {
+//            robot.drivetrain.turnMovement = calculateAngleDelta(loc.getYaw() + offset);
+            robot.drivetrain.setBrakeHeading(calculateAngleDelta(loc.getYaw()) + robot.drivetrain.brakeHeading);
+        }
+//        else
+//            robot.drivetrain.setBrakeHeading(headingToTarget(target) + (robot.drivetrain.brakeHeading + offset));
     }
 
     /**
@@ -350,6 +353,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         data.add("Is active: " + isAimBotActive);
         data.add("Queued indexes: " + queuedIndexes);
         data.add("Distance: d" + distanceSam);
+        data.add("angleOffset: " + angleOffset);
+        data.add("are we using vision for aim: " + (robot.visionModule.goalFinder.getLocationData() != null));
         return data;
     }
 

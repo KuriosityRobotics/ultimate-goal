@@ -71,6 +71,7 @@ public class Robot extends ModuleCollection {
                 try {
                     module.update();
                 } catch (Exception e) {
+                    e.printStackTrace();
                     Log.d("Module", "Module couldn't update: " + module.getName());
                 }
             }

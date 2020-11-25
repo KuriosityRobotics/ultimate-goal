@@ -2,12 +2,15 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.vision.GoalFinder;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
+
+import java.util.ArrayList;
 
 public class VisionModule implements Module {
     OpenCvWebcam webcam;
@@ -21,7 +24,7 @@ public class VisionModule implements Module {
     }
 
     @Override
-    public void init() {
+    public void initModules() {
         goalFinder = new GoalFinder();
         try {
             webcam = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, "Webcam 1"));
@@ -31,15 +34,21 @@ public class VisionModule implements Module {
             webcam.openCameraDeviceAsync(() -> {
                 webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
             });
-        } catch (Throwable ignored) { // If this fails, it's okay; the default value is null, and the robot will try to work out how to aim w/o the cam
-
+        } catch (Throwable nonpog) { // If this fails, it's okay; the default value is null, and the robot will try to work out how to aim w/o the cam
+            nonpog.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean initCycle() {
+        return true;
     }
 
     @Override
     public void update() {
         goalFinder.isBlue = robot.shooter.target.name().contains("BLUE");
     }
+
 
     @Override
     public boolean isOn() {
