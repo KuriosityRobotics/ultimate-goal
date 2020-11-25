@@ -92,7 +92,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         }
 
         if (activeToggle) {
-            //        robot.drivetrain.setMovements(0, 0, 0);
+            robot.drivetrain.setMovements(0, 0, 0);
 
             hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
