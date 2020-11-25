@@ -57,8 +57,8 @@ public class Target {
 
     public enum Red implements ITarget {
         RED_HIGH(new Point(RED_GOAL_CENTER_X, HIGH_GOAL_CENTER_Y), false),
-        RED_MIDDLE(new Point(RED_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_Y), false),
-        RED_LOW(new Point(RED_GOAL_CENTER_X, LOW_GOAL_CENTER_Y), false),
+//        RED_MIDDLE(new Point(RED_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_Y), false),
+//        RED_LOW(new Point(RED_GOAL_CENTER_X, LOW_GOAL_CENTER_Y), false),
 
         RED_POWERSHOT1(new Point(POWERSHOT_CENTRE_X + SHOT1_OFFSET, POWERSHOT_CENTRE_Y), true),
         RED_POWERSHOT2(new Point(POWERSHOT_CENTRE_X + SHOT2_OFFSET, POWERSHOT_CENTRE_Y), true),
@@ -110,8 +110,8 @@ public class Target {
 
     public enum Blue implements ITarget {
         BLUE_HIGH(new Point(BLUE_GOAL_CENTER_X, HIGH_GOAL_CENTER_Y), false),
-        BLUE_MIDDLE(new Point(BLUE_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_Y), false),
-        BLUE_LOW(new Point(BLUE_GOAL_CENTER_X, LOW_GOAL_CENTER_Y), false),
+//        BLUE_MIDDLE(new Point(BLUE_GOAL_CENTER_X, MIDDLE_GOAL_CENTER_Y), false),
+//        BLUE_LOW(new Point(BLUE_GOAL_CENTER_X, LOW_GOAL_CENTER_Y), false),
 
         BLUE_POWERSHOT1(new Point(POWERSHOT_CENTRE_X - SHOT1_OFFSET, POWERSHOT_CENTRE_Y), true),
         BLUE_POWERSHOT2(new Point(POWERSHOT_CENTRE_X - SHOT2_OFFSET, POWERSHOT_CENTRE_Y), true),
