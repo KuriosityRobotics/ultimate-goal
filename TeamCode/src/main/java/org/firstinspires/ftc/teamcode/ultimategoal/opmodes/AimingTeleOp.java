@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
+package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
 
 import android.os.SystemClock;
 
@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 import java.util.ArrayList;
 
 @TeleOp
-public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvider {
+public class AimingTeleOp extends LinearOpMode implements TelemetryProvider {
     Robot robot;
 
     long lastUpdateTime = 0;
@@ -24,6 +24,7 @@ public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvide
     Toggle g2a = new Toggle();
     Toggle g2b = new Toggle();
     Toggle g2x = new Toggle();
+    Toggle g2y = new Toggle();
 
     private static final double SLOW_MODE_SCALE_FACTOR = 0.3;
 
@@ -60,6 +61,10 @@ public class ShooterAutoAimTest extends LinearOpMode implements TelemetryProvide
     private void updateShooterStates() {
         if (g2a.isToggled(gamepad2.a)) {
             robot.shooter.isAimBotActive = !robot.shooter.isAimBotActive;
+        }
+
+        if (g2x.isToggled(gamepad2.x)) {
+            robot.shooter.target.next();
         }
 
         if (robot.shooter.isAimBotActive) {

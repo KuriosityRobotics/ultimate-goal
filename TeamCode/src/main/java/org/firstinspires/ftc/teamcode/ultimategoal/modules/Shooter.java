@@ -28,18 +28,15 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private static final double FLAP_ANGLE_TO_POSITION_LINEAR_TERM = 0.0025;
     private static final double FLAP_ANGLE_TO_POSITION_CONSTANT_TERM = 0.607;
 
-    // Distance to goal to flap angle constants
-    private static final double DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM = 0.00282;
-    private static final double DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM = -0.615;
-    private static final double DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM = 50;
-
     // Distance to goal to angle offset constant
     // -0.0372 + 2.79E-03x + -1.31E-05x^2
     private static final double DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -1.31E-05;
     private static final double DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
     private static final double DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0372
 
-    public double distanceSam;
+    // Powershot distance to flap position -1.75E-04*x + 0.664
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.664;
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -1.75e-4;
 
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -100,8 +97,6 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         shooterModule.update();
     }
 
-    double distanceToTarget;
-
     public void toggleColour() {
         target = target.switchColour();
     }
@@ -121,9 +116,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         return angleWrap(headingOffset);
     }
 
-    private double getFlapAngleForGoal(double distanceToTarget) {
-        return (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
-    }
+    public double distanceSam;
 
     /**
      * Aim the shooter at the target specified.
@@ -135,20 +128,44 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
         robot.drivetrain.setBrakeHeading(angleWrap(headingToTarget(target) + angleOffset));
 
-        double distanceToTarget = distanceToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
+        double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
         distanceSam = distanceToTarget;
-        aimFlapToTarget(distanceToTarget);
+
+        if (target.isPowershot()) {
+            aimFlapToPowershot(distanceToTarget);
+        } else {
+            aimFlapToHighGoal(distanceToTarget);
+        }
     }
 
+    /**
+     * Aim only the flap at the target. Does not attempt to move the robot.
+     *
+     * @param target The target to aim at.
+     */
     private void aimFlapToTarget(ITarget target) {
-        double distanceToTarget = distanceToTarget(target);
+        double distanceToTargetCenterRobot = distanceToTarget(target);
+        double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
 
-        aimFlapToTarget(distanceToTarget);
+        double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
+        distanceSam = distanceToTarget;
+
+        if (target.isPowershot()) {
+            aimFlapToPowershot(distanceToTarget);
+        } else {
+            aimFlapToHighGoal(distanceToTarget);
+        }
     }
 
-    private void aimFlapToTarget(double distanceToTarget) {
+    private void aimFlapToHighGoal(double distanceToTarget) {
 //        double flapAngleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
-        double flapPositionToShoot = 0.7188854 - 0.00123 * distanceToTarget + 0.00000567 * Math.pow(distanceToTarget, 2) + 0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12));
+        double flapPositionToShoot = 0.7188854 - (0.00123 * distanceToTarget) + (0.00000567 * Math.pow(distanceToTarget, 2)) + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)));
+
+        shooterModule.shooterFlapPosition = flapPositionToShoot;
+    }
+
+    private void aimFlapToPowershot(double distanceToTarget) {
+        double flapPositionToShoot = (POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM * distanceToTarget) + POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM;
 
         shooterModule.shooterFlapPosition = flapPositionToShoot;
     }
@@ -182,8 +199,6 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         double headingToTarget = angleWrap(Math.atan2(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y));
 
-        // TODO: vision magic for double checking
-
         return headingToTarget;
     }
 
@@ -194,8 +209,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      * @param targetGoal The target goal.
      * @return The distance to that goal.
      */
-    public double distanceToTarget(ITarget targetGoal, double heading) {
-        return distanceToTarget(targetGoal.getLocation(), heading);
+    public double distanceFromFlapToTarget(ITarget targetGoal, double heading) {
+        return distanceFromFlapToTarget(targetGoal.getLocation(), heading);
     }
 
     /**
@@ -204,7 +219,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      * @param targetPoint The target point.
      * @return The distance to that point.
      */
-    public double distanceToTarget(Point targetPoint, double heading) {
+    public double distanceFromFlapToTarget(Point targetPoint, double heading) {
         Point currentPosition = robot.drivetrain.getCurrentPosition();
         double globalAngle = Math.atan2(9.0, 5.0) - heading;
         double hypot = Math.hypot(5.0, 9.0);
