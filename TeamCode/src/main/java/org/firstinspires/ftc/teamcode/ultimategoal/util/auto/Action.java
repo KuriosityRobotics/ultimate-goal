@@ -23,4 +23,8 @@ public abstract class Action {
     }
 
     public abstract String getName();
+
+    public String toString() {
+        return this.getName() + beginExecutionTime;
+    }
 }
