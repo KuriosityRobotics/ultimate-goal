@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 import java.util.ArrayList;
 
 @TeleOp
-public class MainTeleop extends LinearOpMode implements TelemetryProvider {
+public class PrimitiveTeleOp extends LinearOpMode implements TelemetryProvider {
     Robot robot;
     long lastUpdateTime;
 
