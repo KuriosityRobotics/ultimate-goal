@@ -131,11 +131,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
         distanceSam = distanceToTarget;
 
-        if (target.isPowershot()) {
-            aimFlapToPowershot(distanceToTarget);
-        } else {
-            aimFlapToHighGoal(distanceToTarget);
-        }
+        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
 
     /**
@@ -150,24 +146,19 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
         distanceSam = distanceToTarget;
 
-        if (target.isPowershot()) {
-            aimFlapToPowershot(distanceToTarget);
-        } else {
-            aimFlapToHighGoal(distanceToTarget);
-        }
+        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
 
-    private void aimFlapToHighGoal(double distanceToTarget) {
-//        double flapAngleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
-        double flapPositionToShoot = 0.7188854 - (0.00123 * distanceToTarget) + (0.00000567 * Math.pow(distanceToTarget, 2)) + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)));
+    private double getHighGoalFlapPosition(double distanceToTarget) {
 
-        shooterModule.shooterFlapPosition = flapPositionToShoot;
+        return 0.7188854
+                - (0.00123 * distanceToTarget)
+                + (0.00000567 * Math.pow(distanceToTarget, 2))
+                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)));
     }
 
-    private void aimFlapToPowershot(double distanceToTarget) {
-        double flapPositionToShoot = (POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM * distanceToTarget) + POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM;
-
-        shooterModule.shooterFlapPosition = flapPositionToShoot;
+    private double getPowershotFlapPosition(double distanceToTarget) {
+        return (POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM * distanceToTarget) + POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM;
     }
 
     /**
