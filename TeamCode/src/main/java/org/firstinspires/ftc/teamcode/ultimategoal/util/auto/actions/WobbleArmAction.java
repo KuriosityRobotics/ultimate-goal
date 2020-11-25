@@ -19,6 +19,6 @@ public class WobbleArmAction extends Action {
 
     @Override
     public String getName() {
-        return null;
+        return "Wobble Arm Action";
     }
 }
