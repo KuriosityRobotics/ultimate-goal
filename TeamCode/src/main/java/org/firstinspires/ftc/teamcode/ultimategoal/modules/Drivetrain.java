@@ -14,7 +14,8 @@ import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunction
 public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     Robot robot;
     public boolean isOn;
-    public boolean weakBrake = false;
+
+    private Point startingPosition;
 
     private DrivetrainModule drivetrainModule;
     private OdometryModule odometryModule;
@@ -26,6 +27,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public double xMovement = 0;
     public double yMovement = 0;
     public double turnMovement = 0;
+    public boolean weakBrake = false;
 
     // Constants
     private final static double SLOW_MODE_FACTOR = 0.3;
@@ -41,11 +43,15 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private static final double INVERSE_TURN_FACTOR = 0;
 
     public Drivetrain(Robot robot, boolean isOn) {
+        this(robot, isOn, new Point(0, 0));
+    }
+
+    public Drivetrain(Robot robot, boolean isOn, Point startingPosition) {
         this.robot = robot;
         this.isOn = isOn;
 
         drivetrainModule = new DrivetrainModule(robot, isOn);
-        odometryModule = new OdometryModule(robot, isOn);
+        odometryModule = new OdometryModule(robot, isOn, startingPosition);
         velocityModule = new VelocityModule(robot, isOn);
 
         modules = new Module[]{drivetrainModule, odometryModule, velocityModule};

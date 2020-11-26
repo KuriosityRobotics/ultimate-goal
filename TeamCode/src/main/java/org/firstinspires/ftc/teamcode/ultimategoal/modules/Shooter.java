@@ -308,11 +308,20 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     /**
      * Add one to the queue of indexes. Only has an effect if the aimbot is active.
      */
-    public void queueRingIndex() {
+    public void queueIndexThreeRings() {
         if (isAimBotActive) {
 //            queuedIndexes++;
             queuedIndexes = 3;
         }
+    }
+
+    /**
+     * Add to the queue of indexes. Only has an effect if the aimbot is active.
+     *
+     * @param numRings The number of rings to add to the queue
+     */
+    public void queueIndexes(int numRings) {
+        queuedIndexes += numRings;
     }
 
     public boolean requestRingIndex() {
@@ -321,15 +330,6 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     public boolean isUpToSpeed() {
         return shooterModule.isUpToSpeed();
-    }
-
-    /**
-     * Add to the queue of indexes. Only has an effect if the aimbot is active.
-     *
-     * @param numRings The number of rings to add to the queue
-     */
-    public void queueRingIndex(int numRings) {
-        queuedIndexes += numRings;
     }
 
     public void setHopperPosition(HopperModule.HopperPosition hopperPosition) {
@@ -349,8 +349,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      *
      * @return If there are indexes queued.
      */
-    public boolean awaitingIndexes() {
-        return queuedIndexes > 0;
+    public boolean isFinishedIndexing() {
+        return queuedIndexes <= 0;
     }
 
     @Override

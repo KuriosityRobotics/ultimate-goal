@@ -10,6 +10,10 @@ public class Waypoint extends Point {
         this.actions = new ArrayList<>();
     }
 
+    public Waypoint (Point point) {
+        super(point.x, point.y);
+    }
+
     public Waypoint(double x, double y, Action action) {
         super(x, y);
         this.actions = new ArrayList<>();
