@@ -27,9 +27,10 @@ import java.util.concurrent.ExecutorService;
 public class Vision {
     private final String VUFORIA_KEY = "AblAnwD/////AAABmRHXA7f65ErFhMbZmr+8xjArZA83Y+l2nal3r90Dmzl6nc0hUj+zgUCK3sF8PxkhDDJkMsSJSl05Q3U0Bjz6HeydKoGMwsvF8x2IbUto/6gbCm8WqDkvfBjzDeVL5Y3XCkczOi1F8dmNt1JkJQdX4bJokLrzEBQnQOF6mwxI22M2eSobTgyHSrZk4hl6jTXVSO9ckVtMfVjV/pryDQMnnJDFMQ/64u+uhxtnsMZKgd9UlORAMwsSL9Wwk1ixoWeUsLzZS4w/5b4GbupBTsY/teWORJo0AulqTI+rCJRhKzQcZRlG7v5jt2f3es7y0uXbxT5QrQ06tNmvhEfjAIduF5eSbPZ/3QjQnFgtRuyMW0ix";
 
-    public enum Location {
+    public enum TargetGoal {
         A, B, C, UNKNOWN
     }
+
     WebcamName webcamName;
 
     File captureDirectory = AppUtil.ROBOT_DATA_DIR;
@@ -58,8 +59,8 @@ public class Vision {
         for (int i = x; i < endX; i++) {
             for (int j = y; j < endY; j++) {
                 intColor = bitmap.getPixel(i, j);
-                redGreen = Color.red(intColor)*20;
-                redGreen -= Color.blue(intColor)*20;
+                redGreen = Color.red(intColor) * 20;
+                redGreen -= Color.blue(intColor) * 20;
                 sum += redGreen;
             }
         }
@@ -99,15 +100,15 @@ public class Vision {
         }
     }
 
-    public Location runDetection() {
+    public TargetGoal runDetection() {
         if (vuforia != null) {
-            final Location[] resultLocation = {Location.UNKNOWN};
+            final TargetGoal[] resultTargetGoal = {TargetGoal.UNKNOWN};
 
             final long startTime = SystemClock.elapsedRealtime();
 
             final ExecutorService executorService = ThreadPool.getDefault();
 
-            while (linearOpMode.opModeIsActive() && SystemClock.elapsedRealtime()-startTime<=250) {
+            while (linearOpMode.opModeIsActive() && SystemClock.elapsedRealtime() - startTime <= 250) {
                 final ConditionVariable resultAvaliable = new ConditionVariable(false);
 
                 vuforia.getFrameOnce(Continuation.create(executorService, new Consumer<Frame>() {
@@ -116,16 +117,16 @@ public class Vision {
                         Bitmap bitmap = vuforia.convertFrameToBitmap(frame);
 
                         if (bitmap != null) {
-                            double percentageOrange = calcOrangeValue(bitmap,125,292,118,88);
+                            double percentageOrange = calcOrangeValue(bitmap, 125, 292, 118, 88);
                             //243 380
 
-                            Log.d("Vision",Double.toString(percentageOrange));
-                            if(percentageOrange > 900){
-                                resultLocation[0] = Location.C;
-                            }else if(percentageOrange < 900 && percentageOrange > 0){
-                                resultLocation[0] = Location.B;
-                            }else{
-                                resultLocation[0] = Location.A;
+                            Log.d("Vision", Double.toString(percentageOrange));
+                            if (percentageOrange > 900) {
+                                resultTargetGoal[0] = TargetGoal.C;
+                            } else if (percentageOrange < 900 && percentageOrange > 0) {
+                                resultTargetGoal[0] = TargetGoal.B;
+                            } else {
+                                resultTargetGoal[0] = TargetGoal.A;
                             }
 
 //                            updateBitmapWithBoundingBoxes(bitmap,125,292,118,88);
@@ -140,11 +141,11 @@ public class Vision {
                 resultAvaliable.block();
             }
 
-            Log.d("Vision", "RESULT " + resultLocation[0].toString());
+            Log.d("Vision", "RESULT " + resultTargetGoal[0].toString());
 
-            return resultLocation[0];
+            return resultTargetGoal[0];
         }
-        return Location.UNKNOWN;
+        return TargetGoal.UNKNOWN;
     }
 
     private void initVuforia() {
@@ -163,7 +164,7 @@ public class Vision {
             //  Instantiate the Vuforia engine
             vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
-            Log.d("CAMERA",vuforia.getCameraName().toString());
+            Log.d("CAMERA", vuforia.getCameraName().toString());
             vuforia.enableConvertFrameToBitmap();
         } catch (Exception e) {
             Log.d("VUFORIA", e.toString());
