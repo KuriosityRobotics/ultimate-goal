@@ -74,7 +74,11 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             robot.drivetrain.weakBrake = false;
 
-        //    robot.drivetrain.setMovements(0, 0, 0);
+            robot.drivetrain.setMovements(0, 0, 0);
+
+            hasAlignedInitial = false;
+            hasAlignedUsingVision = false;
+            isDoneAiming = false;
         } else if (!isAimBotActive && activeToggle) {
             activeToggle = false;
 
@@ -88,12 +92,12 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         }
 
         if (activeToggle) {
-    //        robot.drivetrain.setMovements(0, 0, 0);
+            //        robot.drivetrain.setMovements(0, 0, 0);
 
             hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
             aimShooter(target, robot.visionModule.getLocationData());
-            //           shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
+            shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
             if (queuedIndexes > 0) {
                 if (hopperModule.requestRingIndex()) {
@@ -117,7 +121,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public void aimShooter(TowerGoal target, GoalFinder.GoalLocationData loc) {
         double distanceToTargetCenterRobot = distanceToTarget(target);
         angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
-        turnToGoal(target, loc, 0);
+        turnToGoal(target, loc, angleOffset);
 
         double distanceToTarget = distanceToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
         distanceSam = distanceToTarget;
@@ -148,17 +152,40 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     }
 
     private double calculateAngleDelta(double yaw) {
-        return  Math.toDegrees(yaw) > 1 ? Math.tanh(Math.toDegrees(yaw)) : 0;
+        return Math.toDegrees(yaw) > 1 ? Math.tanh(Math.toDegrees(yaw)) : 0;
     }
 
+    boolean hasAlignedInitial = false;
+    boolean hasAlignedUsingVision = false;
+    boolean isDoneAiming = false;
 
     private void turnToGoal(TowerGoal target, GoalFinder.GoalLocationData loc, double offset) {
-        if (loc != null) {
-//            robot.drivetrain.turnMovement = calculateAngleDelta(loc.getYaw() + offset);
-            robot.drivetrain.setBrakeHeading(calculateAngleDelta(loc.getYaw()) + robot.drivetrain.brakeHeading);
+        if (!hasAlignedInitial) {
+            robot.drivetrain.setBrakeHeading(headingToTarget(target));
+
+            if (Math.abs(angleWrap(headingToTarget(target) - robot.drivetrain.getCurrentHeading())) < Math.toRadians(5)) {
+                hasAlignedInitial = true;
+            }
         }
-//        else
-//            robot.drivetrain.setBrakeHeading(headingToTarget(target) + (robot.drivetrain.brakeHeading + offset));
+
+        if (!hasAlignedUsingVision && hasAlignedInitial) {
+
+            double yawOffset = loc.getYaw();
+            robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + yawOffset);
+
+            if (yawOffset < Math.toRadians(1)) {
+                hasAlignedUsingVision = true;
+            }
+        }
+
+        if (!isDoneAiming && hasAlignedUsingVision) {
+            robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + offset * 0.5);
+            isDoneAiming = true;
+        }
+
+        if (isDoneAiming) {
+            robot.drivetrain.setMovements(0, 0, 0);
+        }
     }
 
     /**
@@ -370,6 +397,9 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         data.add("Distance: d" + distanceSam);
         data.add("angleOffset: " + angleOffset);
         data.add("are we using vision for aim: " + (robot.visionModule.goalFinder.getLocationData() != null));
+        data.add("hasAlignedInitial: " + hasAlignedInitial);
+        data.add("hasAlignedUsingVision: " + hasAlignedUsingVision);
+        data.add("isDoneAiming: " + isDoneAiming);
         return data;
     }
 

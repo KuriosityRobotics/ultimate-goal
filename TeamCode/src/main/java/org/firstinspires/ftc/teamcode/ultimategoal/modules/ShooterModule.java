@@ -61,8 +61,8 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     @Override
     public boolean initCycle() {
-        flyWheel1.setVelocityPIDFCoefficients(4, 0.3, 0, 11.7);
-        flyWheel2.setVelocityPIDFCoefficients(4, 0.3, 0, 11.7);
+        flyWheel1.setVelocityPIDFCoefficients(4.0,0.3,0,11.7);
+        flyWheel2.setVelocityPIDFCoefficients(4.0,0.3,0,11.7);
         return true; // No iterative init required
     }
 

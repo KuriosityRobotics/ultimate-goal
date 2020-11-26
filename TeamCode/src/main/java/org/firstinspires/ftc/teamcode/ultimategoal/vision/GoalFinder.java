@@ -61,7 +61,7 @@ public class GoalFinder extends OpenCvPipeline {
         }
 
         public String toString() {
-            return String.format("Angle (degrees, euler xy): {%f, %f}, Location (in pixels): {%f, %f}", getYaw(), getPitch(), getX(), getY());
+            return String.format("Angle (radians, euler xy): {%f, %f}, Location (in pixels): {%f, %f}", getYaw(), getPitch(), getX(), getY());
         }
     }
 
@@ -82,6 +82,27 @@ public class GoalFinder extends OpenCvPipeline {
             if (maxVal < contourArea) {
                 maxVal = contourArea;
                 maxValIdx = contourIdx;
+            }
+        }
+
+        return maxValIdx;
+    }
+
+
+    static int closestToPoint(final List<MatOfPoint> contours, Point point) {
+        if(contours.size() == 0)
+            return -1;
+
+        double closest = 0;
+        int maxValIdx = 0;
+
+        for (int i = 0; i < contours.size(); i++) {
+            Moments moments = Imgproc.moments(contours.get(i));
+            double distanceToCentre = Math.hypot(point.x - (moments.m10 / moments.m00), point.y - (moments.m01 / moments.m00));
+
+            if(closest > distanceToCentre) {
+                closest = distanceToCentre;
+                maxValIdx = i;
             }
         }
 
@@ -127,8 +148,10 @@ public class GoalFinder extends OpenCvPipeline {
      * @return an int which represents the calculated number of rings
      * @see GoalLocationData
      */
-    public Mat processFrame(final Mat input, boolean shouldWriteToImage, boolean isBlue) {
+    public Mat processFrame(Mat input, boolean shouldWriteToImage, boolean isBlue) {
         Imgproc.resize(input, input, new Size(480, 270));
+        input = input.submat(new Rect(new Point(0, 0), new Point(input.width(), 2*(input.height()/3f))));
+
         Imgproc.cvtColor(input, input, COLOR_RGB2HSV);
 
         Point goalLocation;
@@ -149,20 +172,21 @@ public class GoalFinder extends OpenCvPipeline {
 //            Core.inRange(input, new Scalar(110, 50, 50), new Scalar(130, 255, 255), mask);
 //        }
 
-         Core.inRange(input, new Scalar(0, 0, 0), new Scalar(255, 255, 20), mask);
-        input.copyTo(input, mask);
+        Core.inRange(input, new Scalar(0, 0, 0), new Scalar(255, 255, 25), mask);
 
-        Imgproc.morphologyEx(mask, mask, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(3, 3)));
+//        Imgproc.morphologyEx(mask, mask, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(5, 5)));
+        input.copyTo(input, mask);
 
         List<MatOfPoint> contours = new ArrayList<>(); // List for storing contours
         findContours(mask, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE); // Find all the contours (edges) on the mask
+//        int largestContourIndex = closestToPoint(contours, new Point(input.width() / 2f, input.height() / 2f)); // Find the index of contours of the largest contour
         int largestContourIndex = largestContour(contours); // Find the index of contours of the largest contour
 
         Imgproc.cvtColor(input, input, COLOR_HSV2RGB);
 
         if (largestContourIndex > -1 && largestContourIndex < contours.size() && contours.get(largestContourIndex) != null) { // Do we even have contours?
             Rect contourBoundingBox = Imgproc.boundingRect(contours.get(largestContourIndex)); // Draw a bounding box around the largest contour
-            if (contourBoundingBox.area() > 0.0008 * input.size().area()) { // Min size of contour relative to area of image. Using area of BB because mat.size.area is slow
+            if (contourBoundingBox.area() > 0.0008 * input.size().area() || true) { // Min size of contour relative to area of image. Using area of BB because mat.size.area is slow
                 Moments moments = Imgproc.moments(contours.get(largestContourIndex)); // Calculate the average "centre of mass" of the enclosed area
                 double avgX = moments.m10 / moments.m00;
                 double avgY = moments.m01 / moments.m00;
@@ -176,20 +200,25 @@ public class GoalFinder extends OpenCvPipeline {
                 loc = new GoalLocationData(yaw, pitch, goalLocation.x, goalLocation.y);
 
                 if (shouldWriteToImage) {
-                    Imgproc.circle(input, goalLocation, 3, ORANGE);
-                    Imgproc.putText(input, String.valueOf((int) Math.toDegrees(loc.yaw)), centre, FONT_HERSHEY_TRIPLEX, 1, ORANGE);
-                    Imgproc.line(input, new Point(centre.x, centre.y * 2), centre, ORANGE, 2);
-                    Imgproc.line(input, new Point(centre.x, centre.y * 2), new Point(loc.x, centre.y), ORANGE, 2);
-                    Imgproc.drawContours(input, contours, largestContourIndex, ORANGE, 1, LINE_8, hierarchy, 0);
+                    Imgproc.circle(mask, goalLocation, 3, ORANGE);
+                    Imgproc.putText(mask, String.valueOf((int) Math.toDegrees(loc.yaw)), centre, FONT_HERSHEY_TRIPLEX, 1, ORANGE);
+                    Imgproc.line(mask, new Point(centre.x, centre.y * 2), centre, ORANGE, 2);
+                    Imgproc.line(mask, new Point(centre.x, centre.y * 2), new Point(loc.x, centre.y), ORANGE, 2);
+
+                    for (int i = 0; i < contours.size(); i++) {
+                        Imgproc.drawContours(input, contours, i, ORANGE, 1, LINE_8, hierarchy, 0);
+                    }
                 }
             }
         }
         hierarchy.release();
-        mask.release();
         contours.forEach(Mat::release);
+        input.copyTo(input, mask);
+        input.release();
+
 
         this.locationData = loc;
-        return input;
+        return mask;
     }
 }
 
