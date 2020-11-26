@@ -63,7 +63,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
         if (robot.shooter.isAimBotActive) {
             if (g1b.isToggled(gamepad1.b)) {
-                robot.shooter.queueRingIndex();
+                robot.shooter.queueIndexThreeRings();
             }
         } else {
             if (g2x.isToggled(gamepad2.x)) {

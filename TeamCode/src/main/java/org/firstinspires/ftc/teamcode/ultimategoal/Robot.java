@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.ActionExecutor;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 public class Robot extends ModuleCollection {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
@@ -54,6 +55,10 @@ public class Robot extends ModuleCollection {
     public final static boolean WILL_FILE_DUMP = false;
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode) {
+        this(hardwareMap, telemetry, linearOpMode, new Point(0, 0));
+    }
+
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode, Point startingPosition) {
         this.hardwareMap = hardwareMap;
         this.linearOpMode = linearOpMode;
 
@@ -61,7 +66,7 @@ public class Robot extends ModuleCollection {
         fileDump = new FileDump();
 
         initHubs();
-        initialize();
+        initialize(startingPosition);
 
         actionExecutor = new ActionExecutor(this);
     }
@@ -97,9 +102,9 @@ public class Robot extends ModuleCollection {
         }
     }
 
-    private void initialize() {
+    private void initialize(Point startingPosition) {
         // Add individual modules into the array here
-        this.drivetrain = new Drivetrain(this, true);
+        this.drivetrain = new Drivetrain(this, true, startingPosition);
         this.shooter = new Shooter(this, true);
 
         this.intakeModule = new IntakeModule(this, true);

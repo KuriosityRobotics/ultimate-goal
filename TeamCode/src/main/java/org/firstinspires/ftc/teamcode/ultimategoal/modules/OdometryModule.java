@@ -32,10 +32,18 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     private final static double M_ENCODER_DIST_FROM_CENTER = 4.5;
 
     public OdometryModule(Robot robot, boolean isOn) {
+        this(robot, isOn, new Point(0, 0));
+    }
+
+    public OdometryModule(Robot robot, boolean isOn, Point startingPosition) {
         robot.fileDump.registerProvider(this);
         robot.telemetryDump.registerProvider(this);
+
         this.robot = robot;
         this.isOn = isOn;
+
+        this.worldX = startingPosition.x;
+        this.worldY = startingPosition.y;
     }
 
     public void initModules() {
