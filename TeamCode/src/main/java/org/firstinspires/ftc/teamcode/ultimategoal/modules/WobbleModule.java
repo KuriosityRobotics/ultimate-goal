@@ -16,7 +16,7 @@ public class WobbleModule implements Module, TelemetryProvider {
     boolean isOn;
 
     // States
-    public boolean isClawClamped;
+    public boolean isClawClamped = true;
     public WobbleArmPosition wobbleArmPosition = WobbleArmPosition.RAISED;
 
     private int wobbleEncoderTarget;
@@ -44,12 +44,14 @@ public class WobbleModule implements Module, TelemetryProvider {
     }
 
     public void initModules() {
-        wobbleMotor = (DcMotorEx)robot.getDcMotor("wobbleMotor");
+        wobbleMotor = (DcMotorEx) robot.getDcMotor("wobbleMotor");
 
         wobbleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         wobbleMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         wobbleClaw = robot.getServo("wobbleClaw");
+
+        wobbleClaw.setPosition(CLAW_CLAMP_POSITION);
     }
 
     public boolean initCycle() {
@@ -81,25 +83,6 @@ public class WobbleModule implements Module, TelemetryProvider {
         double rawValue = Range.clip((wobbleMotor.getCurrentPosition() - wobbleEncoderTarget) / 100.0, -1.0, 1.0);
 
         wobbleMotor.setPower(rawValue * 0.5);
-
-//
-//        wobbleMotor.setTargetPosition(wobbleEncoderTarget);
-//        while(wobbleMotor.isBusy())
-//        if(wobbleMotor.isBusy()){
-//            wobbleMotor.setPower(0.5);
-//        }else{
-//            wobbleMotor.setPower(0);
-//        }
-//        if (wobbleEncoderTarget == WOBBLE_RAISED_POSITION || wobbleEncoderTarget == WOBBLE_LOWERED_POSITION){
-//            if (Math.abs(wobbleMotor.getCurrentPosition() - wobbleEncoderTarget) < 10){
-//                wobbleMotor.setPower(0);
-//            }
-//        } else{
-//            wobbleMotor.setPower((wobbleMotor.getCurrentPosition() - wobbleEncoderTarget) / 100.0);
-    }
-
-    public void setWobbleArmPosition(WobbleArmPosition position) {
-        wobbleArmPosition = position;
     }
 
     public void nextArmPosition() {

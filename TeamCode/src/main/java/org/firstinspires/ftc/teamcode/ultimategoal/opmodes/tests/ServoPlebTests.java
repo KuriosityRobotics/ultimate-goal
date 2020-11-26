@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.ArrayList;
 
+@Disabled
 @TeleOp
 public class ServoPlebTests extends LinearOpMode {
     Servo leftLock;

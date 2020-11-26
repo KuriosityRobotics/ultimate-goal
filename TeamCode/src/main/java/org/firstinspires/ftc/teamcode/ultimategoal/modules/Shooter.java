@@ -20,6 +20,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     // States
     public ITarget target = BLUE_HIGH;
+    private ITarget oldTarget = target;
     public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
     public int queuedIndexes = 0;
 
@@ -67,9 +68,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             robot.drivetrain.setMovements(0, 0, 0);
 
-            hasAlignedInitial = false;
-            hasAlignedUsingVision = false;
-            isDoneAiming = false;
+            resetAiming();
         } else if (!isAimBotActive && activeToggle) {
             activeToggle = false;
 
@@ -83,6 +82,11 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         }
 
         if (activeToggle) {
+            if (oldTarget != target) {
+                resetAiming();
+                oldTarget = target;
+            }
+
             robot.drivetrain.setMovements(0, 0, 0);
 
             hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
@@ -90,7 +94,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             aimShooter(target, robot.visionModule.getLocationData());
             shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
-            if (queuedIndexes > 0 && isDoneAiming) {
+            if (queuedIndexes > 0 && isCloseEnough) {
                 if (hopperModule.requestRingIndex()) {
                     queuedIndexes--;
                 }
@@ -102,6 +106,12 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         // Update both modules
         hopperModule.update();
         shooterModule.update();
+    }
+
+    private void resetAiming() {
+        hasAlignedInitial = false;
+        hasAlignedUsingVision = false;
+        isDoneAiming = false;
     }
 
     public void toggleColour() {
@@ -130,6 +140,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      */
     public void aimShooter(ITarget target, GoalFinder.GoalLocationData loc) {
         double distanceToTargetCenterRobot = distanceToTarget(target);
+
         angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
         turnToGoal(target, loc, angleOffset);
 
@@ -183,6 +194,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     boolean hasAlignedInitial = false;
     boolean hasAlignedUsingVision = false;
     boolean isDoneAiming = false;
+    boolean isCloseEnough = false;
 
     private void turnToGoal(ITarget target, GoalFinder.GoalLocationData loc, double offset) {
         if (!hasAlignedInitial) {
@@ -194,23 +206,32 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         }
 
         if (!hasAlignedUsingVision && hasAlignedInitial) {
+            if (target.isPowershot()) {
+                hasAlignedUsingVision = true; //TODO
+            } else {
+                double yawOffset = loc.getYaw();
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + yawOffset);
 
-            double yawOffset = loc.getYaw();
-            robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + yawOffset);
-
-            if (yawOffset < Math.toRadians(1)) {
-                hasAlignedUsingVision = true;
+                if (yawOffset < Math.toRadians(1)) {
+                    hasAlignedUsingVision = true;
+                }
             }
         }
 
         if (!isDoneAiming && hasAlignedUsingVision) {
-            robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + offset * 0.5);
+            if (target.isPowershot()) {
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + offset * 0);
+            } else {
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + offset * 0.5);
+            }
             isDoneAiming = true;
         }
 
         if (isDoneAiming) {
             robot.drivetrain.setMovements(0, 0, 0);
         }
+
+        isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(5);
     }
 
     /**

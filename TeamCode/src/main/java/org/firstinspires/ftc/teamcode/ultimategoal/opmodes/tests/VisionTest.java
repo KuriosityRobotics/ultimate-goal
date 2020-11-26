@@ -14,6 +14,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.Locale;
 
+@Disabled
 @TeleOp
 public class VisionTest extends LinearOpMode {
     OpenCvWebcam webcam;

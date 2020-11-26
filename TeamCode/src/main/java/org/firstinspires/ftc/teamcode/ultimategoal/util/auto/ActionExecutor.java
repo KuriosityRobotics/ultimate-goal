@@ -4,6 +4,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class ActionExecutor implements TelemetryProvider {
     private Robot robot;
@@ -21,11 +22,16 @@ public class ActionExecutor implements TelemetryProvider {
      * Update execution on all actions registered as currently executing.
      */
     public void updateExecution() {
-        for (Action action : executingActions) {
-            if (action.executeAction(robot)) {
-                executingActions.remove(action);
+        Iterator<Action> actionsItr = executingActions.iterator();
+        while (actionsItr.hasNext()) {
+            if (actionsItr.next().executeAction(robot)) {
+                actionsItr.remove();
             }
         }
+    }
+
+    public boolean isDoneExecutingQueue() {
+        return executingActions.isEmpty();
     }
 
     /**
@@ -36,8 +42,10 @@ public class ActionExecutor implements TelemetryProvider {
      * @see #updateExecution()
      */
     public void registerActions(ArrayList<Action> actions) {
-        for (Action action : actions) {
-            registerAction(action);
+        if (actions != null) {
+            for (Action action : actions) {
+                registerAction(action);
+            }
         }
     }
 

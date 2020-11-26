@@ -36,6 +36,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private static final double NON_LINEAR_P = 0.19;
     private static final double MOMENTUM_FACTOR = 0.0017;
     private static final double INVERSE_DISTANCE_FACTOR = 0.5;
+    private static final double SLOW_MOMENTUM_FACTOR = 0;
 
     // Non-linear angle controller factors
     private static final double TURN_NON_LINEAR_P = 1;
@@ -180,7 +181,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotVelocityHeading);
 
         double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
-        scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
+        if (isSlowMode) {
+            scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * SLOW_MOMENTUM_FACTOR), -1, 1);
+        } else {
+            scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
+        }
 
         if (isSlowMode) {
             xMovement = Range.clip(xPower * scale, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
@@ -257,7 +262,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
             velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotVelocityHeading);
 
             double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
-            scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
+            if (isSlowMode) {
+                scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * SLOW_MOMENTUM_FACTOR), -1, 1);
+            } else {
+                scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
+            }
 
             if (isSlowMode) {
                 xMovement = Range.clip(((xPower * scale) > SLOW_MODE_FACTOR ? 1 : ((xPower * scale) / SLOW_MODE_FACTOR)), -moveSpeed, moveSpeed);
@@ -311,6 +320,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     public void setBrakeHeading(double brakeHeading) {
         this.brakeHeading = brakeHeading;
+    }
+
+    public double getBrakeHeading() {
+        return this.brakeHeading;
     }
 
     @Override
