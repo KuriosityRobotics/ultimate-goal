@@ -20,10 +20,6 @@ import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 
@@ -50,7 +46,7 @@ public class Vision {
         initVuforia();
     }
 
-    public static double calcPercentageOrange(Bitmap bitmap, int x, int y, int width, int height) {
+    public static double calcOrangeValue(Bitmap bitmap, int x, int y, int width, int height) {
         double sum = 0;
         int endX = x + width;
         int endY = y + height;
@@ -118,7 +114,7 @@ public class Vision {
                         Bitmap bitmap = vuforia.convertFrameToBitmap(frame);
 
                         if (bitmap != null) {
-                            double percentageOrange = calcPercentageOrange(bitmap,185,465,185,145);
+                            double percentageOrange = calcOrangeValue(bitmap,185,465,185,145);
                             //360 600
 
                             Log.d("Vision",Double.toString(percentageOrange));
