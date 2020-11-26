@@ -23,6 +23,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     Toggle g1a = new Toggle();
     Toggle g1b = new Toggle();
     Toggle g2x = new Toggle();
+    Toggle g2a = new Toggle();
 
     private static final double SLOW_MODE_SCALE_FACTOR = 0.3;
 
@@ -66,7 +67,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
                 robot.shooter.queueIndexThreeRings();
             }
         } else {
-            if (g2x.isToggled(gamepad2.x)) {
+            if (g1x.isToggled(gamepad1.x)) {
                 if (robot.shooter.getFlyWheelTargetSpeed() > 0) {
                     robot.shooter.setFlyWheelSpeed(0);
                 } else {
@@ -77,11 +78,13 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     private void updateWobbleStates() {
-        if (g1x.isToggled(gamepad1.x)) {
+        if (g2x.isToggled(gamepad2.x)) {
             robot.wobbleModule.isClawClamped = !robot.wobbleModule.isClawClamped;
         }
 
-        robot.wobbleModule.wobbleTargetPosition -= gamepad2.right_stick_y;
+        if (g2a.isToggled(gamepad2.a)) {
+            robot.wobbleModule.nextArmPosition();
+        }
     }
 
     private void updateIntakeStates() {

@@ -117,8 +117,7 @@ public class Robot extends ModuleCollection {
 
         // Initialize modules
         initModules(); // Initial init
-        while (!initCycle()) {
-        } // Cycle init
+        while (!initCycle()) {} // Cycle init
 
         // Start the thread for executing modules.
         moduleExecutor = new ModuleExecutor(this);

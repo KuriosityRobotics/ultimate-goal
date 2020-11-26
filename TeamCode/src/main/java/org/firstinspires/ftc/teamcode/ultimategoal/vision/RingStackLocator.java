@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.vision;
 
+import org.firstinspires.ftc.teamcode.ultimategoal.util.Target;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 import static org.opencv.imgproc.Imgproc.*;
 
 public class RingStackLocator {
+    public static TargetZone targetZone = TargetZone.TARGET_ZONE_UNKNOWN;
 
     static final Scalar RED = new Scalar(0, 0, 255);
     static final Scalar GREEN = new Scalar(0, 255, 0);
@@ -96,7 +98,9 @@ public class RingStackLocator {
      * @return an enum representing the target zone
      */
     public static TargetZone processFrame(final Mat input, boolean shouldWriteToImage) {
-        Imgproc.resize(input, input, new Size(480, 270));
+        Mat input2 = new Mat();
+
+        Imgproc.resize(input, input2, new Size(480, 270));
 
         final int IMAGE_WIDTH = input.width();
         final int IMAGE_HEIGHT = input.height();
@@ -135,15 +139,19 @@ public class RingStackLocator {
         inputHSV.release();
         hierarchy.release();
         mask.release();
-
+        input2.release();
         switch (numRings) {
             case 0:
+                targetZone = TargetZone.TARGET_ZONE_A;
                 return TargetZone.TARGET_ZONE_A;
             case 1:
+                targetZone = TargetZone.TARGET_ZONE_B;
                 return TargetZone.TARGET_ZONE_B;
             case 4:
+                targetZone = TargetZone.TARGET_ZONE_C;
                 return TargetZone.TARGET_ZONE_C;
             default:
+                targetZone = TargetZone.TARGET_ZONE_UNKNOWN;
                 return TargetZone.TARGET_ZONE_UNKNOWN;
         }
     }

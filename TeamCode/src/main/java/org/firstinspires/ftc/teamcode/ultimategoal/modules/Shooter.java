@@ -35,11 +35,12 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private static final double DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
     private static final double DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0372
 
-    public double distanceSam;
-    public double angleOffset;
     // Powershot distance to flap position -1.75E-04*x + 0.664
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.664;
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -1.75e-4;
+
+    public double distanceSam;
+    public double angleOffset;
 
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -89,7 +90,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             aimShooter(target, robot.visionModule.getLocationData());
             shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
-            if (queuedIndexes > 0) {
+            if (queuedIndexes > 0 && isDoneAiming) {
                 if (hopperModule.requestRingIndex()) {
                     queuedIndexes--;
                 }
@@ -312,6 +313,12 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         if (isAimBotActive) {
 //            queuedIndexes++;
             queuedIndexes = 3;
+        }
+    }
+
+    public void queueIndex() {
+        if (isAimBotActive) {
+            queuedIndexes = 1;
         }
     }
 
