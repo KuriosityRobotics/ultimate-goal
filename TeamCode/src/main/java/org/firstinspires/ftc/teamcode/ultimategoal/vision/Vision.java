@@ -14,6 +14,7 @@ import com.vuforia.Frame;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.function.Consumer;
 import org.firstinspires.ftc.robotcore.external.function.Continuation;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
@@ -24,11 +25,12 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 
 public class Vision {
-    private final String VUFORIA_KEY = "AbSCRq//////AAAAGYEdTZut2U7TuZCfZGlOu7ZgOzsOlUVdiuQjgLBC9B3dNvrPE1x/REDktOALxt5jBEJJBAX4gM9ofcwMjCzaJKoZQBBlXXxrOscekzvrWkhqs/g+AtWJLkpCOOWKDLSixgH0bF7HByYv4h3fXECqRNGUUCHELf4Uoqea6tCtiGJvee+5K+5yqNfGduJBHcA1juE3kxGMdkqkbfSjfrNgWuolkjXR5z39tRChoOUN24HethAX8LiECiLhlKrJeC4BpdRCRazgJXGLvvI74Tmih9nhCz6zyVurHAHttlrXV17nYLyt6qQB1LtVEuSCkpfLJS8lZWS9ztfC1UEfrQ8m5zA6cYGQXjDMeRumdq9ugMkS";
+    private final String VUFORIA_KEY = "AblAnwD/////AAABmRHXA7f65ErFhMbZmr+8xjArZA83Y+l2nal3r90Dmzl6nc0hUj+zgUCK3sF8PxkhDDJkMsSJSl05Q3U0Bjz6HeydKoGMwsvF8x2IbUto/6gbCm8WqDkvfBjzDeVL5Y3XCkczOi1F8dmNt1JkJQdX4bJokLrzEBQnQOF6mwxI22M2eSobTgyHSrZk4hl6jTXVSO9ckVtMfVjV/pryDQMnnJDFMQ/64u+uhxtnsMZKgd9UlORAMwsSL9Wwk1ixoWeUsLzZS4w/5b4GbupBTsY/teWORJo0AulqTI+rCJRhKzQcZRlG7v5jt2f3es7y0uXbxT5QrQ06tNmvhEfjAIduF5eSbPZ/3QjQnFgtRuyMW0ix";
 
     public enum Location {
         A, B, C, UNKNOWN
     }
+    WebcamName webcamName;
 
     File captureDirectory = AppUtil.ROBOT_DATA_DIR;
     int captureCounter = 0;
@@ -114,8 +116,8 @@ public class Vision {
                         Bitmap bitmap = vuforia.convertFrameToBitmap(frame);
 
                         if (bitmap != null) {
-                            double percentageOrange = calcOrangeValue(bitmap,185,465,185,145);
-                            //360 600
+                            double percentageOrange = calcOrangeValue(bitmap,125,292,118,88);
+                            //243 380
 
                             Log.d("Vision",Double.toString(percentageOrange));
                             if(percentageOrange > 900){
@@ -125,7 +127,8 @@ public class Vision {
                             }else{
                                 resultLocation[0] = Location.A;
                             }
-//                            updateBitmapWithBoundingBoxes(bitmap,185,465,185,145);
+
+//                            updateBitmapWithBoundingBoxes(bitmap,125,292,118,88);
 //                            captureFrameToFile(bitmap);
                         }
 
@@ -136,6 +139,7 @@ public class Vision {
 
                 resultAvaliable.block();
             }
+
             Log.d("Vision", "RESULT " + resultLocation[0].toString());
 
             return resultLocation[0];
@@ -148,16 +152,21 @@ public class Vision {
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          */
         try {
-            VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+            webcamName = linearOpMode.hardwareMap.get(WebcamName.class, "Webcam 1");
+
+            int cameraMonitorViewId = linearOpMode.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", linearOpMode.hardwareMap.appContext.getPackageName());
+            VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
+            parameters.cameraName = webcamName;
 
             parameters.vuforiaLicenseKey = VUFORIA_KEY;
-
             //  Instantiate the Vuforia engine
-            this.vuforia = ClassFactory.getInstance().createVuforia(parameters);
+            vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
+            Log.d("CAMERA",vuforia.getCameraName().toString());
             vuforia.enableConvertFrameToBitmap();
         } catch (Exception e) {
-
+            Log.d("VUFORIA", e.toString());
         }
     }
 }
