@@ -115,9 +115,6 @@ public class Vision {
                 vuforia.getFrameOnce(Continuation.create(executorService, new Consumer<Frame>() {
                     @Override
                     public void accept(Frame frame) {
-                        //x = width 1280
-                        //y = height 720
-
                         Bitmap bitmap = vuforia.convertFrameToBitmap(frame);
 
                         if (bitmap != null) {
@@ -144,8 +141,7 @@ public class Vision {
                 resultAvaliable.block();
             }
             Log.d("Vision", "RESULT " + resultLocation[0].toString());
-            linearOpMode.telemetry.addLine(resultLocation[0].toString());
-            linearOpMode.telemetry.update();
+
             return resultLocation[0];
         }
         return Location.UNKNOWN;
@@ -159,7 +155,6 @@ public class Vision {
             VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
             parameters.vuforiaLicenseKey = VUFORIA_KEY;
-//            parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
 
             //  Instantiate the Vuforia engine
             this.vuforia = ClassFactory.getInstance().createVuforia(parameters);
