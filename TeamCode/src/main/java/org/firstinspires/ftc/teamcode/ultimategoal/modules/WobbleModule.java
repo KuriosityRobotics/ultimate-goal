@@ -14,7 +14,11 @@ public class WobbleModule implements Module, TelemetryProvider {
 
     // States
     public boolean isClawClamped;
-    public int wobbleTargetPosition;
+    public WobbleArmPosition wobbleArmPosition;
+
+    private double wobbleEncoderTarget;
+
+    public enum WobbleArmPosition {RAISED, DEPOSIT, LOWERED}
 
     // Actuators
     DcMotor wobbleMotor;
@@ -24,8 +28,9 @@ public class WobbleModule implements Module, TelemetryProvider {
     private static final double CLAW_CLAMP_POSITION = 0.67;
     private static final double CLAW_OPEN_POSITION = 0.2;
 
-    public static final int WOBBLE_RAISED_POSITION = 0; // TODO tune
-    public static final int WOBBLE_LOWERED_POSITION = 100;
+    public static final int WOBBLE_RAISED_POSITION = 0;
+    public static final int WOBBLE_LOWERED_POSITION = -620;
+    public static final int WOBBLE_WALL_DROP_POSITION = -300;
 
     public WobbleModule(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -38,9 +43,8 @@ public class WobbleModule implements Module, TelemetryProvider {
         wobbleMotor = robot.getDcMotor("wobbleMotor");
 
         wobbleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        wobbleMotor.setTargetPosition(0);
-        wobbleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        wobbleMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        wobbleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         wobbleClaw = robot.getServo("wobbleClaw");
     }
@@ -56,14 +60,36 @@ public class WobbleModule implements Module, TelemetryProvider {
             wobbleClaw.setPosition(CLAW_OPEN_POSITION);
         }
 
-        wobbleMotor.setTargetPosition(wobbleTargetPosition);
+        switch (wobbleArmPosition) {
+            case RAISED:
+                wobbleEncoderTarget = WOBBLE_RAISED_POSITION;
+                break;
+            case LOWERED:
+                wobbleEncoderTarget = WOBBLE_LOWERED_POSITION;
+                break;
+            case DEPOSIT:
+                wobbleEncoderTarget = WOBBLE_WALL_DROP_POSITION;
+                break;
+        }
+
+        wobbleMotor.setPower((wobbleMotor.getCurrentPosition() - ((int) wobbleEncoderTarget)) / 100);
     }
 
-    public void setWobbleArmPosition(boolean lowerWobble) {
-        if (lowerWobble) {
-            wobbleTargetPosition = WOBBLE_LOWERED_POSITION;
-        } else {
-            wobbleTargetPosition = WOBBLE_RAISED_POSITION;
+    public void setWobbleArmPosition(WobbleArmPosition position) {
+        wobbleArmPosition = position;
+    }
+
+    public void nextArmPosition() {
+        switch (wobbleArmPosition) {
+            case RAISED:
+                wobbleArmPosition = WobbleArmPosition.DEPOSIT;
+                break;
+            case LOWERED:
+                wobbleArmPosition = WobbleArmPosition.RAISED;
+                break;
+            case DEPOSIT:
+                wobbleArmPosition = WobbleArmPosition.LOWERED;
+                break;
         }
     }
 
@@ -73,13 +99,14 @@ public class WobbleModule implements Module, TelemetryProvider {
 
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("Wobble target position: " + wobbleTargetPosition);
+        data.add("Wobble target position: " + wobbleArmPosition);
+        data.add("Wobble current position: " + wobbleMotor.getCurrentPosition());
         data.add("Is claw clamped: " + isClawClamped);
         return data;
     }
 
     public String getName() {
-        return "IntakeModule";
+        return "WobbleModule";
     }
 }
 

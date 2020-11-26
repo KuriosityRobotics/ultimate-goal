@@ -30,15 +30,19 @@ public class PrimitiveTeleOp extends LinearOpMode implements TelemetryProvider {
         initRobot();
 
         robot.telemetryDump.registerProvider(this);
+
         waitForStart();
 
-        robot.startModules();
+        if (opModeIsActive()) {
+            robot.startModules();
+        }
 
         while (opModeIsActive()) {
             updateDrivetrainStates();
             updateIntakeStates();
             updateHopperStates();
             updateShooterStates();
+
             lastUpdateTime = SystemClock.elapsedRealtime();
         }
     }

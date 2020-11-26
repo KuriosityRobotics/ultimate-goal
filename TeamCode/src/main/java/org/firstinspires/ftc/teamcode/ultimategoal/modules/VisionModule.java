@@ -2,19 +2,16 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.vision.GoalFinder;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-import java.util.ArrayList;
-
 public class VisionModule implements Module {
     OpenCvWebcam webcam;
     Robot robot;
     GoalFinder goalFinder;
-    boolean isOn = false;
+    boolean isOn;
 
     public VisionModule(Robot robot, boolean isOn) {
         this.robot = robot;

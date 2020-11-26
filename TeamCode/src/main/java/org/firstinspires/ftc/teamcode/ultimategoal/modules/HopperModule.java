@@ -60,11 +60,11 @@ public class HopperModule implements Module, TelemetryProvider {
             indexerServo.setPosition(INDEX_OPEN_POSITION);
 
             initStartTime = currentTime;
-        } else if (currentTime > initStartTime + (INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS)) {
+        } else if (currentTime > initStartTime + Math.max((INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS), HOPPER_RAISE_TIME_MS)) {
             hopperLinkage.setPosition(HOPPER_LOWERED_POSITION);
         }
 
-        return currentTime > initStartTime + (INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS) + HOPPER_LOWER_TIME_MS;
+        return currentTime > initStartTime + Math.max((INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS), HOPPER_RAISE_TIME_MS) + HOPPER_LOWER_TIME_MS;
     }
 
     private long indexTime = 0;
