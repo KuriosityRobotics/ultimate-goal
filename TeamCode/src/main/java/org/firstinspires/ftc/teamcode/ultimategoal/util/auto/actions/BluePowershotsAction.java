@@ -34,7 +34,6 @@ public class BluePowershotsAction extends Action {
     private void shootAndWait() {
         robot.shooter.queueIndex();
 
-        while (!robot.shooter.isFinishedIndexing() && robot.isOpModeActive()) {}
     }
 
     @Override

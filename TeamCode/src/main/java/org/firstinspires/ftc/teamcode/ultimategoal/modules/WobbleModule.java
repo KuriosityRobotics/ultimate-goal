@@ -28,7 +28,7 @@ public class WobbleModule implements Module, TelemetryProvider {
     Servo wobbleClaw;
 
     // Constants
-    private static final double CLAW_CLAMP_POSITION = 0.67;
+    private static final double CLAW_CLAMP_POSITION = 0.68;
     private static final double CLAW_OPEN_POSITION = 0.2;
 
     public static final int WOBBLE_RAISED_POSITION = 0;

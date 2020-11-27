@@ -192,46 +192,48 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     }
 
     boolean hasAlignedInitial = false;
-    boolean hasAlignedUsingVision = false;
+    boolean hasAlignedUsingVision = true;
     boolean isDoneAiming = false;
-    boolean isCloseEnough = false;
+    boolean isCloseEnough = true;
 
     private void turnToGoal(ITarget target, GoalFinder.GoalLocationData loc, double offset) {
-        if (!hasAlignedInitial) {
+//        if (!hasAlignedInitial) {
+//            robot.drivetrain.setBrakeHeading(headingToTarget(target));
+//
+//            if (Math.abs(angleWrap(headingToTarget(target) - robot.drivetrain.getCurrentHeading())) < Math.toRadians(5)) {
+//                hasAlignedInitial = true;
+//            }
+//            hasAlignedInitial = true;
+//        }
             robot.drivetrain.setBrakeHeading(headingToTarget(target));
 
-            if (Math.abs(angleWrap(headingToTarget(target) - robot.drivetrain.getCurrentHeading())) < Math.toRadians(5)) {
-                hasAlignedInitial = true;
-            }
-        }
+//        if (!hasAlignedUsingVision && hasAlignedInitial) {
+//            if (target.isPowershot()) {
+//                hasAlignedUsingVision = true; //TODO
+//            } else {
+//                double yawOffset = loc.getYaw();
+//                robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + yawOffset);
+//
+//                if (yawOffset < Math.toRadians(1)) {
+//                    hasAlignedUsingVision = true;
+//                }
+//            }
+//        }
+//
+//        if (!isDoneAiming && hasAlignedUsingVision) {
+//            if (target.isPowershot()) {
+//                robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + offset * 0);
+//            } else {
+//                robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + offset * 0.5);
+//            }
+//            isDoneAiming = true;
+//        }
+//
+//        if (isDoneAiming) {
+//            robot.drivetrain.setMovements(0, 0, 0);
+//        }
 
-        if (!hasAlignedUsingVision && hasAlignedInitial) {
-            if (target.isPowershot()) {
-                hasAlignedUsingVision = true; //TODO
-            } else {
-                double yawOffset = loc.getYaw();
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + yawOffset);
-
-                if (yawOffset < Math.toRadians(1)) {
-                    hasAlignedUsingVision = true;
-                }
-            }
-        }
-
-        if (!isDoneAiming && hasAlignedUsingVision) {
-            if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + offset * 0);
-            } else {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + offset * 0.5);
-            }
-            isDoneAiming = true;
-        }
-
-        if (isDoneAiming) {
-            robot.drivetrain.setMovements(0, 0, 0);
-        }
-
-        isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(5);
+//        isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(5);
     }
 
     /**
