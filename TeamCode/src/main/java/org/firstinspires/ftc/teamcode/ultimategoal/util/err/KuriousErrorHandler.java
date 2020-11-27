@@ -19,7 +19,6 @@ public class KuriousErrorHandler implements Thread.UncaughtExceptionHandler {
                 Optional.ofNullable(System.getProperty("line.separator")).orElse("\n")
         )).forEach(opMode.telemetry::addLine);
         opMode.telemetry.update();
-        opMode.stop();
         e.printStackTrace();
     }
 }
