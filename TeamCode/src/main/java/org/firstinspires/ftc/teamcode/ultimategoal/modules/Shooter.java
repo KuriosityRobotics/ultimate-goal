@@ -388,6 +388,14 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         return queuedIndexes <= 0;
     }
 
+    public boolean isIndexerPushed() {
+        return hopperModule.isIndexerPushed();
+    }
+
+    public boolean isIndexerReturned() {
+        return hopperModule.isIndexerReturned();
+    }
+
     @Override
     public boolean isOn() {
         return isOn;

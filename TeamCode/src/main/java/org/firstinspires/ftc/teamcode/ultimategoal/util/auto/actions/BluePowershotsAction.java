@@ -24,8 +24,6 @@ public class BluePowershotsAction extends Action {
         robot.shooter.nextTarget();
         shootAndWait();
 
-        robot.opModeSleep(1000);
-
         robot.shooter.isAimBotActive = false;
 
         return true;
@@ -34,6 +32,7 @@ public class BluePowershotsAction extends Action {
     private void shootAndWait() {
         robot.shooter.queueIndex();
 
+        while (!robot.shooter.isIndexerReturned() || !robot.shooter.isFinishedIndexing());
     }
 
     @Override
