@@ -108,7 +108,7 @@ public class Vision {
 
             final ExecutorService executorService = ThreadPool.getDefault();
 
-            while (linearOpMode.opModeIsActive() && SystemClock.elapsedRealtime() - startTime <= 250) {
+            while (linearOpMode.opModeIsActive() && SystemClock.elapsedRealtime()-startTime<=100) {
                 final ConditionVariable resultAvaliable = new ConditionVariable(false);
 
                 vuforia.getFrameOnce(Continuation.create(executorService, new Consumer<Frame>() {
@@ -117,19 +117,24 @@ public class Vision {
                         Bitmap bitmap = vuforia.convertFrameToBitmap(frame);
 
                         if (bitmap != null) {
-                            double percentageOrange = calcOrangeValue(bitmap, 125, 292, 118, 88);
-                            //243 380
+                            double percentageOrange = calcOrangeValue(bitmap, 120, 310, 85, 60);
+
 
                             Log.d("Vision", Double.toString(percentageOrange));
-                            if (percentageOrange > 900) {
+                            if (percentageOrange > 1000) {
                                 resultTargetGoal[0] = TargetGoal.C;
-                            } else if (percentageOrange < 900 && percentageOrange > 0) {
+                            } else if (percentageOrange < 1000 && percentageOrange > -50) {
                                 resultTargetGoal[0] = TargetGoal.B;
                             } else {
                                 resultTargetGoal[0] = TargetGoal.A;
                             }
 
-//                            updateBitmapWithBoundingBoxes(bitmap,125,292,118,88);
+//                            updateBitmapWithBoundingBoxes(bitmap,105, 287, 128, 100);
+                            if(linearOpMode.gamepad1.a){
+                                updateBitmapWithBoundingBoxes(bitmap,135, 315, 75, 60);
+
+                                captureFrameToFile(bitmap);
+                            }
 //                            captureFrameToFile(bitmap);
                         }
 
@@ -166,6 +171,8 @@ public class Vision {
 
             Log.d("CAMERA", vuforia.getCameraName().toString());
             vuforia.enableConvertFrameToBitmap();
+            linearOpMode.telemetry.addLine("DONE INITING VISION");
+            linearOpMode.telemetry.update();
         } catch (Exception e) {
             Log.d("VUFORIA", e.toString());
         }

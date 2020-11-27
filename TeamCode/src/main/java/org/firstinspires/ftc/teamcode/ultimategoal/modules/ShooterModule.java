@@ -16,14 +16,6 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
 
-    private static final double INDEX_OPEN_POSITION = .85;
-    private static final double INDEX_PUSH_POSITION = .68;
-
-    private static final int INDEXER_PUSHED_TIME_MS = 600;
-    private static final int INDEXER_RETURNED_TIME_MS = 1200;
-
-    private static final double HOPPER_UP_POSITION = 0.96;
-
     // States
     public double flyWheelTargetSpeed;
     public double shooterFlapPosition = 0.63;
@@ -57,12 +49,13 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         flyWheel1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        flyWheel1.setVelocityPIDFCoefficients(8, 0.65, 0, 11.7);
+        flyWheel2.setVelocityPIDFCoefficients(8, 0.65, 0, 11.7);
     }
 
     @Override
     public boolean initCycle() {
-        flyWheel1.setVelocityPIDFCoefficients(8, 0.65, 0, 11.7);
-        flyWheel2.setVelocityPIDFCoefficients(8, 0.65, 0, 11.7);
         return true; // No iterative init required
     }
 

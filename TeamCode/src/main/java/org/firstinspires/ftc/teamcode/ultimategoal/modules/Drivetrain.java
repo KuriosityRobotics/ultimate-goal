@@ -30,10 +30,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public boolean weakBrake = false;
 
     // Constants
-    private final static double SLOW_MODE_FACTOR = 0.3;
+    private final static double SLOW_MODE_FACTOR = 0.35;
 
     // Non-linear momentum controller factors
-    private static final double NON_LINEAR_P = 0.19;
+    private static final double NON_LINEAR_P = 0.21;
     private static final double MOMENTUM_FACTOR = 0.0017;
     private static final double INVERSE_DISTANCE_FACTOR = 0.5;
     private static final double SLOW_MOMENTUM_FACTOR = 0;
