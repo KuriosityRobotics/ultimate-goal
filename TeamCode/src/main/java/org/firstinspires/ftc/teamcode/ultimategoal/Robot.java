@@ -35,6 +35,7 @@ public class Robot extends ModuleCollection {
     private long currentTimeMilli;
 
     public HardwareMap hardwareMap;
+    public Telemetry telemetry;
     private final LinearOpMode linearOpMode;
 
     public TelemetryDump telemetryDump;
@@ -60,6 +61,7 @@ public class Robot extends ModuleCollection {
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode, Point startingPosition) {
         this.hardwareMap = hardwareMap;
+        this.telemetry = telemetry;
         this.linearOpMode = linearOpMode;
 
         this.telemetryDump = new TelemetryDump(telemetry);

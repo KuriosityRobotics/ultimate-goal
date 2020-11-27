@@ -25,8 +25,8 @@ public class HopperModule implements Module, TelemetryProvider {
     private static final double INDEX_OPEN_POSITION = 0.2075;
     private static final double INDEX_PUSH_POSITION = 0.365;
 
-    private static final int INDEXER_PUSHED_TIME_MS = 400;
-    private static final int INDEXER_RETURNED_TIME_MS = 600;
+    private static final int INDEXER_PUSHED_TIME_MS = 1000;
+    private static final int INDEXER_RETURNED_TIME_MS = 2000;
 
     private static final double HOPPER_RAISED_POSITION = 0.96;
     private static final double HOPPER_LOWERED_POSITION = 0.63; // TODO find pos
@@ -142,7 +142,7 @@ public class HopperModule implements Module, TelemetryProvider {
      * @return Whether or not the index command will be processed.
      */
     public boolean requestRingIndex() {
-        if (robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS && robot.shooter.isUpToSpeed() && !indexRing) {
+        if (isIndexerReturned() && robot.shooter.isUpToSpeed() && !indexRing) {
             indexRing = true;
             return true;
         } else {
@@ -160,6 +160,12 @@ public class HopperModule implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("Hopper position: " + hopperPosition.toString());
         data.add("Will index: " + indexRing);
+        data.add("--");
+        data.add("index time: " + indexTime);
+        data.add("current time: " + robot.getCurrentTimeMilli());
+        data.add("is indexer returned: " + isIndexerReturned());
+        data.add("is indexer pushed: " + isIndexerPushed());
+        data.add("is hopper at positoin: " + isHopperAtPosition());
         return data;
     }
 

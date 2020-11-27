@@ -207,28 +207,33 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             robot.drivetrain.setBrakeHeading(headingToTarget);
 
-            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(5)) {
+            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1)) {
                 hasAlignedInitial = true;
             }
             hasAlignedInitial = true;
         }
 
-        if (!hasAlignedUsingVision && hasAlignedInitial) {
-            if (target.isPowershot()) {
-                hasAlignedUsingVision = true; //TODO
-            } else {
-                double yawOffset = loc.getYaw();
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + yawOffset);
-
-                if (yawOffset < Math.toRadians(1)) {
-                    hasAlignedUsingVision = true;
-                }
-            }
-        }
+//        if (!hasAlignedUsingVision && hasAlignedInitial) {
+//            if (target.isPowershot()) {
+//                hasAlignedUsingVision = true; //TODO
+//            } else {
+//                if (loc != null) {
+//                    double yawOffset = loc.getYaw();
+//                    robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + yawOffset);
+//
+//                    if (yawOffset < Math.toRadians(1)) {
+//                        hasAlignedUsingVision = true;
+//                    }
+//                } else {
+//                    hasAlignedUsingVision = true;
+//                }
+//            }
+//        }
+        hasAlignedUsingVision = true;
 
         if (!isDoneAiming && hasAlignedUsingVision) {
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + offset * 0);
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + offset * 0.05);
             } else {
                 robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + offset * 0.5);
             }
@@ -385,7 +390,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      * @return If there are indexes queued.
      */
     public boolean isFinishedIndexing() {
-        return queuedIndexes <= 0;
+        return (queuedIndexes <= 0) && isIndexerReturned();
     }
 
     public boolean isIndexerPushed() {
@@ -405,13 +410,16 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("Is active: " + isAimBotActive);
+        data.add("Active toggle: " + activeToggle);
         data.add("Queued indexes: " + queuedIndexes);
         data.add("Distance: d" + distanceSam);
         data.add("angleOffset: " + angleOffset);
-        data.add("are we using vision for aim: " + (robot.visionModule.goalFinder.getLocationData() != null));
+        data.add("--");
         data.add("hasAlignedInitial: " + hasAlignedInitial);
         data.add("hasAlignedUsingVision: " + hasAlignedUsingVision);
         data.add("isDoneAiming: " + isDoneAiming);
+        data.add("isCloseEnough: " + isCloseEnough);
+        data.add("isFinishedIndexing: " + isFinishedIndexing());
         return data;
     }
 
