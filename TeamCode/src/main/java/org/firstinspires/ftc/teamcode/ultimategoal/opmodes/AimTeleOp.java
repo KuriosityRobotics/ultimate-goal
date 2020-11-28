@@ -24,8 +24,13 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     Toggle g1b = new Toggle();
     Toggle g2x = new Toggle();
     Toggle g2a = new Toggle();
-    Toggle g2y = new Toggle();
+    Toggle g1y = new Toggle();
     Toggle g1LB = new Toggle();
+    Toggle g2DR = new Toggle();
+    Toggle g2DL = new Toggle();
+    Toggle g2DU = new Toggle();
+    Toggle g2DD = new Toggle();
+    Toggle g2LB = new Toggle();
 
     private static final double SLOW_MODE_SCALE_FACTOR = 0.3;
 
@@ -60,7 +65,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     private void updateShooterStates() {
-        if(g2y.isToggled(gamepad2.y)){
+        if(g1y.isToggled(gamepad1.y)){
             robot.shooter.nextTarget();
         }
 
@@ -83,6 +88,26 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         }
         if(g1LB.isToggled(gamepad1.left_bumper)){
             robot.shooter.queueIndex();
+        }
+        if(g2DR.isToggled(gamepad2.dpad_right)){
+            robot.shooter.manualAngleCorrection += Math.toRadians(2);
+            robot.shooter.resetAiming();
+        }
+        if(g2DL.isToggled(gamepad2.dpad_left)){
+            robot.shooter.manualAngleCorrection -= Math.toRadians(2);
+            robot.shooter.resetAiming();
+        }
+        if(g2DU.isToggled(gamepad2.dpad_up)){
+            robot.shooter.manualAngleFlapCorrection += 0.002;
+            robot.shooter.resetAiming();
+        }
+        if(g2DD.isToggled(gamepad2.dpad_up)){
+            robot.shooter.manualAngleFlapCorrection += 0.002;
+            robot.shooter.resetAiming();
+        }
+        if(g2LB.isToggled(gamepad2.left_bumper)){
+            robot.shooter.manualAngleFlapCorrection = 0;
+            robot.shooter.manualAngleCorrection = 0;
         }
     }
 

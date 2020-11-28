@@ -43,11 +43,15 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public double distanceSam;
     public double angleOffset;
 
+    public double manualAngleCorrection;
+    public double manualAngleFlapCorrection;
+
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
 
         this.robot = robot;
         this.isOn = isOn;
+        manualAngleCorrection = 0;
 
         shooterModule = new ShooterModule(robot, isOn);
         hopperModule = new HopperModule(robot, isOn);
@@ -110,7 +114,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         shooterModule.update();
     }
 
-    private void resetAiming() {
+    public void resetAiming() {
         hasAlignedInitial = false;
         hasAlignedUsingVision = false;
         isDoneAiming = false;
@@ -169,11 +173,12 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     }
 
     private double getHighGoalFlapPosition(double distanceToTarget) {
-
-        return 0.7188854
-                - (0.00123 * distanceToTarget)
+//0.7188854
+        return 0.7208854
+                - (0.00125 * distanceToTarget)
                 + (0.00000567 * Math.pow(distanceToTarget, 2))
-                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)));
+                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
+                + manualAngleFlapCorrection;
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
@@ -205,7 +210,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             robot.drivetrain.setBrakeHeading(headingToTarget);
 
-            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1)) {
+            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1.5)) {
                 hasAlignedInitial = true;
             }
             hasAlignedInitial = true;
@@ -231,16 +236,17 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         if (!isDoneAiming && hasAlignedUsingVision) {
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + offset * 0.04);
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset+manualAngleCorrection) * 0.0375);
             } else {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + offset * 0.5);
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset+manualAngleCorrection) * 1.1);
             }
             isDoneAiming = true;
         }
 
         if (isDoneAiming) {
             robot.drivetrain.setMovements(0, 0, 0);
-            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1.5);
+            isCloseEnough = true;
+//            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1.5);
         }
     }
 

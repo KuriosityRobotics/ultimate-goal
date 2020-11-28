@@ -41,13 +41,14 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     final Point STACK = new Point(34 - 9, 47 - (16.5 / 2));
 
-    final Point SECOND_WOBBLE = new Point(36 - 13.5, 30.5 - 5);
+    final Point SECOND_WOBBLE = new Point(36 - 14, 30.5 - 5);
 
     final double SHOOT_RING_Y = 60;
+    final double SHOOT_RING_X = 28;
 
     final Point TARGET_A_DROPOFF_SECOND = new Point(18 - 9, 47 + 7);
     final Point TARGET_B_DROPOFF_SECOND = new Point(23 + 12 - 9, 94.25 - 18);
-    final Point TARGET_C_DROPOFF_SECOND = new Point(18 - 13, 117 - 20);
+    final Point TARGET_C_DROPOFF_SECOND = new Point(18 - 12, 117 - 20);
 
     Point secondWobbleDropoff;
 
@@ -92,8 +93,8 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         firstDropOffActions.add(new FlywheelAction(true));
         firstDropOffActions.add(new WobbleClawAction(false));
         firstDropOffActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.AUTO_DROP));
+        firstDropOffActions.add(new FlywheelAction(true));
         ArrayList<Action> startActions = new ArrayList<>();
-        startActions.add(new FlywheelAction(true));
         startActions.add(new WobbleClawAction(true));
         startActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.WALL_DROP));
         PathFollow startToFirstWobbleDropOff = new PathFollow(new Waypoint[]{
@@ -122,26 +123,32 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         PathFollow powerShotToStack = new PathFollow(new Waypoint[]{}, robot, "filler");
         PathFollow backFromStack = new PathFollow(new Waypoint[]{}, robot, "filler");
         PathFollow stackToSecondWobble = new PathFollow(new Waypoint[]{}, robot, "filler");
+        PathFollow stackToSecondWobble2 = new PathFollow(new Waypoint[]{}, robot, "filler");
+
         if (measuredZone == Vision.TargetGoal.C) {
             powerShotToStack = new PathFollow(new Waypoint[]{
                     new Waypoint(POWERSHOT, secondWobbleStartActions),
-                    new Waypoint(POWERSHOT.x + 64, POWERSHOT.y + 12),
-                    new Waypoint(STACK),
-                    new Waypoint(STACK.x - 2, STACK.y)
+                    new Waypoint(POWERSHOT.x + 6, STACK.y),
             }, robot, "Powershot to stack");
 
             backFromStack = new PathFollow(new Waypoint[]{
-                    new Waypoint(STACK.x - 2, STACK.y),
-                    new Waypoint(STACK.x + 12, STACK.y)
+                    new Waypoint(POWERSHOT.x + 6, STACK.y),
+                    new Waypoint(POWERSHOT.x + 4, STACK.y+2),
+                    new Waypoint(STACK.x-3, STACK.y+3)
             }, robot, "Back from stack");
 
             stackToSecondWobble = new PathFollow(new Waypoint[]{
-                    new Waypoint(SECOND_WOBBLE.x, SECOND_WOBBLE.y + 8),
+                    new Waypoint(STACK.x-3.5, STACK.y+3),
+                    new Waypoint(STACK.x+3, STACK.y),
+            }, robot, "Stack to second wobble");
+            stackToSecondWobble2 = new PathFollow(new Waypoint[]{
+                    new Waypoint(STACK.x+3, STACK.y),
                     new Waypoint(SECOND_WOBBLE, secondWobbleActions)
             }, robot, "Stack to second wobble");
         } else {
             powerShotToSecondWobble = new PathFollow(new Waypoint[]{
                     new Waypoint(POWERSHOT, secondWobbleStartActions),
+                    new Waypoint(STACK.x+4,STACK.y),
                     new Waypoint(STACK),
                     new Waypoint(SECOND_WOBBLE, secondWobbleActions)
             }, robot, "Powershot to second wobble");
@@ -150,8 +157,14 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         ArrayList<Action> secondDropOffActions = new ArrayList<>();
         secondDropOffActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.LOWERED));
         secondDropOffActions.add(new WobbleClawAction(false));
+        secondDropOffActions.add(new IntakeAction(true));
+
+        ArrayList<Action> secondDropOffStartActions = new ArrayList<>();
+        secondDropOffStartActions.add(new IntakeAction(true));
+        secondDropOffStartActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.WALL_DROP));
+
         PathFollow secondWobbleToSecondWobbleDropOff = new PathFollow(new Waypoint[]{
-                new Waypoint(SECOND_WOBBLE, new WobbleArmAction(WobbleModule.WobbleArmPosition.WALL_DROP)),
+                new Waypoint(SECOND_WOBBLE, secondDropOffStartActions),
                 new Waypoint(secondWobbleDropoff, secondDropOffActions)
         }, robot, "Second wobble to second wobble dropoff");
 
@@ -160,12 +173,11 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         fromSecondWobbleActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.RAISED));
         PathFollow secondWobbleDropOffToShoot = new PathFollow(new Waypoint[]{
                 new Waypoint(secondWobbleDropoff, fromSecondWobbleActions),
-                new Waypoint(secondWobbleDropoff.x, SHOOT_RING_Y, new ShootAction(BLUE_HIGH)),
+                new Waypoint(SHOOT_RING_X, SHOOT_RING_Y, new ShootAction(BLUE_HIGH)),
         }, robot, "Second wobble drop off to park");
 
         PathFollow shootToPark = new PathFollow(new Waypoint[]{
-                new Waypoint(secondWobbleDropoff),
-                new Waypoint(BEFOREPARK),
+                new Waypoint(SHOOT_RING_X,SHOOT_RING_Y),
                 new Waypoint(PARK)
         }, robot, "Second wobble drop off to park");
 
@@ -179,16 +191,15 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
             robot.drivetrain.brakeHeading = Math.toRadians(90);
             sleep(500);
 
-            powerShotToStack.pathFollow(0, 1, 1, true, Math.toRadians(-90));
+            powerShotToStack.pathFollow(Math.toRadians(180), 1, 1, true, Math.toRadians(-90));
 
-            backFromStack.pathFollow(Math.toRadians(180), 1, 1, false, 0);
-
-            robot.drivetrain.brakeHeading = Math.toRadians(-110);
-            sleep(750);
+            backFromStack.pathFollow(0, 1, 1, true, Math.toRadians(-90));
 
             stackToSecondWobble.pathFollow(0, 1, 1, true, Math.toRadians(215));
+            sleep(500);
+            stackToSecondWobble2.pathFollow(0,0.75,1,true,Math.toRadians(215));
         } else {
-            powerShotToSecondWobble.pathFollow(0, 0.8, 1, true, Math.toRadians(215));
+            powerShotToSecondWobble.pathFollow(0, 1, 1, true, Math.toRadians(215));
         }
         sleep(500);
 

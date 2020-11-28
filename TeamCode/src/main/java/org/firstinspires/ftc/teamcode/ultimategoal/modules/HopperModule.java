@@ -23,12 +23,12 @@ public class HopperModule implements Module, TelemetryProvider {
 
     // Constants
     private static final double INDEX_OPEN_POSITION = 0.2075;
-    private static final double INDEX_PUSH_POSITION = 0.365;
+    private static final double INDEX_PUSH_POSITION = 0.3675;
 
-    private static final int INDEXER_PUSHED_TIME_MS = 400;
+    private static final int INDEXER_PUSHED_TIME_MS = 550;
     private static final int INDEXER_RETURNED_TIME_MS = 800;
 
-    private static final double HOPPER_RAISED_POSITION = 0.96;
+    private static final double HOPPER_RAISED_POSITION = 0.965;
     private static final double HOPPER_LOWERED_POSITION = 0.63; // TODO find pos
 
     private static final int HOPPER_RAISE_TIME_MS = 1000;
