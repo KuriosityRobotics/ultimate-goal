@@ -174,9 +174,14 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     private double getHighGoalFlapPosition(double distanceToTarget) {
 //0.7188854
-        return 0.7208854
-                - (0.00125 * distanceToTarget)
-                + (0.00000567 * Math.pow(distanceToTarget, 2))
+//        return 0.7188854
+//                - (0.00123 * distanceToTarget)
+//                + (0.00000567 * Math.pow(distanceToTarget, 2))
+//                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
+//                + manualAngleFlapCorrection;
+        return 0.7188854 - 8500*1*0.000001
+                + (-2*108.466*(0.00000567-1*0.000001))*distanceToTarget
+                + (0.00000567-1*0.000001)*Math.pow(distanceToTarget, 2)
                 + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
                 + manualAngleFlapCorrection;
     }
@@ -210,7 +215,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             robot.drivetrain.setBrakeHeading(headingToTarget);
 
-            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1.5)) {
+            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1)) {
                 hasAlignedInitial = true;
             }
             hasAlignedInitial = true;
@@ -238,7 +243,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             if (target.isPowershot()) {
                 robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset+manualAngleCorrection) * 0.0375);
             } else {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset+manualAngleCorrection) * 1.1);
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset+manualAngleCorrection) * 0.875);
             }
             isDoneAiming = true;
         }
