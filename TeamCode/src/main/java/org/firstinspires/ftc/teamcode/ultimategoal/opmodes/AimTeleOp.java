@@ -32,8 +32,6 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     Toggle g2DD = new Toggle();
     Toggle g2LB = new Toggle();
 
-    private static final double SLOW_MODE_SCALE_FACTOR = 0.3;
-
     private boolean lastArrowMoveState = false;
     private double arrowMoveAngle = 0;
 
@@ -171,12 +169,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             lastArrowMoveState = false;
         }
 
-        // TODO: use brakemode of branch AutoActions instead
-        if (gamepad1.right_bumper) {
-            xMovement *= SLOW_MODE_SCALE_FACTOR;
-            yMovement *= SLOW_MODE_SCALE_FACTOR;
-            turnMovement *= SLOW_MODE_SCALE_FACTOR;
-        }
+        robot.drivetrain.isSlowMode = gamepad1.right_bumper;
 
         robot.drivetrain.setMovements(xMovement, yMovement, turnMovement);
     }
