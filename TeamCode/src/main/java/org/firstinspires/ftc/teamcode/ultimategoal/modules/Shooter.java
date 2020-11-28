@@ -215,7 +215,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             robot.drivetrain.setBrakeHeading(headingToTarget);
 
-            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1)) {
+            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1.5)) {
                 hasAlignedInitial = true;
             }
             hasAlignedInitial = true;
@@ -250,8 +250,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         if (isDoneAiming) {
             robot.drivetrain.setMovements(0, 0, 0);
-            isCloseEnough = true;
-//            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1.5);
+            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1.5);
         }
     }
 

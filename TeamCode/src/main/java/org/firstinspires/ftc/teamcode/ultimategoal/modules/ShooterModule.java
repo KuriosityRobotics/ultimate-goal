@@ -50,8 +50,8 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        flyWheel1.setVelocityPIDFCoefficients(7, 0.6, 0, 11.7);
-        flyWheel2.setVelocityPIDFCoefficients(7, 0.6, 0, 11.7);
+        flyWheel1.setVelocityPIDFCoefficients(8, 0.5, 0, 11.7);
+        flyWheel2.setVelocityPIDFCoefficients(8, 0.5, 0, 11.7);
     }
 
     @Override
