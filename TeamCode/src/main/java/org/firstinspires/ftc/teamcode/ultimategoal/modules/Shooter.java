@@ -91,14 +91,12 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
                 oldTarget = target;
             }
 
-            robot.drivetrain.setMovements(0, 0, 0);
-
             hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
             aimShooter(target, robot.visionModule.getLocationData());
             shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
-            if (queuedIndexes > 0 && isCloseEnough) {
+            if (queuedIndexes > 0 && isCloseEnough && hopperModule.isIndexerReturned() && shooterModule.isUpToSpeed()) {
                 if (hopperModule.requestRingIndex()) {
                     queuedIndexes--;
                 }
@@ -233,7 +231,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         if (!isDoneAiming && hasAlignedUsingVision) {
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + offset * 0.05);
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + offset * 0.04);
             } else {
                 robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + offset * 0.5);
             }
@@ -242,7 +240,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         if (isDoneAiming) {
             robot.drivetrain.setMovements(0, 0, 0);
-            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1);
+            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1.5);
         }
     }
 
@@ -390,7 +388,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      * @return If there are indexes queued.
      */
     public boolean isFinishedIndexing() {
-        return (queuedIndexes <= 0) && isIndexerReturned();
+        return (queuedIndexes <= 0) && hopperModule.isDoneIndexing();
     }
 
     public boolean isIndexerPushed() {
@@ -411,6 +409,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         ArrayList<String> data = new ArrayList<>();
         data.add("Is active: " + isAimBotActive);
         data.add("Active toggle: " + activeToggle);
+        data.add("Target: " + target.toString());
         data.add("Queued indexes: " + queuedIndexes);
         data.add("Distance: d" + distanceSam);
         data.add("angleOffset: " + angleOffset);
@@ -418,8 +417,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         data.add("hasAlignedInitial: " + hasAlignedInitial);
         data.add("hasAlignedUsingVision: " + hasAlignedUsingVision);
         data.add("isDoneAiming: " + isDoneAiming);
-        data.add("isCloseEnough: " + isCloseEnough);
         data.add("isFinishedIndexing: " + isFinishedIndexing());
+        data.add("isCloseEnough: " + isCloseEnough);
         return data;
     }
 

@@ -15,8 +15,6 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     Robot robot;
     public boolean isOn;
 
-    private Point startingPosition;
-
     private DrivetrainModule drivetrainModule;
     private OdometryModule odometryModule;
     public VelocityModule velocityModule;
@@ -198,6 +196,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         double inverseTurnAngle = INVERSE_TURN_FACTOR * 1 / (angleError + .1);
         turnScale = Range.clip((TURN_NON_LINEAR_P * ((Math.sqrt(angleError) * Math.abs(relativeTurnAngle)) / relativeTurnAngle))
                 - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
+
+        if (Math.abs(getCurrentHeading() - brakeHeading) > Math.toRadians(0.75) && Math.abs(turnScale) < 0.07) {
+            turnScale = 0.07 * (turnScale / Math.abs(turnScale));
+        }
 
         turnMovement = turnScale;
 

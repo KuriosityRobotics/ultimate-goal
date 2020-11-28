@@ -61,6 +61,16 @@ public class ActionExecutor implements TelemetryProvider {
         executingActions.add(action);
     }
 
+    public boolean requiresStop() {
+        for (Action action : executingActions) {
+            if (action.stopMovementForExecution) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();

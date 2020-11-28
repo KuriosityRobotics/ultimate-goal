@@ -9,25 +9,29 @@ public class ShootAction extends Action {
 
     public ShootAction(Target.ITarget target) {
         this.target = target;
+        this.stopMovementForExecution = true;
     }
 
     @Override
     public boolean executeAction(Robot robot) {
-        robot.drivetrain.setMovements(0, 0, 0);
+        if (beginExecutionTime == 0) {
+            robot.shooter.target = target;
 
-        robot.shooter.target = target;
+            robot.shooter.isAimBotActive = true;
 
-        robot.shooter.isAimBotActive = true;
+            robot.shooter.queueIndexThreeRings();
 
-        robot.shooter.queueIndexThreeRings();
+            beginExecutionTime = robot.getCurrentTimeMilli();
 
-        while (!robot.shooter.isFinishedIndexing() && robot.isOpModeActive()) {}
-
-        robot.opModeSleep(1000);
-
-        robot.shooter.isAimBotActive = false;
-
-        return true;
+            return false;
+        } else {
+            if (robot.shooter.isFinishedIndexing()) {
+                robot.shooter.isAimBotActive = false;
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     @Override

@@ -64,7 +64,11 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
             targetPoint = findTarget(path, clippedPoint, robotHeading);
             adjustedTargetPoint = adjustTargetPoint(targetPoint);
 
-            robot.drivetrain.setMovementsToPoint(adjustedTargetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, isTargetingLastPoint, FOLLOW_RADIUS);
+            if (robot.actionExecutor.requiresStop()) {
+                robot.drivetrain.setMovements(0, 0, 0);
+            } else {
+                robot.drivetrain.setMovementsToPoint(adjustedTargetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, isTargetingLastPoint, FOLLOW_RADIUS);
+            }
 
             robot.actionExecutor.updateExecution();
 

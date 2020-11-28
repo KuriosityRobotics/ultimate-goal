@@ -121,7 +121,7 @@ public class Vision {
 
 
                             Log.d("Vision", Double.toString(percentageOrange));
-                            if (percentageOrange > 1300) {
+                            if (percentageOrange > 950) {
                                 resultTargetGoal[0] = TargetGoal.C;
                             } else if (percentageOrange < 1300 && percentageOrange > -50) {
                                 resultTargetGoal[0] = TargetGoal.B;

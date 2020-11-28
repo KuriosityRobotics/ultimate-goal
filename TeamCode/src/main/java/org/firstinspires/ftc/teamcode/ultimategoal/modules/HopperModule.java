@@ -25,8 +25,8 @@ public class HopperModule implements Module, TelemetryProvider {
     private static final double INDEX_OPEN_POSITION = 0.2075;
     private static final double INDEX_PUSH_POSITION = 0.365;
 
-    private static final int INDEXER_PUSHED_TIME_MS = 1000;
-    private static final int INDEXER_RETURNED_TIME_MS = 2000;
+    private static final int INDEXER_PUSHED_TIME_MS = 400;
+    private static final int INDEXER_RETURNED_TIME_MS = 800;
 
     private static final double HOPPER_RAISED_POSITION = 0.96;
     private static final double HOPPER_LOWERED_POSITION = 0.63; // TODO find pos
@@ -135,6 +135,10 @@ public class HopperModule implements Module, TelemetryProvider {
         return currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
     }
 
+    public boolean isDoneIndexing() {
+        return isIndexerReturned() && !indexRing;
+    }
+
     /**
      * Attempt to index a ring. If the indexer is currently indexing, nothing will happen. Whether
      * or not the command was successfully executed is returned.
@@ -142,7 +146,7 @@ public class HopperModule implements Module, TelemetryProvider {
      * @return Whether or not the index command will be processed.
      */
     public boolean requestRingIndex() {
-        if (isIndexerReturned() && robot.shooter.isUpToSpeed() && !indexRing) {
+        if (!indexRing) {
             indexRing = true;
             return true;
         } else {
