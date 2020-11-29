@@ -2,15 +2,13 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 import java.util.ArrayList;
 import java.util.Locale;
-
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.StringHelper.concat;
 
 public class OdometryModule implements Module, TelemetryProvider, FileDumpProvider {
     private Robot robot;
@@ -51,6 +49,10 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         yRightEncoder = robot.getDcMotor("fRight");
         mecanumEncoder = robot.getDcMotor("bLeft");
 
+        resetEncoders();
+    }
+
+    private void resetEncoders() {
         yLeftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         yRightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mecanumEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -58,6 +60,10 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         yLeftEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         yRightEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         mecanumEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        leftPodKnownPosition = 0;
+        rightPodKnownPosition = 0;
+        mecanumPodKnownPosition = 0;
     }
 
     @Override
@@ -111,8 +117,8 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
      * Calculates the robot's position.
      */
     private void calculateRobotPosition() {
-        double leftPodNewPosition = - yLeftEncoder.getCurrentPosition();
-        double rightPodNewPosition = - yRightEncoder.getCurrentPosition();
+        double leftPodNewPosition = -yLeftEncoder.getCurrentPosition();
+        double rightPodNewPosition = -yRightEncoder.getCurrentPosition();
         double mecanumPodNewPosition = mecanumEncoder.getCurrentPosition();
 
         double leftPodDelta = leftPodNewPosition - leftPodKnownPosition;
@@ -198,6 +204,14 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
 
     public DcMotor getMecanumEncoder() {
         return mecanumEncoder;
+    }
+
+    public void setPosition(double x, double y, double heading) {
+        worldX = x;
+        worldY = y;
+        worldAngleRad = heading;
+
+        resetEncoders();
     }
 
     public boolean isOn() {

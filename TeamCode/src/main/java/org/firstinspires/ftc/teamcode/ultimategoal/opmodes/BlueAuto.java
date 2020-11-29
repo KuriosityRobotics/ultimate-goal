@@ -52,7 +52,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     Point secondWobbleDropoff;
 
-    final Point PARK = new Point(23 + 12 - 9, 82 - (16.5 / 2));
+    public static final Point PARK = new Point(23 + 12 - 9, 82 - (16.5 / 2));
     final Point BEFOREPARK = new Point(23.5 * 2, 23.5 * 3);
 
     @Override
@@ -197,9 +197,9 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
             stackToSecondWobble.pathFollow(0, 1, 1, true, Math.toRadians(215));
 
-            stackToSecondWobble2.pathFollow(0,0.75,1,true,Math.toRadians(215));
+            stackToSecondWobble2.pathFollow(0,0.55,1,true,Math.toRadians(215));
         } else {
-            powerShotToSecondWobble.pathFollow(0, 1, 1, true, Math.toRadians(215));
+            powerShotToSecondWobble.pathFollow(0, 0.55, 1, true, Math.toRadians(215));
         }
         sleep(500);
 

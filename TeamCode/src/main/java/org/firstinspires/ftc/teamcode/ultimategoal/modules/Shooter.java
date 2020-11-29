@@ -46,6 +46,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public double manualAngleCorrection;
     public double manualAngleFlapCorrection;
 
+    private boolean hasSkippedForShooterSpeed = false;
+
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
 
@@ -74,20 +76,42 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             resetAiming();
         } else if (!isAimBotActive && activeToggle) {
-            activeToggle = false;
-
             queuedIndexes = 0;
 
-            shooterModule.flyWheelTargetSpeed = 0;
+            if (hopperModule.isIndexerReturned()) {
+                activeToggle = false;
 
-            robot.drivetrain.weakBrake = weakBrakeOldState;
+                shooterModule.flyWheelTargetSpeed = 0;
 
-            robot.shooter.setHopperPosition(HopperModule.HopperPosition.LOWERED);
+                robot.drivetrain.weakBrake = weakBrakeOldState;
+
+                robot.shooter.setHopperPosition(HopperModule.HopperPosition.LOWERED);
+            }
         }
 
         if (activeToggle) {
-            if (!hopperModule.isIndexerPushed()) {
-                return; // If the indexer is pushing we don't want to move anything
+            if (hasSkippedForShooterSpeed) {
+                shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
+            } else {
+                hasSkippedForShooterSpeed = true;
+            }
+
+            if (hopperModule.isIndexerPushed()) {
+                if (oldTarget != target) {
+                    resetAiming();
+                    oldTarget = target;
+                }
+
+                hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
+
+                aimShooter(target);
+                shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
+
+                if (queuedIndexes > 0 && isCloseEnough && hopperModule.isIndexerReturned() && shooterModule.isUpToSpeed()) {
+                    if (hopperModule.requestRingIndex()) {
+                        queuedIndexes--;
+                    }
+                }
             }
 
             if (oldTarget != target) {
@@ -97,8 +121,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
-            aimShooter(target, robot.visionModule.getLocationData());
-            shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
+            aimShooter(target);
 
             if (queuedIndexes > 0 && isCloseEnough && hopperModule.isIndexerReturned() && shooterModule.isUpToSpeed()) {
                 if (hopperModule.requestRingIndex()) {
@@ -119,6 +142,9 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         hasAlignedUsingVision = false;
         isDoneAiming = false;
         isCloseEnough = false;
+        hasSkippedForShooterSpeed = false;
+
+        shooterModule.flyWheelTargetSpeed = 0; // Reset PID on shooter by temporarily setting speed to 0
     }
 
     public void toggleColour() {
@@ -157,6 +183,18 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
 
+    public void aimShooter(ITarget target) {
+        double distanceToTargetCenterRobot = distanceToTarget(target);
+
+        angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+        turnToGoal(target, angleOffset);
+
+        double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
+        distanceSam = distanceToTarget;
+
+        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
+    }
+
     /**
      * Aim only the flap at the target. Does not attempt to move the robot.
      *
@@ -179,9 +217,9 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 //                + (0.00000567 * Math.pow(distanceToTarget, 2))
 //                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
 //                + manualAngleFlapCorrection;
-        return 0.7188854 - 8500*1*0.000001
-                + (-2*108.466*(0.00000567-1*0.000001))*distanceToTarget
-                + (0.00000567-1*0.000001)*Math.pow(distanceToTarget, 2)
+        return 0.7188854 - 8500 * 1 * 0.000001
+                + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
+                + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
                 + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
                 + manualAngleFlapCorrection;
     }
@@ -241,9 +279,38 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         if (!isDoneAiming && hasAlignedUsingVision) {
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset+manualAngleCorrection) * 0.0375);
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset + manualAngleCorrection) * 0.0375);
             } else {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset+manualAngleCorrection) * 0.875);
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset + manualAngleCorrection) * 0.875);
+            }
+            isDoneAiming = true;
+        }
+
+        if (isDoneAiming) {
+            robot.drivetrain.setMovements(0, 0, 0);
+            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1.5);
+        }
+    }
+
+    private void turnToGoal(ITarget target, double offset) {
+        if (!hasAlignedInitial) {
+            double headingToTarget = headingToTarget(target);
+
+            robot.drivetrain.setBrakeHeading(headingToTarget);
+
+            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1.5)) {
+                hasAlignedInitial = true;
+            }
+            hasAlignedInitial = true;
+        }
+
+        hasAlignedUsingVision = true;
+
+        if (!isDoneAiming && hasAlignedUsingVision) {
+            if (target.isPowershot()) {
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset + manualAngleCorrection) * 0.0375);
+            } else {
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset + manualAngleCorrection) * 0.875);
             }
             isDoneAiming = true;
         }

@@ -95,11 +95,11 @@ public class HopperModule implements Module, TelemetryProvider {
                 indexTime = currentTime;
                 indexRing = false;
             }
+        }
 
-            boolean isDoneIndexing = currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
-            if (isDoneIndexing) {
-                indexerServo.setPosition(INDEX_OPEN_POSITION);
-            }
+        boolean isDoneIndexing = currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
+        if (isDoneIndexing) {
+            indexerServo.setPosition(INDEX_OPEN_POSITION);
         }
     }
 
@@ -166,6 +166,7 @@ public class HopperModule implements Module, TelemetryProvider {
         data.add("Will index: " + indexRing);
         data.add("--");
         data.add("index time: " + indexTime);
+        data.add("hopper transition time: " + hopperTransitionTime);
         data.add("current time: " + robot.getCurrentTimeMilli());
         data.add("is indexer returned: " + isIndexerReturned());
         data.add("is indexer pushed: " + isIndexerPushed());
