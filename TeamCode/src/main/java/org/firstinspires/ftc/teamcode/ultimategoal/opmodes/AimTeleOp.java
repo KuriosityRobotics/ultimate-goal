@@ -58,8 +58,12 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
                 if (doPowershotsAction) {
                     bluePowershotsAction = new BluePowershotsAction();
+
+//                    robot.drivetrain.weakBrake = false;
                 } else {
                     robot.shooter.isAimBotActive = false;
+
+//                    robot.drivetrain.weakBrake = true;
                 }
             }
 
@@ -111,6 +115,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         }
 
         if (g1LB.isToggled(gamepad1.left_bumper)) {
+            robot.shooter.forceAim();
             robot.shooter.queueIndex();
         }
         if (g2DR.isToggled(gamepad2.dpad_right)) {

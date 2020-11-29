@@ -32,9 +32,14 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     // Distance to goal to angle offset constant
     // -0.0372 + 2.79E-03x + -1.31E-05x^2
-    private static final double DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -1.31E-05;
-    private static final double DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
-    private static final double DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0372
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -1.31E-05;
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0372
+
+    // 0.48 + -9.05E-03x + 5.34E-05x^2
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 5.34E-5;
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = -9.05E-3;
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.48;
 
     // Powershot distance to flap position -1.75E-04*x + 0.664
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.664;
@@ -155,38 +160,45 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         target = target.next();
     }
 
-    private double getHeadingForGoal(double distanceToTarget, Point targetPoint, Point robotPosition) {
-        double headingToTarget = angleWrap(Math.atan2(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y));
-
-        double headingOffset =
-                headingToTarget
-                        + (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget)
-                        + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget)
-                        + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
-        return angleWrap(headingOffset);
-    }
-
-    /**
-     * Aim the shooter at the target specified.
-     *
-     * @param target The target to aim at.
-     */
-    public void aimShooter(ITarget target, GoalFinder.GoalLocationData loc) {
-        double distanceToTargetCenterRobot = distanceToTarget(target);
-
-        angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
-        turnToGoal(target, loc, angleOffset);
-
-        double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
-        distanceSam = distanceToTarget;
-
-        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
-    }
+//    /**
+//     * Aim the shooter at the target specified.
+//     *
+//     * @param target The target to aim at.
+//     */
+//    public void aimShooter(ITarget target, GoalFinder.GoalLocationData loc) {
+//        double distanceToTargetCenterRobot = distanceToTarget(target);
+//
+//        if (target.isPowershot()) {
+//            angleOffset = (POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
+//                    + (POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
+//                    + POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+//        } else {
+//            angleOffset = (HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
+//                    + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
+//                    + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+//        }
+//
+//        turnToGoal(target, loc, angleOffset);
+//
+//        double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
+//        distanceSam = distanceToTarget;
+//
+//        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
+//    }
 
     public void aimShooter(ITarget target) {
         double distanceToTargetCenterRobot = distanceToTarget(target);
 
-        angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+        if (target.isPowershot()) {
+            angleOffset = (POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
+                    + (POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
+                    + POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+        } else {
+            angleOffset = 0.9 * ((HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
+                    + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
+                    + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
+        }
+
         turnToGoal(target, angleOffset);
 
         double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
@@ -202,7 +214,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      */
     private void aimFlapToTarget(ITarget target) {
         double distanceToTargetCenterRobot = distanceToTarget(target);
-        double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+        double angleOffset = (HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
 
         double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
         distanceSam = distanceToTarget;
@@ -247,78 +259,90 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     boolean isDoneAiming = false;
     boolean isCloseEnough = false;
 
-    private void turnToGoal(ITarget target, GoalFinder.GoalLocationData loc, double offset) {
-        if (!hasAlignedInitial) {
-            double headingToTarget = headingToTarget(target);
-
-            robot.drivetrain.setBrakeHeading(headingToTarget);
-
-            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1.5)) {
-                hasAlignedInitial = true;
-            }
-            hasAlignedInitial = true;
-        }
-
-//        if (!hasAlignedUsingVision && hasAlignedInitial) {
-//            if (target.isPowershot()) {
-//                hasAlignedUsingVision = true; //TODO
-//            } else {
-//                if (loc != null) {
-//                    double yawOffset = loc.getYaw();
-//                    robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + yawOffset);
+//    private void turnToGoal(ITarget target, GoalFinder.GoalLocationData loc, double offset) {
+//        if (!hasAlignedInitial) {
+//            double headingToTarget = headingToTarget(target);
 //
-//                    if (yawOffset < Math.toRadians(1)) {
-//                        hasAlignedUsingVision = true;
-//                    }
-//                } else {
-//                    hasAlignedUsingVision = true;
-//                }
+//            robot.drivetrain.setBrakeHeading(headingToTarget);
+//
+//            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1.5)) {
+//                hasAlignedInitial = true;
 //            }
+//            hasAlignedInitial = true;
 //        }
-        hasAlignedUsingVision = true;
+//
+////        if (!hasAlignedUsingVision && hasAlignedInitial) {
+////            if (target.isPowershot()) {
+////                hasAlignedUsingVision = true; //TODO
+////            } else {
+////                if (loc != null) {
+////                    double yawOffset = loc.getYaw();
+////                    robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + yawOffset);
+////
+////                    if (yawOffset < Math.toRadians(1)) {
+////                        hasAlignedUsingVision = true;
+////                    }
+////                } else {
+////                    hasAlignedUsingVision = true;
+////                }
+////            }
+////        }
+//        hasAlignedUsingVision = true;
+//
+//        if (!isDoneAiming && hasAlignedUsingVision) {
+//            robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset + manualAngleCorrection));
+//
+//            isDoneAiming = true;
+//        }
+//
+//        if (isDoneAiming) {
+//            robot.drivetrain.setMovements(0, 0, 0);
+//            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(2);
+//        }
+//    }
 
-        if (!isDoneAiming && hasAlignedUsingVision) {
+    long doneAimingTime = 0;
+    private void turnToGoal(ITarget target, double offset) {
+//        if (!hasAlignedInitial) {
+//            double headingToTarget = headingToTarget(target);
+//
+//            robot.drivetrain.setBrakeHeading(headingToTarget);
+//
+//            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(2)) {
+//                hasAlignedInitial = true;
+//            }
+            hasAlignedInitial = true;
+//        }
+//
+        hasAlignedUsingVision = true;
+//
+//        if (!isDoneAiming && hasAlignedUsingVision) {
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset + manualAngleCorrection) * 0.0375);
+                robot.drivetrain.setBrakeHeading(headingToTarget(target) + (offset * 1.025) + (manualAngleCorrection * 0.875));
             } else {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset + manualAngleCorrection) * 0.875);
+                robot.drivetrain.setBrakeHeading(headingToTarget(target)  + (offset + manualAngleCorrection) * 0.875);
             }
             isDoneAiming = true;
-        }
+            doneAimingTime = 0;
+//        }
 
         if (isDoneAiming) {
             robot.drivetrain.setMovements(0, 0, 0);
+
             isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1.5);
+
+            if (robot.getCurrentTimeMilli() > doneAimingTime + 2500) {
+                isCloseEnough = true;
+            }
         }
     }
 
-    private void turnToGoal(ITarget target, double offset) {
-        if (!hasAlignedInitial) {
-            double headingToTarget = headingToTarget(target);
-
-            robot.drivetrain.setBrakeHeading(headingToTarget);
-
-            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1.5)) {
-                hasAlignedInitial = true;
-            }
-            hasAlignedInitial = true;
-        }
-
+    public void forceAim() {
+        hasAlignedInitial = true;
         hasAlignedUsingVision = true;
+        isCloseEnough = true;
 
-        if (!isDoneAiming && hasAlignedUsingVision) {
-            if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset + manualAngleCorrection) * 0.0375);
-            } else {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset + manualAngleCorrection) * 0.875);
-            }
-            isDoneAiming = true;
-        }
-
-        if (isDoneAiming) {
-            robot.drivetrain.setMovements(0, 0, 0);
-            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1.5);
-        }
+        robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading());
     }
 
     /**

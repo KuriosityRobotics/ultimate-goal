@@ -28,7 +28,7 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
         if (robot.shooter.isFinishedIndexing()) {
             powershotNum++;
 
-            if (powershotNum > 2) {
+            if (powershotNum > 2 && robot.shooter.isIndexerReturned()) {
                 robot.shooter.isAimBotActive = false;
                 return true;
             }

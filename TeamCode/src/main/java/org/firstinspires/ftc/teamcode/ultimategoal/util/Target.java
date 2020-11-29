@@ -15,7 +15,7 @@ public class Target {
     //    private static final double GOAL_CENTER_Y = 6 * 24.0 - (0.5 * 2) - 9;
     private static final double GOAL_CENTER_Y = (24 * 6) - 9;
 
-    private static final double POWERSHOT_CENTRE_X = (24 - 0.5) * 3;
+    private static final double POWERSHOT_CENTRE_X = (24 - 0.5) * 3 - 9;
     // these are abs of dist from centre (for each powershot)
     private static final double SHOT1_OFFSET = 3.5, SHOT2_OFFSET = 11, SHOT3_OFFSET = 18.5;
 

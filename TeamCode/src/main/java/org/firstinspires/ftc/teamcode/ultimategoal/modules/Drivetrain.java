@@ -197,8 +197,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         turnScale = Range.clip((TURN_NON_LINEAR_P * ((Math.sqrt(angleError) * Math.abs(relativeTurnAngle)) / relativeTurnAngle))
                 - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
 
-        if (Math.abs(getCurrentHeading() - brakeHeading) > Math.toRadians(1.5) && Math.abs(turnScale) < 0.1) {
-            turnScale = 0.1 * (turnScale / Math.abs(turnScale));
+        if (Math.abs(getCurrentHeading() - brakeHeading) > Math.toRadians(2) && Math.abs(turnScale) < 0.08) {
+            turnScale = 0.08 * (turnScale / Math.abs(turnScale));
         }
 
         turnMovement = turnScale;
@@ -315,9 +315,19 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         }
     }
 
+    public double getDistanceToPoint(Point targetPoint) {
+        Point robotPosition = getCurrentPosition();
+
+        return Math.hypot(robotPosition.x - targetPoint.x, robotPosition.y - targetPoint.y);
+    }
+
     public void setBrake(Point brakePoint, double brakeHeading) {
         this.brakePoint = brakePoint;
         this.brakeHeading = brakeHeading;
+    }
+
+    public void setBrakePosition(Point brakePoint) {
+        this.brakePoint = brakePoint;
     }
 
     public void setBrakeHeading(double brakeHeading) {
@@ -336,6 +346,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      */
     public void setPosition(double x, double y, double heading) {
         odometryModule.setPosition(x, y, heading);
+        velocityModule.reset();
     }
 
     @Override

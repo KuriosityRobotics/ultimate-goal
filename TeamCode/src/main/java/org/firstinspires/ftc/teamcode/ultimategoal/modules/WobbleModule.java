@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
@@ -36,6 +35,9 @@ public class WobbleModule implements Module, TelemetryProvider {
     public static final int WOBBLE_WALL_DROP_POSITION = -250;
     public static final int WOBBLE_AUTO_DROP_POSITION = -450;
 
+    public static final int CLAW_CLOSE_MS = 750;
+    public static final int CLAW_OPEN_MS = 750;
+
     public WobbleModule(Robot robot, boolean isOn) {
         this.robot = robot;
         this.isOn = isOn;
@@ -58,11 +60,21 @@ public class WobbleModule implements Module, TelemetryProvider {
         return true;
     }
 
+    boolean oldIsClawClamped = !isClawClamped;
+    long clawTransitionTime = 0;
+
     public void update() {
-        if (isClawClamped) {
-            wobbleClaw.setPosition(CLAW_CLAMP_POSITION);
-        } else {
-            wobbleClaw.setPosition(CLAW_OPEN_POSITION);
+        long currentTime = robot.getCurrentTimeMilli();
+
+        if (oldIsClawClamped != isClawClamped) {
+            if (isClawClamped) {
+                wobbleClaw.setPosition(CLAW_CLAMP_POSITION);
+            } else {
+                wobbleClaw.setPosition(CLAW_OPEN_POSITION);
+            }
+
+            clawTransitionTime = currentTime;
+            oldIsClawClamped = isClawClamped;
         }
 
         switch (wobbleArmPosition) {
@@ -100,6 +112,20 @@ public class WobbleModule implements Module, TelemetryProvider {
         }
     }
 
+    public boolean isClawAtPosition() {
+        long currentTime = robot.getCurrentTimeMilli();
+
+        if (isClawClamped) {
+            return currentTime > clawTransitionTime + CLAW_CLOSE_MS && wasClawTransitionedToTarget();
+        } else {
+            return currentTime > clawTransitionTime + CLAW_OPEN_MS && wasClawTransitionedToTarget();
+        }
+    }
+
+    public boolean wasClawTransitionedToTarget() {
+        return oldIsClawClamped == isClawClamped;
+    }
+
     public boolean isOn() {
         return isOn;
     }
@@ -110,6 +136,7 @@ public class WobbleModule implements Module, TelemetryProvider {
         data.add("Wobble encoder target position: " + wobbleEncoderTarget);
         data.add("Wobble current position: " + wobbleMotor.getCurrentPosition());
         data.add("Is claw clamped: " + isClawClamped);
+        data.add("Is claw at position: " + isClawAtPosition());
         return data;
     }
 

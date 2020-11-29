@@ -136,7 +136,7 @@ public class HopperModule implements Module, TelemetryProvider {
     }
 
     public boolean isDoneIndexing() {
-        return isIndexerReturned() && !indexRing;
+        return isIndexerPushed() && !indexRing;
     }
 
     /**
