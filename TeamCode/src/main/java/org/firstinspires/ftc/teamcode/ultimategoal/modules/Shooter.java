@@ -303,28 +303,28 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     long doneAimingTime = 0;
     private void turnToGoal(ITarget target, double offset) {
-//        if (!hasAlignedInitial) {
-//            double headingToTarget = headingToTarget(target);
-//
-//            robot.drivetrain.setBrakeHeading(headingToTarget);
-//
-//            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(2)) {
-//                hasAlignedInitial = true;
-//            }
+        if (!hasAlignedInitial) {
+            double headingToTarget = headingToTarget(target);
+
+            robot.drivetrain.setBrakeHeading(headingToTarget);
+
+            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(2)) {
+                hasAlignedInitial = true;
+            }
             hasAlignedInitial = true;
-//        }
-//
+        }
+
         hasAlignedUsingVision = true;
-//
-//        if (!isDoneAiming && hasAlignedUsingVision) {
+
+        if (!isDoneAiming && hasAlignedUsingVision) {
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(headingToTarget(target) + (offset * 1.025) + (manualAngleCorrection * 0.875));
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset * 1.015) + (manualAngleCorrection * 0.875));
             } else {
-                robot.drivetrain.setBrakeHeading(headingToTarget(target)  + (offset + manualAngleCorrection) * 0.875);
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading()  + (offset + manualAngleCorrection) * 0.875);
             }
             isDoneAiming = true;
-            doneAimingTime = 0;
-//        }
+            doneAimingTime = robot.getCurrentTimeMilli();
+        }
 
         if (isDoneAiming) {
             robot.drivetrain.setMovements(0, 0, 0);
