@@ -197,8 +197,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         turnScale = Range.clip((TURN_NON_LINEAR_P * ((Math.sqrt(angleError) * Math.abs(relativeTurnAngle)) / relativeTurnAngle))
                 - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
 
-        if (Math.abs(getCurrentHeading() - brakeHeading) > Math.toRadians(2) && Math.abs(turnScale) < 0.08) {
-            turnScale = 0.08 * (turnScale / Math.abs(turnScale));
+        if (Math.abs(getCurrentHeading() - brakeHeading) > Math.toRadians(2) && Math.abs(turnScale) < 0.07) {
+            turnScale = 0.07 * (turnScale / Math.abs(turnScale));
         }
 
         turnMovement = turnScale;

@@ -50,8 +50,8 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        flyWheel1.setVelocityPIDFCoefficients(8, 0.5, 0, 11.7);
-        flyWheel2.setVelocityPIDFCoefficients(8, 0.5, 0, 11.7);
+        flyWheel1.setVelocityPIDFCoefficients(7, 0.5, 0, 11.7);
+        flyWheel2.setVelocityPIDFCoefficients(7, 0.5, 0, 11.7);
     }
 
     @Override
@@ -68,8 +68,8 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     public boolean isUpToSpeed() {
-        return Math.abs(flyWheel1.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD
-                && Math.abs(flyWheel2.getVelocity() - flyWheelTargetSpeed) < FLYWHEEL_SPEED_THRESHOLD;
+        return flyWheel1.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
+                && flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD;
     }
 
     @Override

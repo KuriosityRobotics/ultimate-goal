@@ -68,6 +68,9 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             }
 
             if (doPowershotsAction) {
+                robot.shooter.manualAngleFlapCorrection = 0;
+                robot.shooter.manualAngleCorrection = 0;
+
                 doPowershotsAction = !bluePowershotsAction.executeAction(robot);
             } else {
                 updateShooterStates();

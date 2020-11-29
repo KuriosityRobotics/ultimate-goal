@@ -318,9 +318,9 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         if (!isDoneAiming && hasAlignedUsingVision) {
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset * 1.015) + (manualAngleCorrection * 0.875));
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset * 1.015) + (manualAngleCorrection * 0.925));
             } else {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading()  + (offset + manualAngleCorrection) * 0.875);
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading()  + (offset + manualAngleCorrection) * 0.925);
             }
             isDoneAiming = true;
             doneAimingTime = robot.getCurrentTimeMilli();
@@ -329,7 +329,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         if (isDoneAiming) {
             robot.drivetrain.setMovements(0, 0, 0);
 
-            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1.5);
+            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(2);
 
             if (robot.getCurrentTimeMilli() > doneAimingTime + 2500) {
                 isCloseEnough = true;
