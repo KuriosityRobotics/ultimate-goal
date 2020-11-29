@@ -33,22 +33,22 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     Vision.TargetGoal measuredZone;
 
-    final Point TARGET_A_DROPOFF_FIRST = new Point(23, 80 - 15);
+    final Point TARGET_A_DROPOFF_FIRST = new Point(23, 80 - 19);
     final Point TARGET_B_DROPOFF_FIRST = new Point(23.5 * 2 - 2, 88 - (16.5 / 2) + 6);
-    final Point TARGET_C_DROPOFF_FIRST = new Point(23 + 4, 108 - (16.5 / 2));
+    final Point TARGET_C_DROPOFF_FIRST = new Point(23 + 2, 112 - (16.5 / 2));
 
     Point firstWobbleDropOff;
 
     final Point STACK = new Point(34 - 9, 47 - (16.5 / 2));
 
-    final Point SECOND_WOBBLE = new Point(36 - 14.5, 30.5 - 5);
+    final Point SECOND_WOBBLE = new Point(36 - 16, 30.5 - 4);
 
     final double SHOOT_RING_Y = 60;
     final double SHOOT_RING_X = 28;
 
-    final Point TARGET_A_DROPOFF_SECOND = new Point(18 - 9, 47 + 7);
+    final Point TARGET_A_DROPOFF_SECOND = new Point(18 - 12, 47 + 4);
     final Point TARGET_B_DROPOFF_SECOND = new Point(23 + 12 - 9, 94.25 - 18);
-    final Point TARGET_C_DROPOFF_SECOND = new Point(18 - 12, 117 - 20);
+    final Point TARGET_C_DROPOFF_SECOND = new Point(18 - 15, 117 - 20);
 
     Point secondWobbleDropoff;
 
@@ -91,9 +91,9 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         ArrayList<Action> firstDropOffActions = new ArrayList<>();
         firstDropOffActions.add(new FlywheelAction(true));
-        firstDropOffActions.add(new WobbleClawAction(false));
         firstDropOffActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.AUTO_DROP));
         firstDropOffActions.add(new FlywheelAction(true));
+        firstDropOffActions.add(new WobbleClawAction(false));
         ArrayList<Action> startActions = new ArrayList<>();
         startActions.add(new WobbleClawAction(true));
         startActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.WALL_DROP));
@@ -156,8 +156,9 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         ArrayList<Action> secondDropOffActions = new ArrayList<>();
         secondDropOffActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.LOWERED));
-        secondDropOffActions.add(new WobbleClawAction(false));
         secondDropOffActions.add(new IntakeAction(true));
+        secondDropOffActions.add(new WobbleClawAction(false));
+
 
         ArrayList<Action> secondDropOffStartActions = new ArrayList<>();
         secondDropOffStartActions.add(new IntakeAction(true));
@@ -171,9 +172,14 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         ArrayList<Action> fromSecondWobbleActions = new ArrayList<>();
         fromSecondWobbleActions.add(new FlywheelAction(true));
         fromSecondWobbleActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.RAISED));
+
+        ArrayList<Action> shootActions = new ArrayList<>();
+        shootActions.add(new ShootAction(BLUE_HIGH));
+
+
         PathFollow secondWobbleDropOffToShoot = new PathFollow(new Waypoint[]{
                 new Waypoint(secondWobbleDropoff, fromSecondWobbleActions),
-                new Waypoint(SHOOT_RING_X, SHOOT_RING_Y, new ShootAction(BLUE_HIGH)),
+                new Waypoint(SHOOT_RING_X, SHOOT_RING_Y, shootActions),
         }, robot, "Second wobble drop off to park");
 
         PathFollow shootToPark = new PathFollow(new Waypoint[]{

@@ -144,7 +144,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         isCloseEnough = false;
         hasSkippedForShooterSpeed = false;
 
-        shooterModule.flyWheelTargetSpeed = 0; // Reset PID on shooter by temporarily setting speed to 0
+        shooterModule.flyWheelTargetSpeed = getFlyWheelTargetSpeed(); // Reset PID on shooter by temporarily setting speed to 0
     }
 
     public void toggleColour() {
