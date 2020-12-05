@@ -1,3 +1,4 @@
+[![works badge](https://cdn.jsdelivr.net/gh/nikku/works-on-my-machine@v0.2.0/badge.svg)](https://github.com/nikku/works-on-my-machine)
 ## NOTICE
 
 This repository contains Kuriosity Robotics's code for the Ultimate Goal (2020-2021) competition season.
