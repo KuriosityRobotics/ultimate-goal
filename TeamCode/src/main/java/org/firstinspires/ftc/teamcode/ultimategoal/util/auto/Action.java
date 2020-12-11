@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
  * A class to keep track of an action, along with the state of its execution.
  */
 public abstract class Action {
+    protected boolean stopMovementForExecution = false;
     protected long beginExecutionTime = 0;
 
     /**

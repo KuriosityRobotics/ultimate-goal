@@ -2,22 +2,25 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.TowerGoal;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.vision.GoalFinder;
 
 import java.util.ArrayList;
 
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.ITarget;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
 
 public class Shooter extends ModuleCollection implements Module, TelemetryProvider {
-    private Robot robot;
+    private final Robot robot;
     private boolean isOn;
 
-    private ShooterModule shooterModule;
-    private HopperModule hopperModule;
+    private final ShooterModule shooterModule;
+    private final HopperModule hopperModule;
 
     // States
-    public TowerGoal target = TowerGoal.BLUE_HIGH;
+    public ITarget target = BLUE_HIGH;
+    private ITarget oldTarget = target;
     public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
     public int queuedIndexes = 0;
 
@@ -27,33 +30,35 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private static final double FLAP_ANGLE_TO_POSITION_LINEAR_TERM = 0.0025;
     private static final double FLAP_ANGLE_TO_POSITION_CONSTANT_TERM = 0.607;
 
-    // Distance to goal to flap angle constants
-    private static final double DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM = 0.00282;
-    private static final double DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM = -0.615;
-    private static final double DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM = 50;
-
     // Distance to goal to angle offset constant
     // -0.0372 + 2.79E-03x + -1.31E-05x^2
-    private static final double DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -1.31E-05;
-    private static final double DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
-    private static final double DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0372
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -1.31E-05;
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0372
 
-    // Position of goals, all in inches, from the center of the robot at the front blue corner (audience, left)
-    private static final double HIGH_GOAL_CENTER_HEIGHT = 33.0 + (5.0 / 2) - 0.625;
-    private static final double MIDDLE_GOAL_CENTER_HEIGHT = 21.0 + (12.0 / 2) - 0.625;
-    private static final double LOW_GOAL_CENTER_HEIGHT = 13.0 + (8.0 / 2) - 0.625; // Subtract to account for thickness of mat
-    //    private static final double BLUE_GOAL_CENTER_X = 23.0 + (24.0 / 2) - 9; // Subtract to account for center of robot
-    private static final double BLUE_GOAL_CENTER_X = 27; // Subtract to account for center of robot
-    private static final double RED_GOAL_CENTER_X = 23.0 + (23.5 * 3) + (24.0 / 2) - 9;
-    //    private static final double GOAL_CENTER_Y = 6 * 24.0 - (0.5 * 2) - 9;
-    private static final double GOAL_CENTER_Y = (24 * 6) - 9;
+    // 0.48 + -9.05E-03x + 5.34E-05x^2
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 5.34E-5;
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = -9.05E-3;
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.48;
+
+    // Powershot distance to flap position -1.75E-04*x + 0.664
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.664;
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -1.75e-4;
+
     public double distanceSam;
+    public double angleOffset;
+
+    public double manualAngleCorrection;
+    public double manualAngleFlapCorrection;
+
+    private boolean hasSkippedForShooterSpeed = false;
 
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
 
         this.robot = robot;
         this.isOn = isOn;
+        manualAngleCorrection = 0;
 
         shooterModule = new ShooterModule(robot, isOn);
         hopperModule = new HopperModule(robot, isOn);
@@ -73,28 +78,57 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             robot.drivetrain.weakBrake = false;
 
             robot.drivetrain.setMovements(0, 0, 0);
-        } else if (!isAimBotActive && activeToggle) {
-            activeToggle = false;
 
+            resetAiming();
+        } else if (!isAimBotActive && activeToggle) {
             queuedIndexes = 0;
 
-            shooterModule.flyWheelTargetSpeed = 0;
+            if (hopperModule.isIndexerReturned()) {
+                activeToggle = false;
 
-            robot.drivetrain.weakBrake = weakBrakeOldState;
+                shooterModule.flyWheelTargetSpeed = 0;
 
-            robot.shooter.setHopperPosition(HopperModule.HopperPosition.LOWERED);
+                robot.drivetrain.weakBrake = weakBrakeOldState;
+
+                robot.shooter.setHopperPosition(HopperModule.HopperPosition.LOWERED);
+            }
         }
 
         if (activeToggle) {
-            robot.drivetrain.setMovements(0, 0, 0);
+            if (hasSkippedForShooterSpeed) {
+                shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
+            } else {
+                hasSkippedForShooterSpeed = true;
+            }
+
+            if (hopperModule.isIndexerPushed()) {
+                if (oldTarget != target) {
+                    resetAiming();
+                    oldTarget = target;
+                }
+
+                hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
+
+                aimShooter(target);
+                shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
+
+                if (queuedIndexes > 0 && isCloseEnough && hopperModule.isIndexerReturned() && shooterModule.isUpToSpeed()) {
+                    if (hopperModule.requestRingIndex()) {
+                        queuedIndexes--;
+                    }
+                }
+            }
+
+            if (oldTarget != target) {
+                resetAiming();
+                oldTarget = target;
+            }
 
             hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
             aimShooter(target);
 
-            shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
-
-            if (queuedIndexes > 0) {
+            if (queuedIndexes > 0 && isCloseEnough && hopperModule.isIndexerReturned() && shooterModule.isUpToSpeed()) {
                 if (hopperModule.requestRingIndex()) {
                     queuedIndexes--;
                 }
@@ -108,32 +142,102 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         shooterModule.update();
     }
 
+    public void resetAiming() {
+        hasAlignedInitial = false;
+        hasAlignedUsingVision = false;
+        isDoneAiming = false;
+        isCloseEnough = false;
+        hasSkippedForShooterSpeed = false;
+
+        shooterModule.flyWheelTargetSpeed = getFlyWheelTargetSpeed(); // Reset PID on shooter by temporarily setting speed to 0
+    }
+
+    public void toggleColour() {
+        target = target.switchColour();
+    }
+
+    public void nextTarget() {
+        target = target.next();
+    }
+
+//    /**
+//     * Aim the shooter at the target specified.
+//     *
+//     * @param target The target to aim at.
+//     */
+//    public void aimShooter(ITarget target, GoalFinder.GoalLocationData loc) {
+//        double distanceToTargetCenterRobot = distanceToTarget(target);
+//
+//        if (target.isPowershot()) {
+//            angleOffset = (POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
+//                    + (POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
+//                    + POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+//        } else {
+//            angleOffset = (HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
+//                    + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
+//                    + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+//        }
+//
+//        turnToGoal(target, loc, angleOffset);
+//
+//        double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
+//        distanceSam = distanceToTarget;
+//
+//        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
+//    }
+
+    public void aimShooter(ITarget target) {
+        double distanceToTargetCenterRobot = distanceToTarget(target);
+
+        if (target.isPowershot()) {
+            angleOffset = (POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
+                    + (POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
+                    + POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+        } else {
+            angleOffset = 0.9 * ((HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
+                    + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
+                    + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
+        }
+
+        turnToGoal(target, angleOffset);
+
+        double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
+        distanceSam = distanceToTarget;
+
+        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
+    }
+
     /**
-     * Aim the shooter at the target specified.
+     * Aim only the flap at the target. Does not attempt to move the robot.
      *
      * @param target The target to aim at.
      */
-    public void aimShooter(TowerGoal target) {
+    private void aimFlapToTarget(ITarget target) {
         double distanceToTargetCenterRobot = distanceToTarget(target);
-        double angleOffset = (DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
-        robot.drivetrain.setBrakeHeading(angleWrap(headingToTarget(target) + angleOffset));
+        double angleOffset = (HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
 
-        double distanceToTarget = distanceToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
+        double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
         distanceSam = distanceToTarget;
-        aimFlapToTarget(distanceToTarget);
+
+        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
 
-    private void aimFlapToTarget(TowerGoal target) {
-        double distanceToTarget = distanceToTarget(target);
-
-        aimFlapToTarget(distanceToTarget);
+    private double getHighGoalFlapPosition(double distanceToTarget) {
+//0.7188854
+//        return 0.7188854
+//                - (0.00123 * distanceToTarget)
+//                + (0.00000567 * Math.pow(distanceToTarget, 2))
+//                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
+//                + manualAngleFlapCorrection;
+        return 0.7188854 - 8500 * 1 * 0.000001
+                + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
+                + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
+                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
+                + manualAngleFlapCorrection;
     }
 
-    private void aimFlapToTarget(double distanceToTarget) {
-//        double flapAngleToShoot = (DISTANCE_TO_FLAP_ANGLE_SQUARE_TERM * distanceToTarget * distanceToTarget) + (DISTANCE_TO_FLAP_ANGLE_LINEAR_TERM * distanceToTarget) + DISTANCE_TO_FLAP_ANGLE_CONSTANT_TERM;
-        double flapPositionToShoot = 0.7188854 - 0.00123 * distanceToTarget + 0.00000567 * Math.pow(distanceToTarget, 2) + 0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12));
-
-        shooterModule.shooterFlapPosition = flapPositionToShoot;
+    private double getPowershotFlapPosition(double distanceToTarget) {
+        return (POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM * distanceToTarget) + POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM;
     }
 
     /**
@@ -146,58 +250,99 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         return (FLAP_ANGLE_TO_POSITION_LINEAR_TERM * angle) + FLAP_ANGLE_TO_POSITION_CONSTANT_TERM;
     }
 
-    /**
-     * Returns the position of the given goal, relative to (0,0) being the bottom left (blue and audience side)
-     * of the field.
-     *
-     * @param towerGoal The target goal.
-     * @return The position of that goal, as a Point.
-     * @see Point
-     */
-    public Point towerGoalPosition(TowerGoal towerGoal) {
-        Point targetPoint = new Point();
-
-        switch (towerGoal) {
-            case RED_HIGH:
-            case RED_LOW:
-            case RED_MIDDLE:
-                targetPoint = new Point(RED_GOAL_CENTER_X, GOAL_CENTER_Y);
-                break;
-            case BLUE_HIGH:
-            case BLUE_MIDDLE:
-            case BLUE_LOW:
-                targetPoint = new Point(BLUE_GOAL_CENTER_X, GOAL_CENTER_Y);
-                break;
-        }
-
-        return targetPoint;
+    private double calculateAngleDelta(double yaw) {
+        return Math.toDegrees(yaw) > 1 ? Math.tanh(Math.toDegrees(yaw)) : 0;
     }
 
-    /**
-     * Returns the height of the given goal, relative to the top of the mats.
-     *
-     * @param towerGoal The target goal.
-     * @return The height of that goal.
-     */
-    public double towerGoalHeight(TowerGoal towerGoal) {
-        double height = 0;
+    boolean hasAlignedInitial = false;
+    boolean hasAlignedUsingVision = false;
+    boolean isDoneAiming = false;
+    boolean isCloseEnough = false;
 
-        switch (towerGoal) {
-            case RED_HIGH:
-            case BLUE_HIGH:
-                height = HIGH_GOAL_CENTER_HEIGHT;
-                break;
-            case RED_MIDDLE:
-            case BLUE_MIDDLE:
-                height = MIDDLE_GOAL_CENTER_HEIGHT;
-                break;
-            case RED_LOW:
-            case BLUE_LOW:
-                height = LOW_GOAL_CENTER_HEIGHT;
-                break;
+//    private void turnToGoal(ITarget target, GoalFinder.GoalLocationData loc, double offset) {
+//        if (!hasAlignedInitial) {
+//            double headingToTarget = headingToTarget(target);
+//
+//            robot.drivetrain.setBrakeHeading(headingToTarget);
+//
+//            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(1.5)) {
+//                hasAlignedInitial = true;
+//            }
+//            hasAlignedInitial = true;
+//        }
+//
+////        if (!hasAlignedUsingVision && hasAlignedInitial) {
+////            if (target.isPowershot()) {
+////                hasAlignedUsingVision = true; //TODO
+////            } else {
+////                if (loc != null) {
+////                    double yawOffset = loc.getYaw();
+////                    robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading() + yawOffset);
+////
+////                    if (yawOffset < Math.toRadians(1)) {
+////                        hasAlignedUsingVision = true;
+////                    }
+////                } else {
+////                    hasAlignedUsingVision = true;
+////                }
+////            }
+////        }
+//        hasAlignedUsingVision = true;
+//
+//        if (!isDoneAiming && hasAlignedUsingVision) {
+//            robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset + manualAngleCorrection));
+//
+//            isDoneAiming = true;
+//        }
+//
+//        if (isDoneAiming) {
+//            robot.drivetrain.setMovements(0, 0, 0);
+//            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(2);
+//        }
+//    }
+
+    long doneAimingTime = 0;
+    private void turnToGoal(ITarget target, double offset) {
+        if (!hasAlignedInitial) {
+            double headingToTarget = headingToTarget(target);
+
+            robot.drivetrain.setBrakeHeading(headingToTarget);
+
+            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(2)) {
+                hasAlignedInitial = true;
+            }
+            hasAlignedInitial = true;
         }
 
-        return height;
+        hasAlignedUsingVision = true;
+
+        if (!isDoneAiming && hasAlignedUsingVision) {
+            if (target.isPowershot()) {
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset * 1.015) + (manualAngleCorrection * 0.925));
+            } else {
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading()  + (offset + manualAngleCorrection) * 0.925);
+            }
+            isDoneAiming = true;
+            doneAimingTime = robot.getCurrentTimeMilli();
+        }
+
+        if (isDoneAiming) {
+            robot.drivetrain.setMovements(0, 0, 0);
+
+            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(2);
+
+            if (robot.getCurrentTimeMilli() > doneAimingTime + 2500) {
+                isCloseEnough = true;
+            }
+        }
+    }
+
+    public void forceAim() {
+        hasAlignedInitial = true;
+        hasAlignedUsingVision = true;
+        isCloseEnough = true;
+
+        robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading());
     }
 
     /**
@@ -205,8 +350,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      *
      * @param targetGoal The target to aim at.
      */
-    public double headingToTarget(TowerGoal targetGoal) {
-        return headingToTarget(towerGoalPosition(targetGoal));
+    public double headingToTarget(ITarget targetGoal) {
+        return headingToTarget(targetGoal.getLocation());
     }
 
     /**
@@ -219,10 +364,9 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         double headingToTarget = angleWrap(Math.atan2(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y));
 
-        // TODO: vision magic for double checking
-
         return headingToTarget;
     }
+
 
     /**
      * Calculate the distance from the target goal.
@@ -230,8 +374,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      * @param targetGoal The target goal.
      * @return The distance to that goal.
      */
-    public double distanceToTarget(TowerGoal targetGoal, double heading) {
-        return distanceToTarget(towerGoalPosition(targetGoal), heading);
+    public double distanceFromFlapToTarget(ITarget targetGoal, double heading) {
+        return distanceFromFlapToTarget(targetGoal.getLocation(), heading);
     }
 
     /**
@@ -240,7 +384,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      * @param targetPoint The target point.
      * @return The distance to that point.
      */
-    public double distanceToTarget(Point targetPoint, double heading) {
+    public double distanceFromFlapToTarget(Point targetPoint, double heading) {
         Point currentPosition = robot.drivetrain.getCurrentPosition();
         double globalAngle = Math.atan2(9.0, 5.0) - heading;
         double hypot = Math.hypot(5.0, 9.0);
@@ -254,8 +398,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         return distanceToTarget;
     }
 
-    public double distanceToTarget(TowerGoal targetGoal) {
-        return distanceToTarget(towerGoalPosition(targetGoal));
+    public double distanceToTarget(ITarget targetGoal) {
+        return distanceToTarget(targetGoal.getLocation());
     }
 
     public double distanceToTarget(Point targetPoint) {
@@ -297,11 +441,26 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     /**
      * Add one to the queue of indexes. Only has an effect if the aimbot is active.
      */
-    public void queueRingIndex() {
+    public void queueIndexThreeRings() {
         if (isAimBotActive) {
 //            queuedIndexes++;
             queuedIndexes = 3;
         }
+    }
+
+    public void queueIndex() {
+        if (isAimBotActive) {
+            queuedIndexes = 1;
+        }
+    }
+
+    /**
+     * Add to the queue of indexes. Only has an effect if the aimbot is active.
+     *
+     * @param numRings The number of rings to add to the queue
+     */
+    public void queueIndexes(int numRings) {
+        queuedIndexes += numRings;
     }
 
     public boolean requestRingIndex() {
@@ -310,15 +469,6 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     public boolean isUpToSpeed() {
         return shooterModule.isUpToSpeed();
-    }
-
-    /**
-     * Add to the queue of indexes. Only has an effect if the aimbot is active.
-     *
-     * @param numRings The number of rings to add to the queue
-     */
-    public void queueRingIndex(int numRings) {
-        queuedIndexes += numRings;
     }
 
     public void setHopperPosition(HopperModule.HopperPosition hopperPosition) {
@@ -338,8 +488,16 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      *
      * @return If there are indexes queued.
      */
-    public boolean awaitingIndexes() {
-        return queuedIndexes > 0;
+    public boolean isFinishedIndexing() {
+        return (queuedIndexes <= 0) && hopperModule.isDoneIndexing();
+    }
+
+    public boolean isIndexerPushed() {
+        return hopperModule.isIndexerPushed();
+    }
+
+    public boolean isIndexerReturned() {
+        return hopperModule.isIndexerReturned();
     }
 
     @Override
@@ -351,8 +509,17 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("Is active: " + isAimBotActive);
+        data.add("Active toggle: " + activeToggle);
+        data.add("Target: " + target.toString());
         data.add("Queued indexes: " + queuedIndexes);
         data.add("Distance: d" + distanceSam);
+        data.add("angleOffset: " + angleOffset);
+        data.add("--");
+        data.add("hasAlignedInitial: " + hasAlignedInitial);
+        data.add("hasAlignedUsingVision: " + hasAlignedUsingVision);
+        data.add("isDoneAiming: " + isDoneAiming);
+        data.add("isFinishedIndexing: " + isFinishedIndexing());
+        data.add("isCloseEnough: " + isCloseEnough);
         return data;
     }
 

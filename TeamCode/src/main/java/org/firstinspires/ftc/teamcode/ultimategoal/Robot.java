@@ -15,22 +15,27 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ModuleCollection;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.VisionModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.ActionExecutor;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 public class Robot extends ModuleCollection {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
     public Shooter shooter;
+
     public IntakeModule intakeModule;
     public WobbleModule wobbleModule;
+//    public VisionModule visionModule;
 
     private long currentTimeMilli;
 
     public HardwareMap hardwareMap;
+    public Telemetry telemetry;
     private final LinearOpMode linearOpMode;
 
     public TelemetryDump telemetryDump;
@@ -51,14 +56,19 @@ public class Robot extends ModuleCollection {
     public final static boolean WILL_FILE_DUMP = false;
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode) {
+        this(hardwareMap, telemetry, linearOpMode, new Point(0, 0));
+    }
+
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode, Point startingPosition) {
         this.hardwareMap = hardwareMap;
+        this.telemetry = telemetry;
         this.linearOpMode = linearOpMode;
 
         this.telemetryDump = new TelemetryDump(telemetry);
         fileDump = new FileDump();
 
         initHubs();
-        initialize();
+        initialize(startingPosition);
 
         actionExecutor = new ActionExecutor(this);
     }
@@ -73,6 +83,7 @@ public class Robot extends ModuleCollection {
                 try {
                     module.update();
                 } catch (Exception e) {
+                    e.printStackTrace();
                     Log.d("Module", "Module couldn't update: " + module.getName());
                 }
             }
@@ -93,21 +104,22 @@ public class Robot extends ModuleCollection {
         }
     }
 
-    private void initialize() {
+    private void initialize(Point startingPosition) {
         // Add individual modules into the array here
-        this.drivetrain = new Drivetrain(this, true);
+        this.drivetrain = new Drivetrain(this, true, startingPosition);
         this.shooter = new Shooter(this, true);
+
         this.intakeModule = new IntakeModule(this, true);
         this.wobbleModule = new WobbleModule(this, true);
+//        this.visionModule = new VisionModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.shooter, this.intakeModule, this.wobbleModule
+                this.drivetrain, this.intakeModule, this.wobbleModule, this.shooter
         };
 
         // Initialize modules
         initModules(); // Initial init
-        while (!initCycle()) {
-        } // Cycle init
+        while (!initCycle()) {} // Cycle init
 
         // Start the thread for executing modules.
         moduleExecutor = new ModuleExecutor(this);
@@ -130,6 +142,7 @@ public class Robot extends ModuleCollection {
             revHub2 = hardwareMap.get(LynxModule.class, "Expansion Hub 2");
             revHub2.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         } catch (Exception e) {
+            linearOpMode.stop();
             throw new Error("One or more of the REV hubs could not be found. More info: " + e);
         }
     }

@@ -23,12 +23,12 @@ public class HopperModule implements Module, TelemetryProvider {
 
     // Constants
     private static final double INDEX_OPEN_POSITION = 0.2075;
-    private static final double INDEX_PUSH_POSITION = 0.365;
+    private static final double INDEX_PUSH_POSITION = 0.3675;
 
-    private static final int INDEXER_PUSHED_TIME_MS = 400;
-    private static final int INDEXER_RETURNED_TIME_MS = 400;
+    private static final int INDEXER_PUSHED_TIME_MS = 550;
+    private static final int INDEXER_RETURNED_TIME_MS = 1100;
 
-    private static final double HOPPER_RAISED_POSITION = 0.96;
+    private static final double HOPPER_RAISED_POSITION = 0.965;
     private static final double HOPPER_LOWERED_POSITION = 0.63; // TODO find pos
 
     private static final int HOPPER_RAISE_TIME_MS = 1000;
@@ -60,11 +60,11 @@ public class HopperModule implements Module, TelemetryProvider {
             indexerServo.setPosition(INDEX_OPEN_POSITION);
 
             initStartTime = currentTime;
-        } else if (currentTime > initStartTime + (INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS)) {
+        } else if (currentTime > initStartTime + Math.max((INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS), HOPPER_RAISE_TIME_MS)) {
             hopperLinkage.setPosition(HOPPER_LOWERED_POSITION);
         }
 
-        return currentTime > initStartTime + (INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS) + HOPPER_LOWER_TIME_MS;
+        return currentTime > initStartTime + Math.max((INDEXER_RETURNED_TIME_MS - INDEXER_PUSHED_TIME_MS), HOPPER_RAISE_TIME_MS) + HOPPER_LOWER_TIME_MS;
     }
 
     private long indexTime = 0;
@@ -88,18 +88,18 @@ public class HopperModule implements Module, TelemetryProvider {
         }
 
         // Index logic if the hopper is up
-        if (hopperPosition == HopperPosition.RAISED && isAtPosition()) {
+        if (hopperPosition == HopperPosition.RAISED && isHopperAtPosition()) {
             boolean indexerReturned = currentTime > indexTime + INDEXER_RETURNED_TIME_MS;
             if (indexRing && indexerReturned) {
                 indexerServo.setPosition(INDEX_PUSH_POSITION);
                 indexTime = currentTime;
                 indexRing = false;
             }
+        }
 
-            boolean isDoneIndexing = currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
-            if (isDoneIndexing) {
-                indexerServo.setPosition(INDEX_OPEN_POSITION);
-            }
+        boolean isDoneIndexing = currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
+        if (isDoneIndexing) {
+            indexerServo.setPosition(INDEX_OPEN_POSITION);
         }
     }
 
@@ -116,13 +116,27 @@ public class HopperModule implements Module, TelemetryProvider {
      *
      * @return whether or not the hopper is at the position specified.
      */
-    public boolean isAtPosition() {
+    public boolean isHopperAtPosition() {
         long currentTime = robot.getCurrentTimeMilli();
         if (hopperPosition == HopperPosition.RAISED) {
             return currentTime > (hopperTransitionTime + HOPPER_RAISE_TIME_MS);
         } else {
             return currentTime > (hopperTransitionTime + HOPPER_LOWER_TIME_MS);
         }
+    }
+
+    public boolean isIndexerReturned() {
+        long currentTime = robot.getCurrentTimeMilli();
+        return currentTime > indexTime + INDEXER_RETURNED_TIME_MS;
+    }
+
+    public boolean isIndexerPushed() {
+        long currentTime = robot.getCurrentTimeMilli();
+        return currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
+    }
+
+    public boolean isDoneIndexing() {
+        return isIndexerPushed() && !indexRing;
     }
 
     /**
@@ -132,7 +146,7 @@ public class HopperModule implements Module, TelemetryProvider {
      * @return Whether or not the index command will be processed.
      */
     public boolean requestRingIndex() {
-        if (robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS && robot.shooter.isUpToSpeed() && !indexRing) {
+        if (!indexRing) {
             indexRing = true;
             return true;
         } else {
@@ -150,6 +164,13 @@ public class HopperModule implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("Hopper position: " + hopperPosition.toString());
         data.add("Will index: " + indexRing);
+        data.add("--");
+        data.add("index time: " + indexTime);
+        data.add("hopper transition time: " + hopperTransitionTime);
+        data.add("current time: " + robot.getCurrentTimeMilli());
+        data.add("is indexer returned: " + isIndexerReturned());
+        data.add("is indexer pushed: " + isIndexerPushed());
+        data.add("is hopper at positoin: " + isHopperAtPosition());
         return data;
     }
 

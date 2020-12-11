@@ -21,7 +21,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     Point adjustedTargetPoint;
 
     // constants
-    public static final double DISTANCE_THRESHOLD = 0.5;
+    public static final double DISTANCE_THRESHOLD = 0.75;
     public static final double ANGLE_THRESHOLD = Math.toRadians(2);
     public static final double FOLLOW_RADIUS = 15;
     public static final double SLIP_FACTOR = 0;
@@ -31,6 +31,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     private String description;
     private Waypoint[] path;
     private int pathIndex = 0;
+    private boolean registeredLastAction = false;
 
     // settings
     private double direction = 0;
@@ -47,10 +48,13 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
 
     public void pathFollow(double direction, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading) {
         pathIndex = 0; // Reset pathIndex
+        registeredLastAction = false;
         this.direction = direction;
         this.willAngleLock = willAngleLock;
         this.angleLockHeading = angleLockHeading;
         isTargetingLastPoint = false;
+
+        robot.actionExecutor.registerActions(path[0].actions);
 
         while (robot.isOpModeActive()) {
             Point robotPoint = robot.drivetrain.getCurrentPosition();
@@ -60,14 +64,23 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
             targetPoint = findTarget(path, clippedPoint, robotHeading);
             adjustedTargetPoint = adjustTargetPoint(targetPoint);
 
-            robot.drivetrain.setMovementsToPoint(adjustedTargetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, isTargetingLastPoint, FOLLOW_RADIUS);
+            if (robot.actionExecutor.requiresStop()) {
+                robot.drivetrain.setMovements(0, 0, 0);
+            } else {
+                robot.drivetrain.setMovementsToPoint(adjustedTargetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, isTargetingLastPoint, FOLLOW_RADIUS);
+            }
 
             robot.actionExecutor.updateExecution();
 
-            if (isDone(path, robotPoint, robotHeading)) {
+            boolean isDoneMoving = isDoneMoving(path, robotPoint, robotHeading);
+            if (isDoneMoving && !registeredLastAction) {
+                robot.actionExecutor.registerActions(path[path.length - 1].actions);
+                registeredLastAction = true;
+            } else if (isDoneMoving && robot.actionExecutor.isDoneExecutingQueue()) {
                 robot.drivetrain.setMovements(0, 0, 0);
 
                 robot.drivetrain.brakePoint = path[path.length - 1];
+
                 if (willAngleLock) {
                     robot.drivetrain.brakeHeading = angleLockHeading;
                 }
@@ -166,7 +179,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
         return new Point(targetPoint.x - slipX, targetPoint.y - slipY);
     }
 
-    private boolean isDone(Waypoint[] path, Point center, double heading) {
+    private boolean isDoneMoving(Waypoint[] path, Point center, double heading) {
         Point endPoint = path[path.length - 1];
 
         return (Math.hypot(center.x - endPoint.x, center.y - endPoint.y) < DISTANCE_THRESHOLD) && (!willAngleLock || Math.abs(angleWrap(angleLockHeading - heading)) < ANGLE_THRESHOLD) && pathIndex == path.length - 2;

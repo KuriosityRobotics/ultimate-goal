@@ -56,6 +56,11 @@ public class VelocityModule implements Module, TelemetryProvider {
         oldUpdateTime = currentUpdateTime;
     }
 
+    public void reset() {
+        oldWorldPosition = robot.drivetrain.getCurrentPosition();
+        oldWorldAngle = robot.drivetrain.getCurrentHeading();
+    }
+
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("xVel: " + xVel);

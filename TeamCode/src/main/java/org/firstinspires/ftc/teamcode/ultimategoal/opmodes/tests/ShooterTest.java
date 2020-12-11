@@ -10,19 +10,26 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
 import java.util.ArrayList;
 
+//@Disabled
 @TeleOp
 public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     Robot robot;
 
     Toggle a = new Toggle();
+    Toggle b = new Toggle();
+    Toggle x = new Toggle();
+
 
     // States
-    double flapPosition = 0.74; // In degrees
-    double flyWheelSpeed = robot.FLY_WHEEL_SPEED; // In ticks per second
+//    final double FLAP_MAX = 0.71;
+    double flapPosition = 0.65; // In degrees
+    double flyWheelSpeed = 1550; // In ticks per second
 
     @Override
     public void runOpMode() {
         robot = new Robot(hardwareMap, telemetry, this);
+        robot.drivetrain.zeroPowerBrake = false;
+
         robot.telemetryDump.registerProvider(this);
 
         waitForStart();
@@ -44,9 +51,15 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
             robot.shooter.setFlapPosition(flapPosition);
             robot.shooter.setFlyWheelSpeed(flyWheelSpeed);
 
+            if (x.isToggled(gamepad1.y))
+                flapPosition /= 2;
+
             if (a.isToggled(gamepad1.a)) {
                 robot.shooter.requestRingIndex();
             }
+            if (b.isToggled(gamepad1.b))
+                robot.shooter.nextTarget();
+
         }
     }
 

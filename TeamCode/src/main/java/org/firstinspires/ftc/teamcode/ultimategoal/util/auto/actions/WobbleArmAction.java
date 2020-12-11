@@ -1,18 +1,19 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
 
 public class WobbleArmAction extends Action {
-    boolean lowerWobble;
+    WobbleModule.WobbleArmPosition wobbleArmPosition;
 
-    public WobbleArmAction(boolean lowerWobble) {
-        this.lowerWobble = lowerWobble;
+    public WobbleArmAction(WobbleModule.WobbleArmPosition wobbleArmPosition) {
+        this.wobbleArmPosition = wobbleArmPosition;
     }
 
     @Override
     public boolean executeAction(Robot robot) {
-        robot.wobbleModule.setWobbleArmPosition(lowerWobble);
+        robot.wobbleModule.wobbleArmPosition = this.wobbleArmPosition;
 
         return true;
     }
