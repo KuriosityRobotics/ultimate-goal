@@ -187,34 +187,34 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
                 new Waypoint(PARK)
         }, robot, "Second wobble drop off to park");
 
-        startToFirstWobbleDropOff.pathFollow(0, 1, 1, true, Math.toRadians(-45));
+        startToFirstWobbleDropOff.followPath(0, 1, 1, true, Math.toRadians(-45));
         sleep(500);
 
-        firstWobbleDropOffToPowerShot.pathFollow(Math.toRadians(180), 1, 1, true, 0);
+        firstWobbleDropOffToPowerShot.followPath(Math.toRadians(180), 1, 1, true, 0);
         sleep(500);
 
         if (measuredZone == Vision.TargetGoal.C) {
             robot.drivetrain.brakeHeading = Math.toRadians(90);
             sleep(500);
 
-            powerShotToStack.pathFollow(Math.toRadians(180), 1, 1, true, Math.toRadians(-90));
+            powerShotToStack.followPath(Math.toRadians(180), 1, 1, true, Math.toRadians(-90));
 
-            backFromStack.pathFollow(0, 1, 1, true, Math.toRadians(-90));
+            backFromStack.followPath(0, 1, 1, true, Math.toRadians(-90));
 
-            stackToSecondWobble.pathFollow(0, 1, 1, true, Math.toRadians(215));
+            stackToSecondWobble.followPath(0, 1, 1, true, Math.toRadians(215));
 
-            stackToSecondWobble2.pathFollow(0,0.55,1,true,Math.toRadians(215));
+            stackToSecondWobble2.followPath(0,0.55,1,true,Math.toRadians(215));
         } else {
-            powerShotToSecondWobble.pathFollow(0, 0.55, 1, true, Math.toRadians(215));
+            powerShotToSecondWobble.followPath(0, 0.55, 1, true, Math.toRadians(215));
         }
         sleep(500);
 
-        secondWobbleToSecondWobbleDropOff.pathFollow(0, 1, 1, true, 0);
+        secondWobbleToSecondWobbleDropOff.followPath(0, 1, 1, true, 0);
         sleep(500);
 
-        secondWobbleDropOffToShoot.pathFollow(Math.toRadians(180), 1, 1, false, 0);
+        secondWobbleDropOffToShoot.followPath(Math.toRadians(180), 1, 1, false, 0);
 
-        shootToPark.pathFollow(0, 1, 1, true, 0);
+        shootToPark.followPath(0, 1, 1, true, 0);
         sleep(2000);
     }
 

@@ -16,9 +16,8 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     Robot robot;
     private boolean isFileDump = false;
 
-    Point clippedPoint = new Point(0, 0);
+    Point clippedRobotPosition = new Point(0, 0);
     Point targetPoint = new Point(0, 0);
-    Point adjustedTargetPoint;
 
     // constants
     public static final double DISTANCE_THRESHOLD = 0.75;
@@ -27,11 +26,11 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     public static final double SLIP_FACTOR = 0;
 
     // states
-    private boolean isTargetingLastPoint = false;
+    private boolean isTargetingLastPoint;
     private String description;
     private Waypoint[] path;
-    private int pathIndex = 0;
-    private boolean registeredLastAction = false;
+    private int pathIndex;
+    private boolean registeredLastAction;
 
     // settings
     private double direction = 0;
@@ -46,47 +45,47 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
         robot.telemetryDump.registerProvider(this);
     }
 
-    public void pathFollow(double direction, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading) {
-        pathIndex = 0; // Reset pathIndex
-        registeredLastAction = false;
+    public void followPath(double direction, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading) {
+        this.pathIndex = 0; // Reset pathIndex
+        this.registeredLastAction = false;
         this.direction = direction;
         this.willAngleLock = willAngleLock;
         this.angleLockHeading = angleLockHeading;
-        isTargetingLastPoint = false;
+        this.isTargetingLastPoint = false;
 
         robot.actionExecutor.registerActions(path[0].actions);
 
         while (robot.isOpModeActive()) {
-            Point robotPoint = robot.drivetrain.getCurrentPosition();
+            Point robotPosition = robot.drivetrain.getCurrentPosition();
             double robotHeading = robot.drivetrain.getCurrentHeading();
 
-            clippedPoint = clipToPath(path, robotPoint);
-            targetPoint = findTarget(path, clippedPoint, robotHeading);
-            adjustedTargetPoint = adjustTargetPoint(targetPoint);
+            clippedRobotPosition = calculateClippedPosition(robotPosition);
+            targetPoint = calculateTargetPoint(clippedRobotPosition);
 
             if (robot.actionExecutor.requiresStop()) {
                 robot.drivetrain.setMovements(0, 0, 0);
-            } else {
-                robot.drivetrain.setMovementsToPoint(adjustedTargetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, isTargetingLastPoint, FOLLOW_RADIUS);
-            }
-
-            robot.actionExecutor.updateExecution();
-
-            boolean isDoneMoving = isDoneMoving(path, robotPoint, robotHeading);
-            if (isDoneMoving && !registeredLastAction) {
-                robot.actionExecutor.registerActions(path[path.length - 1].actions);
-                registeredLastAction = true;
-            } else if (isDoneMoving && robot.actionExecutor.isDoneExecutingQueue()) {
-                robot.drivetrain.setMovements(0, 0, 0);
-
+            } else if (isDoneMoving(robotPosition, robotHeading)) {
                 robot.drivetrain.brakePoint = path[path.length - 1];
 
                 if (willAngleLock) {
                     robot.drivetrain.brakeHeading = angleLockHeading;
                 }
 
-                return;
+                robot.drivetrain.setMovements(0, 0, 0);
+
+                if (!registeredLastAction) {
+                    robot.actionExecutor.registerActions(path[path.length - 1].actions);
+                    registeredLastAction = true;
+                }
+
+                if (robot.actionExecutor.isDoneExecutingQueue()) {
+                    return;
+                }
+            } else {
+                robot.drivetrain.setMovementsToPoint(targetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, isTargetingLastPoint);
             }
+
+            robot.actionExecutor.updateExecution();
         }
     }
 
@@ -98,7 +97,14 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
         return description + ".path";
     }
 
-    private Point clipToPath(Waypoint[] path, Point center) {
+    /**
+     * Clips the robot's current position onto the path, also updating the pathIndex to reflect
+     * where the robot is along the path.
+     *
+     * @param center
+     * @return clipped position of the robot onto the path
+     */
+    private Point calculateClippedPosition(Point center) {
         Point clipped = new Point();
 
         double nearestClipDist = Double.MAX_VALUE;
@@ -111,7 +117,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
 
             double thisClipDist = lineSegmentPointDistance(center, start, end);
 
-            // if this clip distance is record low set the clip point to the clip point set the clippedIndex to index so later we can update the index we are at
+            // if this clip distance is the lowest, remember this point, where it is on the path, and distance
             if (thisClipDist < nearestClipDist) {
                 nearestClipDist = thisClipDist;
                 clipped = closestPointOnLineToPoint(center, start, end);
@@ -119,6 +125,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
             }
         }
 
+        // Update our progress along the path using where we actually are
         if (clippedIndex != pathIndex) {
             for (int skippedIndex = pathIndex; skippedIndex <= clippedIndex; skippedIndex++) {
                 robot.actionExecutor.registerActions(path[skippedIndex].actions);
@@ -130,38 +137,38 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
         return clipped;
     }
 
-    private Point findTarget(Waypoint[] path, Point center, double heading) {
+    /**
+     * Calculate what point the robot should move towards.
+     *
+     * @param center
+     * @return The point the robot should move towards.
+     */
+    private Point calculateTargetPoint(Point center) {
         Point followPoint = new Point();
 
-        Point lineStartPoint = path[pathIndex];
-        double distToFirst = Math.hypot(center.x - lineStartPoint.x, center.y - lineStartPoint.y);
+        Point pathSegmentStartPoint = path[pathIndex];
+        double distToSegmentStart = Math.hypot(center.x - pathSegmentStartPoint.x, center.y - pathSegmentStartPoint.y);
 
-        // only look at lines on current index or next index
-        for (int i = pathIndex; i < Math.min(path.length - 1, pathIndex + 2); i++) {
-            Point start = path[i];
-            Point end = path[i + 1];
-
-            ArrayList<Point> intersections = lineSegmentCircleIntersection(center, FOLLOW_RADIUS, start, end);
-
-            double nearestAngle = Double.MAX_VALUE;
-
-            for (Point thisIntersection : intersections) {
-
-                double angle = Math.atan2(thisIntersection.x - center.x, thisIntersection.y - center.y) + direction;
-                double deltaAngle = Math.abs(angleWrap(angle - heading));
-                double thisDistToFirst = Math.hypot(thisIntersection.x - lineStartPoint.x, thisIntersection.y - lineStartPoint.y);
-
-                if (deltaAngle < nearestAngle && thisDistToFirst > distToFirst) {
-                    nearestAngle = deltaAngle;
-                    followPoint.x = thisIntersection.x;
-                    followPoint.y = thisIntersection.y;
-                }
-            }
-        }
-
+        // If we're close enough to the end of the path, just try to go to the end of the path
         if (Math.hypot(center.x - path[path.length - 1].x, center.y - path[path.length - 1].y) < FOLLOW_RADIUS * 1.5 && pathIndex == path.length - 2) {
             followPoint = path[path.length - 1];
             isTargetingLastPoint = true;
+        } else {
+            // only look at lines on current index or next index
+            for (int i = pathIndex; i < Math.min(path.length - 1, pathIndex + 2); i++) {
+                Point start = path[i];
+                Point end = path[i + 1];
+
+                ArrayList<Point> intersections = lineSegmentCircleIntersection(center, FOLLOW_RADIUS, start, end);
+
+                for (Point thisIntersection : intersections) {
+                    double thisDistanceToSegmentStart = Math.hypot(thisIntersection.x - pathSegmentStartPoint.x, thisIntersection.y - pathSegmentStartPoint.y);
+
+                    if (thisDistanceToSegmentStart > distToSegmentStart) { // If this intersection is furthest along the segment of the path
+                        followPoint = thisIntersection; // Use this point
+                    }
+                }
+            }
         }
 
         return followPoint;
@@ -179,10 +186,12 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
         return new Point(targetPoint.x - slipX, targetPoint.y - slipY);
     }
 
-    private boolean isDoneMoving(Waypoint[] path, Point center, double heading) {
+    private boolean isDoneMoving(Point robotPosition, double heading) {
         Point endPoint = path[path.length - 1];
 
-        return (Math.hypot(center.x - endPoint.x, center.y - endPoint.y) < DISTANCE_THRESHOLD) && (!willAngleLock || Math.abs(angleWrap(angleLockHeading - heading)) < ANGLE_THRESHOLD) && pathIndex == path.length - 2;
+        return (Math.hypot(robotPosition.x - endPoint.x, robotPosition.y - endPoint.y) < DISTANCE_THRESHOLD)
+                && (!willAngleLock || Math.abs(angleWrap(angleLockHeading - heading)) < ANGLE_THRESHOLD)
+                && pathIndex == path.length - 2;
     }
 
     public boolean isFileDump() {
@@ -193,8 +202,8 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("path: " + description);
-        data.add("clippedX: " + clippedPoint.x);
-        data.add("clippedY: " + clippedPoint.y);
+        data.add("clippedX: " + clippedRobotPosition.x);
+        data.add("clippedY: " + clippedRobotPosition.y);
         data.add("targetX: " + targetPoint.x);
         data.add("targetY: " + targetPoint.y);
         data.add("pathIndex: " + pathIndex);

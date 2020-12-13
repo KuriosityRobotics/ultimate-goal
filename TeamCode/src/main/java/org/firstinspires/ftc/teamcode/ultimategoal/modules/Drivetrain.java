@@ -123,7 +123,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      */
     private void setDrivetrainMovements() {
         if (isBrake) {
-            setMovementsToBrakePosition();
+            setDrivetrainMovementsToBrakePosition();
         } else {
             if (isSlowMode) {
                 drivetrainModule.setMovements(xMovement * SLOW_MODE_FACTOR, yMovement * SLOW_MODE_FACTOR, turnMovement * SLOW_MODE_FACTOR);
@@ -133,24 +133,27 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         }
     }
 
+    double velocityAlongPath;
+    double scale;
+    double turnScale;
+
     /**
      * Sets movement of drivetrain to try to stay on the brake point.
      */
-    private void setMovementsToBrakePosition() {
+    private void setDrivetrainMovementsToBrakePosition() {
         Point robotPosition = getCurrentPosition();
         double robotHeading = getCurrentHeading();
 
         double distanceToTarget = Math.hypot(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
+        double absoluteAngleToTarget = Math.atan2(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
+        double relativeTurnAngle = angleWrap(brakeHeading - robotHeading);
+        double angleError = Math.abs(relativeTurnAngle);
 
         if (weakBrake && distanceToTarget > .5) {
             brakePoint = new Point((brakePoint.x + robotPosition.x) / 2, (brakePoint.y + robotPosition.y) / 2);
 
             distanceToTarget = Math.hypot(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
         }
-
-        double absoluteAngleToTarget = Math.atan2(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
-        double relativeTurnAngle = angleWrap(brakeHeading - robotHeading);
-        double angleError = Math.abs(relativeTurnAngle);
 
         if (weakBrake && angleError > .08) {
             brakeHeading = robotHeading;
@@ -179,16 +182,15 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotVelocityHeading);
 
         double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
-        if (isSlowMode) {
-            scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * SLOW_MOMENTUM_FACTOR), -1, 1);
-        } else {
-            scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
-        }
 
         if (isSlowMode) {
+            scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * SLOW_MOMENTUM_FACTOR), -1, 1);
+
             xMovement = Range.clip(xPower * scale, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
             yMovement = Range.clip(yPower * scale, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
         } else {
+            scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
+
             xMovement = Range.clip(xPower * scale, -1, 1);
             yMovement = Range.clip(yPower * scale, -1, 1);
         }
@@ -212,11 +214,6 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
     }
 
-    private Point lastTargetPoint = new Point();
-    double velocityAlongPath;
-    double scale;
-    double turnScale;
-
     /**
      * Set the movements of the drivetrain to go to a target point. Should be called over and over
      * to adjust the movements until reaching the point.
@@ -228,9 +225,20 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @param willAngleLock        Whether or not to lock to an angle.
      * @param angleLockHeading     The angle to lock to.
      * @param isTargetingLastPoint Whether or not to activate logic specific to the last point of a path.
-     * @param followRadius         The radius to follow, used for last point logic.
      */
-    public void setMovementsToPoint(Point targetPoint, double moveSpeed, double turnSpeed, double direction, boolean willAngleLock, double angleLockHeading, boolean isTargetingLastPoint, double followRadius) {
+    public void setMovementsToPoint(Point targetPoint, double moveSpeed, double turnSpeed, double direction, boolean willAngleLock, double angleLockHeading, boolean isTargetingLastPoint) {
+        if (isTargetingLastPoint) {
+            setMovements(0, 0, 0);
+
+            brakePoint = targetPoint;
+
+            if (willAngleLock) {
+                brakeHeading = angleLockHeading;
+            }
+
+            return;
+        }
+
         Point robotPosition = getCurrentPosition();
         double robotHeading = getCurrentHeading();
 
@@ -242,47 +250,15 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         double relativeYToPoint = Math.cos(relativeAngleToPoint) * distanceToTarget;
 
         double relativeTurnAngle = angleWrap(relativeAngleToPoint + direction);
-        if (willAngleLock && isTargetingLastPoint) {
-            relativeTurnAngle = angleWrap(angleLockHeading - robotHeading);
-        }
-        double angleError = Math.abs(relativeTurnAngle);
 
-        double totalPower = Math.abs(relativeYToPoint) + Math.abs(relativeXToPoint);
+        double totalOffsetToPoint = Math.abs(relativeYToPoint) + Math.abs(relativeXToPoint);
 
-        double xPower = relativeXToPoint / totalPower;
-        double yPower = relativeYToPoint / totalPower;
+        double xPower = relativeXToPoint / totalOffsetToPoint;
+        double yPower = relativeYToPoint / totalOffsetToPoint;
 
         double xMovement = xPower * moveSpeed;
         double yMovement = yPower * moveSpeed;
         double turnMovement = Range.clip(relativeTurnAngle / Math.toRadians(30), -1, 1) * turnSpeed;
-
-        if (isTargetingLastPoint) {
-            double p = NON_LINEAR_P * Math.sqrt(distanceToTarget);
-
-            double robotVelocity = Math.hypot(velocityModule.getxVel(), velocityModule.getyVel());
-            double robotVelocityHeading = Math.atan2(velocityModule.getyVel(), velocityModule.getxVel());
-            velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotVelocityHeading);
-
-            double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
-            if (isSlowMode) {
-                scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * SLOW_MOMENTUM_FACTOR), -1, 1);
-            } else {
-                scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
-            }
-
-            if (isSlowMode) {
-                xMovement = Range.clip(((xPower * scale) > SLOW_MODE_FACTOR ? 1 : ((xPower * scale) / SLOW_MODE_FACTOR)), -moveSpeed, moveSpeed);
-                yMovement = Range.clip(((yPower * scale) > SLOW_MODE_FACTOR ? 1 : ((yPower * scale) / SLOW_MODE_FACTOR)), -moveSpeed, moveSpeed);
-            } else {
-                xMovement = Range.clip(xPower * scale, -moveSpeed, moveSpeed);
-                yMovement = Range.clip(yPower * scale, -moveSpeed, moveSpeed);
-            }
-
-            double inverseTurnAngle = INVERSE_TURN_FACTOR * 1 / (angleError + .1);
-            turnScale = Range.clip((TURN_NON_LINEAR_P * ((Math.sqrt(angleError) * Math.abs(relativeTurnAngle)) / relativeTurnAngle)) - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
-
-            turnMovement = turnScale;
-        }
 
         setMovements(xMovement, yMovement, turnMovement);
     }
@@ -311,7 +287,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         while ((Math.hypot(robotPosition.x - targetPoint.x, robotPosition.y - targetPoint.y) > PathFollow.DISTANCE_THRESHOLD)
                 || (!willAngleLock || (Math.abs(angleWrap(angleLockHeading - angleLockHeading)) > PathFollow.ANGLE_THRESHOLD))) {
-            setMovementsToPoint(targetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, false, PathFollow.FOLLOW_RADIUS);
+            setMovementsToPoint(targetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, false);
         }
     }
 
