@@ -7,10 +7,8 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ShootAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.SlowModeAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.WobbleArmAction;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.WobbleClawAction;
 
 @Autonomous
 public class AutoActionsTest extends LinearOpMode {
@@ -32,7 +30,7 @@ public class AutoActionsTest extends LinearOpMode {
 
         sleep(1000);
 
-        pf1.pathFollow(0, 1, 1, true, 0);
+        pf1.followPath(0, 1, 1, true, 0);
 
         sleep(5000);
     }
