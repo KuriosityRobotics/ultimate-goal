@@ -19,15 +19,24 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     // States
     public ITarget target = BLUE_HIGH;
-    private ITarget oldTarget = target;
     public boolean isAimBotActive = false; // Whether or not the aimbot is actively controlling the robot.
+    public boolean isFlyWheelOn = false;
     public int queuedIndexes = 0;
 
+    public double manualAngleCorrection;
+    public double manualAngleFlapCorrection;
+
+    // Helpers
     private boolean activeToggle = false;
+    private ITarget oldTarget = target;
 
     // Flap angle to position constants 2.5E-03*x + 0.607
     private static final double FLAP_ANGLE_TO_POSITION_LINEAR_TERM = 0.0025;
     private static final double FLAP_ANGLE_TO_POSITION_CONSTANT_TERM = 0.607;
+
+    // Flywheel constants
+    public final static int HIGHGOAL_FLYWHEEL_SPEED = 1550;
+    public final static int POWERSHOT_FLYWHEEL_SPEED = 1500; // todo
 
     // Distance to goal to angle offset constant
     // -0.0372 + 2.79E-03x + -1.31E-05x^2
@@ -44,13 +53,9 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.664;
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -1.75e-4;
 
-    public double distanceSam;
+    public double distanceToGoal;
     public double angleOffset;
 
-    public double manualAngleCorrection;
-    public double manualAngleFlapCorrection;
-
-    private boolean hasSkippedForShooterSpeed = false;
     private int burstNum = 0;
 
     public Shooter(Robot robot, boolean isOn) {
@@ -73,6 +78,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         if (isAimBotActive && !activeToggle) {
             activeToggle = true;
 
+            isFlyWheelOn = true;
+
             weakBrakeOldState = robot.drivetrain.weakBrake;
 
             robot.drivetrain.weakBrake = false;
@@ -86,6 +93,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             if (hopperModule.isIndexerReturned()) {
                 activeToggle = false;
 
+                isFlyWheelOn = false;
+
                 shooterModule.flyWheelTargetSpeed = 0;
 
                 robot.drivetrain.weakBrake = weakBrakeOldState;
@@ -94,13 +103,12 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             }
         }
 
-        if (activeToggle) {
-            if (hasSkippedForShooterSpeed) {
-                shooterModule.flyWheelTargetSpeed = robot.FLY_WHEEL_SPEED;
-            } else {
-                hasSkippedForShooterSpeed = true;
-            }
+        if (isFlyWheelOn) {
+            shooterModule.flyWheelTargetSpeed = target.isPowershot() ? POWERSHOT_FLYWHEEL_SPEED : HIGHGOAL_FLYWHEEL_SPEED;
+        }
 
+        if (activeToggle) {
+            // Don't move if the indexer is still pushing a ring
             if (hopperModule.isIndexerPushed()) {
                 if (oldTarget != target) {
                     resetAiming();
@@ -109,8 +117,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
                 hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
 
+                shooterModule.flyWheelTargetSpeed = target.isPowershot() ? POWERSHOT_FLYWHEEL_SPEED : HIGHGOAL_FLYWHEEL_SPEED;
                 aimShooter(target);
-                shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
                 if (queuedIndexes > 0) {
                     boolean shooterReady = burstNum > 0 || shooterModule.isUpToSpeed();
@@ -138,11 +146,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         hasAlignedUsingVision = false;
         isDoneAiming = false;
         isCloseEnough = false;
-        hasSkippedForShooterSpeed = false;
 
         burstNum = 0;
-
-        shooterModule.flyWheelTargetSpeed = getFlyWheelTargetSpeed(); // Reset PID on shooter by temporarily setting speed to 0
     }
 
     public void toggleColour() {
@@ -169,7 +174,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         turnToGoal(target, angleOffset);
 
         double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
-        distanceSam = distanceToTarget;
+        distanceToGoal = distanceToTarget;
 
         shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
@@ -184,7 +189,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         double angleOffset = (HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
 
         double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
-        distanceSam = distanceToTarget;
+        distanceToGoal = distanceToTarget;
 
         shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
@@ -287,9 +292,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public double headingToTarget(Point targetPoint) {
         Point robotPosition = robot.drivetrain.getCurrentPosition();
 
-        double headingToTarget = angleWrap(Math.atan2(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y));
-
-        return headingToTarget;
+        return angleWrap(Math.atan2(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y));
     }
 
 
@@ -437,7 +440,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         data.add("Active toggle: " + activeToggle);
         data.add("Target: " + target.toString());
         data.add("Queued indexes: " + queuedIndexes);
-        data.add("Distance: d" + distanceSam);
+        data.add("Distance: " + distanceToGoal);
         data.add("angleOffset: " + angleOffset);
         data.add("--");
         data.add("hasAlignedInitial: " + hasAlignedInitial);
