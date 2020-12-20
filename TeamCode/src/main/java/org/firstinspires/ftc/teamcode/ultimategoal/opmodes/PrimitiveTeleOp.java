@@ -93,7 +93,7 @@ public class PrimitiveTeleOp extends LinearOpMode implements TelemetryProvider {
         }
 
         if (isFlyWheelOn) {
-            robot.shooter.setFlyWheelSpeed(robot.FLY_WHEEL_SPEED);
+            robot.shooter.isFlyWheelOn = true;
         } else {
             robot.shooter.setFlyWheelSpeed(0);
         }

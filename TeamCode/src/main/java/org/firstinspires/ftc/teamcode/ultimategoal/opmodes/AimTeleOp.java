@@ -112,7 +112,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
                 if (robot.shooter.getFlyWheelTargetSpeed() > 0) {
                     robot.shooter.setFlyWheelSpeed(0);
                 } else {
-                    robot.shooter.setFlyWheelSpeed(robot.FLY_WHEEL_SPEED);
+                    robot.shooter.isFlyWheelOn = true;
                 }
             }
         }
