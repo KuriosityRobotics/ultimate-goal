@@ -29,17 +29,22 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     // Constants
     private final static double SLOW_MODE_FACTOR = 0.35;
+    private final static double TURN_SCALE = Math.toRadians(30);
 
-    // Non-linear momentum controller factors
-    private static final double NON_LINEAR_P = 0.21;
-    private static final double MOMENTUM_FACTOR = 0.0017;
-    private static final double INVERSE_DISTANCE_FACTOR = 0.5;
-    private static final double SLOW_MOMENTUM_FACTOR = 0;
+    // Velocity controller
+    private final static double ORTH_VELOCITY_P = 0.1;
+    private final static double ANGULAR_VELOCITY_P = 0.1;
 
-    // Non-linear angle controller factors
-    private static final double TURN_NON_LINEAR_P = 1;
-    private static final double TURN_MOMENTUM_FACTOR = 0;
-    private static final double INVERSE_TURN_FACTOR = 0;
+    // Velocity target constants (line with a floor, to allow for coasting)
+    private final static double ORTH_VELOCITY_SLOWDOWN = 2.6; // The slope of dist vs target velocity
+    private final static double ORTH_COAST_THRESHOLD = 5; // threshold to start coasting, which means hold a speed until power cutoff
+    private final static double ORTH_COAST_VELOCITY = 3; // velocity to coast at
+    private final static double ORTH_STOP_THRESHOLD = 0.5; // threshold at which to stop entirely (after coasting)
+
+    private final static double ANGULAR_VELOCITY_SLOWDOWN = Math.toRadians(5);
+    private final static double ANGULAR_COAST_THRESHOLD = Math.toRadians(10);
+    private final static double ANGULAR_COAST_VELOCITY = Math.toRadians(8);
+    private final static double ANGULAR_STOP_THRESHOLD = Math.toRadians(1);
 
     public Drivetrain(Robot robot, boolean isOn) {
         this(robot, isOn, new Point(0, 0));
@@ -110,7 +115,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @return A double in radians, of the robot's heading.
      */
     public double getCurrentHeading() {
-        return odometryModule.worldAngleRad;
+        return odometryModule.getWorldHeadingRad();
     }
 
     boolean isBrake;
@@ -123,7 +128,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      */
     private void setDrivetrainMovements() {
         if (isBrake) {
-            setDrivetrainMovementsToBrakePosition();
+            applyMovementsToBrakePosition();
         } else {
             if (isSlowMode) {
                 drivetrainModule.setMovements(xMovement * SLOW_MODE_FACTOR, yMovement * SLOW_MODE_FACTOR, turnMovement * SLOW_MODE_FACTOR);
@@ -133,21 +138,16 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         }
     }
 
-    double velocityAlongPath;
-    double scale;
-    double turnScale;
-
     /**
      * Sets movement of drivetrain to try to stay on the brake point.
      */
-    private void setDrivetrainMovementsToBrakePosition() {
+    private void applyMovementsToBrakePosition() {
         Point robotPosition = getCurrentPosition();
         double robotHeading = getCurrentHeading();
 
         double distanceToTarget = Math.hypot(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
         double absoluteAngleToTarget = Math.atan2(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
         double relativeTurnAngle = angleWrap(brakeHeading - robotHeading);
-        double angleError = Math.abs(relativeTurnAngle);
 
         if (weakBrake && distanceToTarget > .5) {
             brakePoint = new Point((brakePoint.x + robotPosition.x) / 2, (brakePoint.y + robotPosition.y) / 2);
@@ -155,11 +155,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
             distanceToTarget = Math.hypot(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
         }
 
-        if (weakBrake && angleError > .08) {
+        if (weakBrake && Math.abs(relativeTurnAngle) > 0.08) {
             brakeHeading = robotHeading;
 
             relativeTurnAngle = 0;
-            angleError = 0;
         }
 
         double relativeAngleToPoint = absoluteAngleToTarget - robotHeading;
@@ -168,50 +167,87 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         double totalPower = Math.abs(relativeYToPoint) + Math.abs(relativeXToPoint);
 
-        double xPower = relativeXToPoint / totalPower;
-        double yPower = relativeYToPoint / totalPower;
+        double xMovement = relativeXToPoint / totalPower;
+        double yMovement = relativeYToPoint / totalPower;
+        double turnMovement = Range.clip(relativeTurnAngle / TURN_SCALE, -1, 1);
 
-        double xMovement = xPower;
-        double yMovement = yPower;
-        double turnMovement = Range.clip(relativeTurnAngle / Math.toRadians(30), -1, 1);
+        // Calculate current velocity along path
+        double velocityAlongPath = velocityTowardsTarget(absoluteAngleToTarget);
+        double angularVelocity = velocityModule.getAngleVel();
 
-        double p = NON_LINEAR_P * Math.sqrt(distanceToTarget);
+        // Calculate the target velocity
+        double targetOrthVelocity = orthTargetVelocity(distanceToTarget);
+        double targetAngularVelocity = angularTargetVelocity(relativeTurnAngle);
 
-        double robotVelocity = Math.hypot(velocityModule.getxVel(), velocityModule.getyVel());
-        double robotVelocityHeading = Math.atan2(velocityModule.getyVel(), velocityModule.getxVel());
-        velocityAlongPath = robotVelocity * Math.cos(absoluteAngleToTarget - robotVelocityHeading);
+        // Maybe use last change in velocity caused by movement offset as feed forward
+        // lol maybe later
 
-        double inverseDistance = INVERSE_DISTANCE_FACTOR * 1 / (distanceToTarget + 0.5);
-
-        if (isSlowMode) {
-            scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * SLOW_MOMENTUM_FACTOR), -1, 1);
-
-            xMovement = Range.clip(xPower * scale, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
-            yMovement = Range.clip(yPower * scale, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
+        // Calculate movements
+        // PID later? this might be questionable, maybe power should be directly calced instead of scaling
+        if (targetOrthVelocity == 0) {
+            xMovement = 0;
+            yMovement = 0;
         } else {
-            scale = Range.clip(p - ((velocityAlongPath) * (inverseDistance) * MOMENTUM_FACTOR), -1, 1);
+            double scale = (velocityAlongPath - targetOrthVelocity) * ORTH_VELOCITY_P;
 
-            xMovement = Range.clip(xPower * scale, -1, 1);
-            yMovement = Range.clip(yPower * scale, -1, 1);
+            xMovement *= scale;
+            yMovement *= scale;
         }
 
-        double inverseTurnAngle = INVERSE_TURN_FACTOR * 1 / (angleError + .1);
-        turnScale = Range.clip((TURN_NON_LINEAR_P * ((Math.sqrt(angleError) * Math.abs(relativeTurnAngle)) / relativeTurnAngle))
-                - ((velocityModule.getAngleVel()) * (inverseTurnAngle) * TURN_MOMENTUM_FACTOR), -1, 1);
+        if (targetAngularVelocity == 0) {
+            turnMovement = 0;
+        } else {
+            double scale = (angularVelocity - targetAngularVelocity) * ANGULAR_VELOCITY_P;
 
-        if (Math.abs(getCurrentHeading() - brakeHeading) > Math.toRadians(1.5) && Math.abs(turnScale) < 0.07) {
-            turnScale = 0.07 * (turnScale / Math.abs(turnScale));
+            turnMovement *= scale;
         }
 
-        turnMovement = turnScale;
-
+        // nerf braking if weak brake
         if (weakBrake) {
             xMovement *= 0.65;
             yMovement *= 0.65;
             turnMovement *= 0.4;
         }
 
+        // apply movements
         drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
+    }
+
+    public double orthTargetVelocity(double distanceToTarget) {
+        return targetVelocityFunction(distanceToTarget, ORTH_STOP_THRESHOLD, ORTH_COAST_VELOCITY, ORTH_COAST_THRESHOLD, ORTH_VELOCITY_SLOWDOWN);
+    }
+
+    public double angularTargetVelocity(double angleOffsetToTarget) {
+        return targetVelocityFunction(angleOffsetToTarget, ANGULAR_STOP_THRESHOLD, ANGULAR_COAST_VELOCITY, ANGULAR_COAST_THRESHOLD, ANGULAR_VELOCITY_SLOWDOWN);
+    }
+
+    public double targetVelocityFunction(double distanceToTarget, double stopThreshold, double coastVelocity, double coastThreshold, double velocitySlowdown) {
+        if (distanceToTarget < stopThreshold) {
+            return 0;
+        } else if (distanceToTarget < coastThreshold) {
+            return coastVelocity;
+        } else {
+            // linear function with transformations (think back to algii/trigh)
+            // use absolute value to calculate target, then add back polarity
+            return (velocitySlowdown * (Math.abs(distanceToTarget) - coastThreshold) + coastVelocity) * (distanceToTarget / Math.abs(distanceToTarget));
+        }
+    }
+
+    /**
+     * Calculate the velocity of the robot on the path towards a target point.
+     *
+     * @param absoluteAngleToTarget The absolute heading from the robot to the target
+     * @return The velocity of the robot towards that point
+     */
+    public double velocityTowardsTarget(double absoluteAngleToTarget) {
+        double xVel = velocityModule.getxVel();
+        double yVel = velocityModule.getyVel();
+        double heading = odometryModule.getWorldHeadingRad();
+
+        double totalVel = Math.hypot(xVel, yVel);
+        double angleDiff = heading - absoluteAngleToTarget;
+
+        return totalVel * Math.cos(angleDiff);
     }
 
     /**
@@ -258,7 +294,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         double xMovement = xPower * moveSpeed;
         double yMovement = yPower * moveSpeed;
-        double turnMovement = Range.clip(relativeTurnAngle / Math.toRadians(30), -1, 1) * turnSpeed;
+        double turnMovement = Math.max(Range.clip(relativeTurnAngle / TURN_SCALE, -1, 1), turnSpeed);
 
         setMovements(xMovement, yMovement, turnMovement);
     }
@@ -341,9 +377,6 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         data.add("isBrake: " + isBrake);
         data.add("Brake Point: " + brakePoint);
         data.add("Brake heading: " + brakeHeading);
-        data.add("-");
-        data.add("non-lin momentum scale: " + scale);
-        data.add("turning scale: " + turnScale);
         return data;
     }
 
