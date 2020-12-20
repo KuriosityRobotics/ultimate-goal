@@ -15,9 +15,9 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     private boolean isOn;
 
     // Position of the robot
-    public double worldX;
-    public double worldY;
-    public double worldAngleRad;
+    private double worldX;
+    private double worldY;
+    private double worldHeadingRad;
 
     // Encoders (as Motors)
     private DcMotor yLeftEncoder;
@@ -92,7 +92,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         ArrayList<String> data = new ArrayList<>();
         data.add("worldX: " + worldX);
         data.add("worldY: " + worldY);
-        data.add("heading: " + worldAngleRad);
+        data.add("heading: " + worldHeadingRad);
 //        data.add("--");
 //        data.add("left: " + leftPodKnownPosition);
 //        data.add("right: " + rightPodKnownPosition);
@@ -105,7 +105,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     public String getFileData() {
-        return String.format(Locale.CANADA_FRENCH, "(%f, %f), %f", worldX, worldY, worldAngleRad);
+        return String.format(Locale.CANADA_FRENCH, "(%f, %f), %f", worldX, worldY, worldHeadingRad);
     }
 
     // Helper variables
@@ -150,10 +150,10 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         double dRobotX = M * sinXOverX(dTheta) + Q * Math.sin(dTheta) - L * cosXMinusOneOverX(dTheta) + P * (Math.cos(dTheta) - 1);
         double dRobotY = L * sinXOverX(dTheta) - P * Math.sin(dTheta) + M * cosXMinusOneOverX(dTheta) + Q * (Math.cos(dTheta) - 1);
 
-        worldX += dRobotX * Math.cos(worldAngleRad) + dRobotY * Math.sin(worldAngleRad);
-        worldY += dRobotY * Math.cos(worldAngleRad) - dRobotX * Math.sin(worldAngleRad);
+        worldX += dRobotX * Math.cos(worldHeadingRad) + dRobotY * Math.sin(worldHeadingRad);
+        worldY += dRobotY * Math.cos(worldHeadingRad) - dRobotX * Math.sin(worldHeadingRad);
         //worldAngleRad =  (leftPodNewPosition - rightPodNewPosition) * INCHES_PER_ENCODER_TICK / (2 * P);
-        worldAngleRad += dTheta;
+        worldHeadingRad += dTheta;
     }
 
     /*
@@ -209,7 +209,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     public void setPosition(double x, double y, double heading) {
         worldX = x;
         worldY = y;
-        worldAngleRad = heading;
+        worldHeadingRad = heading;
 
         resetEncoders();
     }
@@ -220,5 +220,17 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
 
     public String getName() {
         return "OdometryModule";
+    }
+
+    public double getWorldX() {
+        return worldX;
+    }
+
+    public double getWorldY() {
+        return worldY;
+    }
+
+    public double getWorldHeadingRad() {
+        return worldHeadingRad;
     }
 }
