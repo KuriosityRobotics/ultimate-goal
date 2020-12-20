@@ -22,11 +22,11 @@ public class HopperModule implements Module, TelemetryProvider {
     private Servo hopperLinkage;
 
     // Constants
-    private static final double INDEX_OPEN_POSITION = 0.2075;
-    private static final double INDEX_PUSH_POSITION = 0.3675;
+    private static final double INDEX_OPEN_POSITION = 0.385;
+    private static final double INDEX_PUSH_POSITION = 0.125;
 
-    private static final int INDEXER_PUSHED_TIME_MS = 550;
-    private static final int INDEXER_RETURNED_TIME_MS = 1100;
+    private static final int INDEXER_PUSHED_TIME_MS = 125;
+    private static final int INDEXER_RETURNED_TIME_MS = 250;
 
     private static final double HOPPER_RAISED_POSITION = 0.965;
     private static final double HOPPER_LOWERED_POSITION = 0.63; // TODO find pos
