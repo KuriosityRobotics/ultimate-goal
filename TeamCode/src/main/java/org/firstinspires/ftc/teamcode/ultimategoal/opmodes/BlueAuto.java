@@ -134,11 +134,11 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
             backFromStack = new PathFollow(new Waypoint[]{
                     new Waypoint(POWERSHOT.x + 6, STACK.y),
                     new Waypoint(POWERSHOT.x + 4, STACK.y+2),
-                    new Waypoint(STACK.x-4, STACK.y+3)
+                    new Waypoint(STACK.x-7, STACK.y+3)
             }, robot, "Back from stack");
 
             stackToSecondWobble = new PathFollow(new Waypoint[]{
-                    new Waypoint(STACK.x-4, STACK.y+3),
+                    new Waypoint(STACK.x-7, STACK.y+3),
                     new Waypoint(STACK.x+2, STACK.y),
             }, robot, "Stack to second wobble");
             stackToSecondWobble2 = new PathFollow(new Waypoint[]{
