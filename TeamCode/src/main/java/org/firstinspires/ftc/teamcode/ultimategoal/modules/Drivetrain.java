@@ -88,34 +88,20 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         if (xMovement == 0 && yMovement == 0 && turnMovement == 0 && zeroPowerBrake) {
             if (!isBrake) {
                 isBrake = true;
-                brakePoint = getCurrentPosition();
-                brakeHeading = getCurrentHeading();
+
+                resetBrake();
             }
         } else {
             isBrake = false;
         }
     }
 
-    /**
-     * Returns the current position of the robot.
-     *
-     * @return The position of the robot, as a point.
-     */
-    public Point getCurrentPosition() {
-        return odometryModule.getCurrentPosition();
-    }
+    private void resetBrake() {
+        brakePoint = getCurrentPosition();
+        brakeHeading = getCurrentHeading();
 
-    public double[] getEncoderPositions() {
-        return odometryModule.getEncoderPositions();
-    }
-
-    /**
-     * Returns the heading of the robot, in radians.
-     *
-     * @return A double in radians, of the robot's heading.
-     */
-    public double getCurrentHeading() {
-        return odometryModule.getWorldHeadingRad();
+        orthScale = 1;
+        angularScale = 1;
     }
 
     boolean isBrake;
@@ -137,6 +123,14 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
             }
         }
     }
+
+    double orthScale = 1;
+    double angularScale = 1;
+
+    double velocityAlongPath;
+    double angularVelocity;
+    double orthTargetVelocity;
+    double angularTargetVelocity;
 
     /**
      * Sets movement of drivetrain to try to stay on the brake point.
@@ -172,41 +166,47 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         double turnMovement = Range.clip(relativeTurnAngle / TURN_SCALE, -1, 1);
 
         // Calculate current velocity along path
-        double velocityAlongPath = velocityTowardsTarget(absoluteAngleToTarget);
-        double angularVelocity = velocityModule.getAngleVel();
+        velocityAlongPath = velocityTowardsTarget(absoluteAngleToTarget);
+        angularVelocity = velocityModule.getAngleVel();
 
         // Calculate the target velocity
-        double targetOrthVelocity = orthTargetVelocity(distanceToTarget);
-        double targetAngularVelocity = angularTargetVelocity(relativeTurnAngle);
+        orthTargetVelocity = orthTargetVelocity(distanceToTarget);
+        angularTargetVelocity = angularTargetVelocity(relativeTurnAngle);
 
         // Maybe use last change in velocity caused by movement offset as feed forward
         // lol maybe later
 
         // Calculate movements
         // PID later? this might be questionable, maybe power should be directly calced instead of scaling
-        if (targetOrthVelocity == 0) {
-            xMovement = 0;
-            yMovement = 0;
+        if (orthTargetVelocity == 0) {
+            orthScale = 0;
         } else {
-            double scale = (velocityAlongPath - targetOrthVelocity) * ORTH_VELOCITY_P;
-
-            xMovement *= scale;
-            yMovement *= scale;
+            double increment = (orthTargetVelocity - velocityAlongPath) * ORTH_VELOCITY_P;
+            orthScale = Range.clip(orthScale + increment, -1, 1);
         }
 
-        if (targetAngularVelocity == 0) {
-            turnMovement = 0;
+        if (angularTargetVelocity == 0) {
+            angularScale = 0;
         } else {
-            double scale = (angularVelocity - targetAngularVelocity) * ANGULAR_VELOCITY_P;
-
-            turnMovement *= scale;
+            double increment = (angularTargetVelocity - angularVelocity) * ANGULAR_VELOCITY_P;
+            angularScale = Range.clip(angularScale + increment, -1, 1);
         }
+
+        xMovement *= orthScale;
+        yMovement *= orthScale;
+        turnMovement *= angularScale;
 
         // nerf braking if weak brake
         if (weakBrake) {
             xMovement *= 0.65;
             yMovement *= 0.65;
             turnMovement *= 0.4;
+        }
+
+        if (isSlowMode) {
+            xMovement = Range.clip(xMovement, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
+            yMovement = Range.clip(xMovement, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
+            turnMovement = Range.clip(xMovement, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
         }
 
         // apply movements
@@ -351,6 +351,28 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     }
 
     /**
+     * Returns the current position of the robot.
+     *
+     * @return The position of the robot, as a point.
+     */
+    public Point getCurrentPosition() {
+        return odometryModule.getCurrentPosition();
+    }
+
+    public double[] getEncoderPositions() {
+        return odometryModule.getEncoderPositions();
+    }
+
+    /**
+     * Returns the heading of the robot, in radians.
+     *
+     * @return A double in radians, of the robot's heading.
+     */
+    public double getCurrentHeading() {
+        return odometryModule.getWorldHeadingRad();
+    }
+
+    /**
      * DANGEROUS: Set the position of the robot
      *
      * @param x
@@ -377,6 +399,13 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         data.add("isBrake: " + isBrake);
         data.add("Brake Point: " + brakePoint);
         data.add("Brake heading: " + brakeHeading);
+        data.add("--");
+        data.add("velo along path: " + velocityAlongPath);
+        data.add("target orth velo: " + orthTargetVelocity);
+        data.add("angular velo: " + angularVelocity);
+        data.add("target angular velo: " + angularTargetVelocity);
+        data.add("orth scale: " + orthScale);
+        data.add("angular scale: " + angularScale);
         return data;
     }
 
