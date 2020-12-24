@@ -18,22 +18,32 @@ public class WobbleModule implements Module, TelemetryProvider {
     public boolean isClawClamped = true;
     public WobbleArmPosition wobbleArmPosition = WobbleArmPosition.RAISED;
 
-    private int wobbleEncoderTarget;
+    private double wobbleRightTargetPosition;
+    private double wobbleLeftTargetPosition;
 
     public enum WobbleArmPosition {RAISED, WALL_DROP, LOWERED, AUTO_DROP}
 
     // Actuators
-    DcMotorEx wobbleMotor;
+    Servo wobbleLeft;
+    Servo wobbleRight;
+
     Servo wobbleClaw;
 
     // Constants
     private static final double CLAW_CLAMP_POSITION = 0.68;
     private static final double CLAW_OPEN_POSITION = 0.2;
 
-    public static final int WOBBLE_RAISED_POSITION = 0;
-    public static final int WOBBLE_LOWERED_POSITION = -620;
-    public static final int WOBBLE_WALL_DROP_POSITION = -250;
-    public static final int WOBBLE_AUTO_DROP_POSITION = -450;
+    public static final double WOBBLE_RAISED_LEFT_POSITON = 0.225;
+    public static final double WOBBLE_RAISED_RIGHT_POSITON = 0.775;
+
+    public static final double WOBBLE_LOWERED_LEFT_POSITON = 0.86;
+    public static final double WOBBLE_LOWERED_RIGHT_POSITON = 0.14;
+
+    public static final double WOBBLE_WALLDROP_LEFT_POSITON = 0.55;
+    public static final double WOBBLE_WALLDROP_RIGHT_POSITON = 0.45;
+
+    public static final double WOBBLE_AUTODROP_LEFT_POSITON = 0.7;
+    public static final double WOBBLE_AUTODROP_RIGHT_POSITON = 0.3;
 
     public static final int CLAW_CLOSE_MS = 750;
     public static final int CLAW_OPEN_MS = 750;
@@ -46,10 +56,8 @@ public class WobbleModule implements Module, TelemetryProvider {
     }
 
     public void initModules() {
-        wobbleMotor = (DcMotorEx) robot.getDcMotor("wobbleMotor");
-
-        wobbleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        wobbleMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        wobbleLeft = robot.getServo("wobbleLeft");
+        wobbleRight = robot.getServo("wobbleRight");
 
         wobbleClaw = robot.getServo("wobbleClaw");
 
@@ -79,22 +87,25 @@ public class WobbleModule implements Module, TelemetryProvider {
 
         switch (wobbleArmPosition) {
             case RAISED:
-                wobbleEncoderTarget = WOBBLE_RAISED_POSITION;
+                wobbleLeftTargetPosition = WOBBLE_RAISED_LEFT_POSITON;
+                wobbleRightTargetPosition = WOBBLE_RAISED_RIGHT_POSITON;
                 break;
             case LOWERED:
-                wobbleEncoderTarget = WOBBLE_LOWERED_POSITION;
+                wobbleLeftTargetPosition = WOBBLE_LOWERED_LEFT_POSITON;
+                wobbleRightTargetPosition = WOBBLE_LOWERED_RIGHT_POSITON;
                 break;
             case WALL_DROP:
-                wobbleEncoderTarget = WOBBLE_WALL_DROP_POSITION;
+                wobbleLeftTargetPosition = WOBBLE_WALLDROP_LEFT_POSITON;
+                wobbleRightTargetPosition = WOBBLE_WALLDROP_RIGHT_POSITON;
                 break;
             case AUTO_DROP:
-                wobbleEncoderTarget = WOBBLE_AUTO_DROP_POSITION;
+                wobbleLeftTargetPosition = WOBBLE_AUTODROP_LEFT_POSITON;
+                wobbleRightTargetPosition = WOBBLE_AUTODROP_RIGHT_POSITON;
                 break;
         }
 
-        double rawValue = Range.clip((wobbleMotor.getCurrentPosition() - wobbleEncoderTarget) / 100.0, -1.0, 1.0);
-
-        wobbleMotor.setPower(rawValue * 0.5);
+        wobbleLeft.setPosition(wobbleLeftTargetPosition);
+        wobbleRight.setPosition(wobbleRightTargetPosition);
     }
 
     public void nextArmPosition() {
@@ -133,8 +144,6 @@ public class WobbleModule implements Module, TelemetryProvider {
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("Wobble target position: " + wobbleArmPosition);
-        data.add("Wobble encoder target position: " + wobbleEncoderTarget);
-        data.add("Wobble current position: " + wobbleMotor.getCurrentPosition());
         data.add("Is claw clamped: " + isClawClamped);
         data.add("Is claw at position: " + isClawAtPosition());
         return data;

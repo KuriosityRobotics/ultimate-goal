@@ -1,8 +1,12 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
@@ -16,15 +20,19 @@ public class IntakeModule implements Module, TelemetryProvider {
     public double intakePower = 0;
 
     // Actuators
-    DcMotor intakeMotor;
+    DcMotor intakeTop;
+    DcMotor intakeBottom;
+
     Servo leftIntakeLock;
     Servo rightIntakeLock;
 
+
     // Constants
-    private static final double LEFT_LOCKED_POSITION = 0.13;
-    private static final double LEFT_UNLOCKED_POSITION = 0;
-    private static final double RIGHT_LOCKED_POSITION = 0.13;
-    private static final double RIGHT_UNLOCKED_POSITION = 0;
+    private static final double LEFT_LOCKED_POSITION = 0.20824;
+    private static final double LEFT_UNLOCKED_POSITION = 0.36688;
+
+    private static final double RIGHT_LOCKED_POSITION = 0.80932;
+    private static final double RIGHT_UNLOCKED_POSITION = 0.61842;
 
     public IntakeModule(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -34,7 +42,11 @@ public class IntakeModule implements Module, TelemetryProvider {
     }
 
     public void initModules() {
-        intakeMotor = robot.getDcMotor("intakeMotor");
+        intakeTop = robot.getDcMotor("intakeTop");
+        intakeBottom = robot.getDcMotor("intakeBottom");
+
+        intakeTop.setDirection(DcMotorSimple.Direction.REVERSE);
+        intakeBottom.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftIntakeLock = robot.getServo("leftIntakeLock");
         rightIntakeLock = robot.getServo("rightIntakeLock");
@@ -59,9 +71,11 @@ public class IntakeModule implements Module, TelemetryProvider {
             }
         } else {
             if (robot.shooter.getHopperPosition() == HopperModule.HopperPosition.LOWERED) {
-                intakeMotor.setPower(intakePower);
+                intakeTop.setPower(intakePower);
+                intakeBottom.setPower(intakePower);
             } else {
-                intakeMotor.setPower(0);
+                intakeTop.setPower(0);
+                intakeBottom.setPower(0);
             }
         }
     }

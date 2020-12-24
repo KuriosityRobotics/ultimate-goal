@@ -68,9 +68,10 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     public boolean isUpToSpeed() {
-        return true;
+//        return true;
 //        return flyWheel1.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
 //                && flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD;
+        return flyWheel2.getVelocity() > Math.abs(flyWheelTargetSpeed) - FLYWHEEL_SPEED_THRESHOLD;
     }
 
     @Override
@@ -81,7 +82,8 @@ public class ShooterModule implements Module, TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("Flywheel speed: " + flyWheel1.getVelocity());
+        data.add("Flywheel1 speed: " + flyWheel1.getVelocity());
+        data.add("Flywheel2 speed: " + flyWheel2.getVelocity());
         data.add("Flap angle: " + shooterFlapPosition);
         data.add("PID coeefs: " + flyWheel1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER).p);
         return data;

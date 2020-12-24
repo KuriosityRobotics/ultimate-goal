@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import android.os.SystemClock;
 
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
@@ -20,6 +22,8 @@ public class HopperModule implements Module, TelemetryProvider {
     // Servos
     private Servo indexerServo;
     private Servo hopperLinkage;
+
+    public DistanceSensor distance;
 
     // Constants
     private static final double INDEX_OPEN_POSITION = 0.385;
@@ -46,6 +50,8 @@ public class HopperModule implements Module, TelemetryProvider {
 
     @Override
     public void initModules() {
+        distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
+
         indexerServo = robot.getServo("indexerServo");
         hopperLinkage = robot.getServo("hopperLinkage");
     }
@@ -71,6 +77,7 @@ public class HopperModule implements Module, TelemetryProvider {
     private long hopperTransitionTime = 0;
 
     private HopperPosition oldHopperPosition = HopperPosition.LOWERED;
+    public int counter = 0;
 
     @Override
     public void update() {
@@ -100,6 +107,18 @@ public class HopperModule implements Module, TelemetryProvider {
         boolean isDoneIndexing = currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
         if (isDoneIndexing) {
             indexerServo.setPosition(INDEX_OPEN_POSITION);
+        }
+
+        if(distance.getDistance(DistanceUnit.MM) <= 57){
+            counter++;
+        }else{
+            counter = 0;
+        }
+
+        if(counter >= 8){
+            hopperLinkage.setPosition(HOPPER_RAISED_POSITION);
+            counter = 0;
+            robot.intakeModule.intakePower = -1;
         }
     }
 
