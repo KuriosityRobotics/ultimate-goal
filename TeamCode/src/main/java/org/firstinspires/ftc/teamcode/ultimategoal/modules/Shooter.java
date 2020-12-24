@@ -112,7 +112,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
                 aimShooter(target);
                 shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
-                if (queuedIndexes > 0 && isCloseEnough && hopperModule.isIndexerReturned() && shooterModule.isUpToSpeed()) {
+                if (queuedIndexes > 0 && isCloseEnough && hopperModule.isIndexerReturned() && (queuedIndexes <= 2 || shooterModule.isUpToSpeed())) {
                     if (hopperModule.requestRingIndex()) {
                         queuedIndexes--;
                     }
@@ -128,7 +128,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
             aimShooter(target);
 
-            if (queuedIndexes > 0 && isCloseEnough && hopperModule.isIndexerReturned() && shooterModule.isUpToSpeed()) {
+            if (queuedIndexes > 0 && isCloseEnough && hopperModule.isIndexerReturned() && (queuedIndexes <= 2 || shooterModule.isUpToSpeed())) {
                 if (hopperModule.requestRingIndex()) {
                     queuedIndexes--;
                 }
