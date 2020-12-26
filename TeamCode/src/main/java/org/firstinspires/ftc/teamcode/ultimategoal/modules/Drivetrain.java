@@ -260,32 +260,25 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @param direction            The direction to face while moving.
      * @param willAngleLock        Whether or not to lock to an angle.
      * @param angleLockHeading     The angle to lock to.
-     * @param isTargetingLastPoint Whether or not to activate logic specific to the last point of a path.
      */
-    public void setMovementsToPoint(Point targetPoint, double moveSpeed, double turnSpeed, double direction, boolean willAngleLock, double angleLockHeading, boolean isTargetingLastPoint) {
-        if (isTargetingLastPoint) {
-            setMovements(0, 0, 0);
-
-            brakePoint = targetPoint;
-
-            if (willAngleLock) {
-                brakeHeading = angleLockHeading;
-            }
-
-            return;
-        }
-
+    public void setMovementsTowardsPoint(Point targetPoint, double moveSpeed, double turnSpeed, double direction, boolean willAngleLock, double angleLockHeading) {
         Point robotPosition = getCurrentPosition();
         double robotHeading = getCurrentHeading();
 
         double distanceToTarget = Math.hypot(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y);
         double absoluteAngleToTarget = Math.atan2(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y);
 
+
         double relativeAngleToPoint = absoluteAngleToTarget - robotHeading;
         double relativeXToPoint = Math.sin(relativeAngleToPoint) * distanceToTarget;
         double relativeYToPoint = Math.cos(relativeAngleToPoint) * distanceToTarget;
 
-        double relativeTurnAngle = angleWrap(relativeAngleToPoint + direction);
+        double relativeTurnAngle;
+        if (willAngleLock) {
+            relativeTurnAngle = angleWrap(angleLockHeading - robotHeading);
+        } else {
+            relativeTurnAngle = angleWrap(relativeAngleToPoint + direction);
+        }
 
         double totalOffsetToPoint = Math.abs(relativeYToPoint) + Math.abs(relativeXToPoint);
 
@@ -323,8 +316,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         while ((Math.hypot(robotPosition.x - targetPoint.x, robotPosition.y - targetPoint.y) > PathFollow.DISTANCE_THRESHOLD)
                 || (!willAngleLock || (Math.abs(angleWrap(angleLockHeading - angleLockHeading)) > PathFollow.ANGLE_THRESHOLD))) {
-            setMovementsToPoint(targetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, false);
+            setMovementsTowardsPoint(targetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading);
         }
+
+        // TODO: FIX, use braking
     }
 
     public double getDistanceToPoint(Point targetPoint) {
