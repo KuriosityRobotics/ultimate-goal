@@ -23,14 +23,14 @@ public class HopperModule implements Module, TelemetryProvider {
     private Servo indexerServo;
     private Servo hopperLinkage;
 
-    public DistanceSensor distance;
+//    public DistanceSensor distance;
 
     // Constants
     private static final double INDEX_OPEN_POSITION = 0.385;
     private static final double INDEX_PUSH_POSITION = 0.125;
 
-    private static final int INDEXER_PUSHED_TIME_MS = 125;
-    private static final int INDEXER_RETURNED_TIME_MS = 250;
+    private static final int INDEXER_PUSHED_TIME_MS = 200;
+    private static final int INDEXER_RETURNED_TIME_MS = 400;
 
     private static final double HOPPER_RAISED_POSITION = 0.965;
     private static final double HOPPER_LOWERED_POSITION = 0.63; // TODO find pos
@@ -50,7 +50,7 @@ public class HopperModule implements Module, TelemetryProvider {
 
     @Override
     public void initModules() {
-        distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
+        //distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
 
         indexerServo = robot.getServo("indexerServo");
         hopperLinkage = robot.getServo("hopperLinkage");
@@ -78,6 +78,7 @@ public class HopperModule implements Module, TelemetryProvider {
 
     private HopperPosition oldHopperPosition = HopperPosition.LOWERED;
     public int counter = 0;
+    public int counter2 = 0;
 
     @Override
     public void update() {
@@ -109,17 +110,28 @@ public class HopperModule implements Module, TelemetryProvider {
             indexerServo.setPosition(INDEX_OPEN_POSITION);
         }
 
-        if(distance.getDistance(DistanceUnit.MM) <= 57){
-            counter++;
-        }else{
-            counter = 0;
-        }
+//        if(distance.getDistance(DistanceUnit.MM) <= 57){
+//            counter++;
+//        }else{
+//            counter = 0;
+//        }
+//
+//        if(counter >= 8){
+//            hopperLinkage.setPosition(HOPPER_RAISED_POSITION);
+//            counter = 0;
+//            robot.intakeModule.intakePower = -1;
+//        }
 
-        if(counter >= 8){
-            hopperLinkage.setPosition(HOPPER_RAISED_POSITION);
-            counter = 0;
-            robot.intakeModule.intakePower = -1;
-        }
+//        if(distance.getDistance(DistanceUnit.MM) <= 67){
+//            counter2++;
+//        }else{
+//            counter2 = 0;
+//        }
+//
+//        if(counter2 >= 8){
+//            robot.shooter.setFlyWheelSpeed(-1550);
+//            counter2 = 0;
+//        }
     }
 
     public void switchHopperPosition() {
@@ -190,6 +202,7 @@ public class HopperModule implements Module, TelemetryProvider {
         data.add("is indexer returned: " + isIndexerReturned());
         data.add("is indexer pushed: " + isIndexerPushed());
         data.add("is hopper at positoin: " + isHopperAtPosition());
+//        data.add("DISTANCE: " + distance.getDistance(DistanceUnit.MM));
         return data;
     }
 

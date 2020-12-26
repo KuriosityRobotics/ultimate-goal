@@ -38,9 +38,6 @@ public class WobblePlebTest extends LinearOpMode{
 //
         leftServo = (Servo) hardwareMap.get("rightIntakeLock");
         rightServo = (Servo) hardwareMap.get("leftIntakeLock");
-        leftServo.setPosition(0.5);
-        rightServo.setPosition(0.5);
-
         waitForStart();
 
         double left = 0.5;
@@ -57,30 +54,9 @@ public class WobblePlebTest extends LinearOpMode{
             //0.61842
             //0.36688
 
-            left += gamepad1.left_stick_y*0.001;
-            right += gamepad1.right_stick_y*0.001;
 
-            leftServo.setPosition(left);
-            rightServo.setPosition(right);
-
-            telemetry.addLine("LEFT " + left);
-            telemetry.addLine("RIGHT " + right);
+            telemetry.addLine(Double.toString(distance.getDistance(DistanceUnit.MM)));
             telemetry.update();
-            if(distance.getDistance(DistanceUnit.MM) <= 57){
-                counter++;
-            }else{
-                counter = 0;
-            }
-            if(counter >= 5){
-                intakeTop.setPower(1);
-                intakeBottom.setPower(1);
-            }else {
-                intakeTop.setPower(-1);
-                intakeBottom.setPower(-1);
-            }
-
-
-
 //            if(gamepad1.a){
 //                rings = 0;
 //                leftServo.setPosition(0.15);

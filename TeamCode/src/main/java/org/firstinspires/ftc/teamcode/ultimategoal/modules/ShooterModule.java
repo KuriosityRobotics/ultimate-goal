@@ -19,7 +19,6 @@ public class ShooterModule implements Module, TelemetryProvider {
     // States
     public double flyWheelTargetSpeed;
     public double shooterFlapPosition = 0.63;
-    private boolean indexRing;
 
     // Motors
     private DcMotorEx flyWheel1;
@@ -39,8 +38,8 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel1 = (DcMotorEx) robot.getDcMotor("flyWheel1");
         flyWheel2 = (DcMotorEx) robot.getDcMotor("flyWheel2");
 
-        flyWheel1.setDirection(DcMotorSimple.Direction.FORWARD);
-        flyWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
+        flyWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
+        flyWheel2.setDirection(DcMotorSimple.Direction.FORWARD);
 
         shooterFlap = robot.getServo("shooterFlap");
 
@@ -50,8 +49,8 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        flyWheel1.setVelocityPIDFCoefficients(7, 0.5, 0, 11.7);
-        flyWheel2.setVelocityPIDFCoefficients(7, 0.5, 0, 11.7);
+        flyWheel1.setVelocityPIDFCoefficients(8.5, 0.6, 0, 11.7);
+        flyWheel2.setVelocityPIDFCoefficients(8.5, 0.6, 0, 11.7);
     }
 
     @Override
@@ -71,7 +70,7 @@ public class ShooterModule implements Module, TelemetryProvider {
 //        return true;
 //        return flyWheel1.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
 //                && flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD;
-        return flyWheel2.getVelocity() > Math.abs(flyWheelTargetSpeed) - FLYWHEEL_SPEED_THRESHOLD;
+        return  flyWheel1.getVelocity() > Math.abs(flyWheelTargetSpeed)-50 && flyWheel2.getVelocity() > Math.abs(flyWheelTargetSpeed)-50;
     }
 
     @Override
