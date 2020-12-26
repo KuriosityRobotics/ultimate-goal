@@ -34,8 +34,8 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
 
     // settings
     private double direction = 0;
-    private double angleLockHeading = 0;
-    private boolean willAngleLock = false;
+    private double angleLockHeadingAtEnd = 0;
+    private boolean willAngleLockAtEnd = false;
 
     public PathFollow(Waypoint[] path, Robot robot, String description) {
         this.path = path;
@@ -45,12 +45,12 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
         robot.telemetryDump.registerProvider(this);
     }
 
-    public void followPath(double direction, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading) {
+    public void followPath(double direction, double moveSpeed, double turnSpeed, boolean willAngleLockAtEnd, double angleLockHeadingAtEnd) {
         this.pathIndex = 0; // Reset pathIndex
         this.registeredLastAction = false;
         this.direction = direction;
-        this.willAngleLock = willAngleLock;
-        this.angleLockHeading = angleLockHeading;
+        this.willAngleLockAtEnd = willAngleLockAtEnd;
+        this.angleLockHeadingAtEnd = angleLockHeadingAtEnd;
         this.isTargetingLastPoint = false;
 
         robot.actionExecutor.registerActions(path[0].actions);
@@ -62,13 +62,13 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
             clippedRobotPosition = calculateClippedPosition(robotPosition);
             targetPoint = calculateTargetPoint(clippedRobotPosition);
 
-            if (robot.actionExecutor.requiresStop()) {
+            if (robot.actionExecutor.requiresStop()) { // an action requires us to stop
                 robot.drivetrain.setMovements(0, 0, 0);
-            } else if (isDoneMoving(robotPosition, robotHeading)) {
+            } else if (isDoneMoving(robotPosition, robotHeading)) { // We're at the end of the path
                 robot.drivetrain.brakePoint = path[path.length - 1];
 
-                if (willAngleLock) {
-                    robot.drivetrain.brakeHeading = angleLockHeading;
+                if (willAngleLockAtEnd) {
+                    robot.drivetrain.brakeHeading = angleLockHeadingAtEnd;
                 }
 
                 robot.drivetrain.setMovements(0, 0, 0);
@@ -81,8 +81,20 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
                 if (robot.actionExecutor.isDoneExecutingQueue()) {
                     return;
                 }
-            } else {
-                robot.drivetrain.setMovementsToPoint(targetPoint, moveSpeed, turnSpeed, direction, willAngleLock, angleLockHeading, isTargetingLastPoint);
+            } else { // We still need to move
+                if (isTargetingLastPoint) {
+                    // use brake
+                    robot.drivetrain.setMovements(0, 0, 0);
+
+                    robot.drivetrain.brakePoint = path[path.length - 1];
+
+                    if (willAngleLockAtEnd) {
+                        robot.drivetrain.brakeHeading = angleLockHeadingAtEnd;
+                    }
+                } else {
+                    // go to the target point
+                    robot.drivetrain.setMovementsTowardsPoint(targetPoint, moveSpeed, turnSpeed, direction, false, angleLockHeadingAtEnd);
+                }
             }
 
             robot.actionExecutor.updateExecution();
@@ -190,7 +202,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
         Point endPoint = path[path.length - 1];
 
         return (Math.hypot(robotPosition.x - endPoint.x, robotPosition.y - endPoint.y) < DISTANCE_THRESHOLD)
-                && (!willAngleLock || Math.abs(angleWrap(angleLockHeading - heading)) < ANGLE_THRESHOLD)
+                && (!willAngleLockAtEnd || Math.abs(angleWrap(angleLockHeadingAtEnd - heading)) < ANGLE_THRESHOLD)
                 && pathIndex == path.length - 2;
     }
 
