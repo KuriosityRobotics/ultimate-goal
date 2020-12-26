@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.RobotAction;
 
-public class FlywheelAction extends Action {
+public class FlywheelAction extends RobotAction {
     boolean isFlywheelOn;
 
     public FlywheelAction(boolean isFlywheelOn) {

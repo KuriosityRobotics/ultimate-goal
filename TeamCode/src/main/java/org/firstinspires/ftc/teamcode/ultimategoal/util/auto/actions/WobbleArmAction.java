@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.RobotAction;
 
-public class WobbleArmAction extends Action {
+public class WobbleArmAction extends RobotAction {
     WobbleModule.WobbleArmPosition wobbleArmPosition;
 
     public WobbleArmAction(WobbleModule.WobbleArmPosition wobbleArmPosition) {

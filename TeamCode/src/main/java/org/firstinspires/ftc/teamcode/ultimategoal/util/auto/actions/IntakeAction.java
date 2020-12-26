@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.RobotAction;
 
-public class IntakeAction extends Action {
+public class IntakeAction extends RobotAction {
     boolean isIntakeOn;
 
     public IntakeAction(boolean isIntakeOn) {

@@ -37,6 +37,9 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     private double angleLockHeadingAtEnd = 0;
     private boolean willAngleLockAtEnd = false;
 
+    public boolean currentlyAngleLocking = false;
+    public double currentAngleLockHeading = 0;
+
     public PathFollow(Waypoint[] path, Robot robot, String description) {
         this.path = path;
         this.robot = robot;
@@ -92,12 +95,14 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
                         robot.drivetrain.brakeHeading = angleLockHeadingAtEnd;
                     }
                 } else {
+                    double desiredAngleLockHeading = isTargetingLastPoint ? angleLockHeadingAtEnd : currentAngleLockHeading;
+
                     // go to the target point
-                    robot.drivetrain.setMovementsTowardsPoint(targetPoint, moveSpeed, turnSpeed, direction, false, angleLockHeadingAtEnd);
+                    robot.drivetrain.setMovementsTowardsPoint(targetPoint, moveSpeed, turnSpeed, direction, this.willAngleLockAtEnd || this.currentlyAngleLocking, desiredAngleLockHeading);
                 }
             }
 
-            robot.actionExecutor.updateExecution();
+            robot.actionExecutor.updateExecution(this);
         }
     }
 
@@ -204,6 +209,10 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
         return (Math.hypot(robotPosition.x - endPoint.x, robotPosition.y - endPoint.y) < DISTANCE_THRESHOLD)
                 && (!willAngleLockAtEnd || Math.abs(angleWrap(angleLockHeadingAtEnd - heading)) < ANGLE_THRESHOLD)
                 && pathIndex == path.length - 2;
+    }
+
+    public int currentPathIndex() {
+        return pathIndex;
     }
 
     public boolean isFileDump() {

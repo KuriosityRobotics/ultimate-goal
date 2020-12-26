@@ -14,7 +14,7 @@ public class Waypoint extends Point {
         super(point.x, point.y);
     }
 
-    public Waypoint(Point point, Action action) {
+    public Waypoint(Point point, RobotAction action) {
         super(point.x, point.y);
         this.actions = new ArrayList<>();
         actions.add(action);

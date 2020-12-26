@@ -3,11 +3,11 @@ package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Target;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.RobotAction;
 
 import java.util.ArrayList;
 
-public class BluePowershotsAction extends Action implements TelemetryProvider {
+public class BluePowershotsAction extends RobotAction implements TelemetryProvider {
     Robot robot;
 
     int powershotNum = -1;

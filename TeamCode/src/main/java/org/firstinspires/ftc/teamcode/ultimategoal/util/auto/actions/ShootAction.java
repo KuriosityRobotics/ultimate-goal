@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Target;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.RobotAction;
 
-public class ShootAction extends Action {
+public class ShootAction extends RobotAction {
     Target.ITarget target;
 
     public ShootAction(Target.ITarget target) {

@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.RobotAction;
 
-public class SlowModeAction extends Action {
+public class SlowModeAction extends RobotAction {
     boolean isSlowMode;
 
     public SlowModeAction(boolean isSlowMode) {

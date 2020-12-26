@@ -20,12 +20,24 @@ public class ActionExecutor implements TelemetryProvider {
 
     /**
      * Update execution on all actions registered as currently executing.
+     *
+     * @param pathFollow The PathFollow object to modify if there are any PathFollowActions.
      */
-    public void updateExecution() {
+    public void updateExecution(PathFollow pathFollow) {
         Iterator<Action> actionsItr = executingActions.iterator();
         while (actionsItr.hasNext()) {
-            if (actionsItr.next().executeAction(robot)) {
-                actionsItr.remove();
+            Action nextAction = actionsItr.next();
+
+            if (nextAction instanceof PathFollowAction) {
+                if (((PathFollowAction) nextAction).executeAction(pathFollow)) {
+                    actionsItr.remove();
+                }
+            } else if (nextAction instanceof RobotAction) {
+                if (((RobotAction) nextAction).executeAction(robot)) {
+                    actionsItr.remove();
+                }
+            } else {
+                throw new Error("Unknown action: " + nextAction.getName() + ": " + nextAction);
             }
         }
     }
@@ -39,7 +51,7 @@ public class ActionExecutor implements TelemetryProvider {
      * updateExecution() is run.
      *
      * @param actions An ArrayList of Actions to register.
-     * @see #updateExecution()
+     * @see #updateExecution(PathFollow)
      */
     public void registerActions(ArrayList<Action> actions) {
         if (actions != null) {
@@ -54,7 +66,6 @@ public class ActionExecutor implements TelemetryProvider {
      * updateExecution() is run.
      *
      * @param action
-     * @see #updateExecution()
      */
     public void registerAction(Action action) {
         // Register the action
