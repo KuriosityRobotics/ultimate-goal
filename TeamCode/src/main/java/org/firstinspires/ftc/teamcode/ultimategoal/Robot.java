@@ -52,7 +52,7 @@ public class Robot extends ModuleCollection {
     private LynxModule revHub2;
 
     // Constants
-    public final static int FLY_WHEEL_SPEED = -700;
+    public final static int FLY_WHEEL_SPEED = 1550;
     public final static boolean WILL_FILE_DUMP = false;
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode) {
