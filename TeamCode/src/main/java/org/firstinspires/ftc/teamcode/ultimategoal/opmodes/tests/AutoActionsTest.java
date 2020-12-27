@@ -20,8 +20,8 @@ public class AutoActionsTest extends LinearOpMode {
 
         PathFollow pf1 = new PathFollow(new Waypoint[]{
                 new Waypoint(0, 0),
-                new Waypoint(0, 24, new SlowModeAction(true)),
-                new Waypoint(0, 60, new WobbleArmAction(WobbleModule.WobbleArmPosition.LOWERED))
+                new Waypoint(0, 24),
+                new Waypoint(0, 60)
         }, robot, "test");
 
         waitForStart();
@@ -30,8 +30,10 @@ public class AutoActionsTest extends LinearOpMode {
 
         sleep(1000);
 
-        pf1.followPath(0, 1, 1, true, 0);
+        pf1.followPath(0, 1, 1, true, Math.toRadians(90));
 
-        sleep(5000);
+        while (opModeIsActive()) {
+
+        }
     }
 }

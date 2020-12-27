@@ -29,22 +29,23 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     // Constants
     private final static double SLOW_MODE_FACTOR = 0.35;
-    private final static double TURN_SCALE = Math.toRadians(30);
+    private final static double TURN_SCALE = Math.toRadians(10);
 
     // Velocity controller
-    private final static double ORTH_VELOCITY_P = 0.1;
-    private final static double ANGULAR_VELOCITY_P = 0.1;
+    private final static double ORTH_VELOCITY_P = 0.007;
+    //    private final static double ORTH_VELOCITY_P = .00045;
+    private final static double ANGULAR_VELOCITY_P = 0.15;
 
     // Velocity target constants (line with a floor, to allow for coasting)
-    private final static double ORTH_VELOCITY_SLOWDOWN = 2.6; // The slope of dist vs target velocity
-    private final static double ORTH_COAST_THRESHOLD = 5; // threshold to start coasting, which means hold a speed until power cutoff
+    private final static double ORTH_VELOCITY_SLOWDOWN = 0.8; // The slope of dist vs target velocity
+    private final static double ORTH_COAST_THRESHOLD = 8; // threshold to start coasting, which means hold a speed until power cutoff
     private final static double ORTH_COAST_VELOCITY = 3; // velocity to coast at
-    private final static double ORTH_STOP_THRESHOLD = 0.5; // threshold at which to stop entirely (after coasting)
+    private final static double ORTH_STOP_THRESHOLD = 0.25; // threshold at which to stop entirely (after coasting)
 
-    private final static double ANGULAR_VELOCITY_SLOWDOWN = Math.toRadians(5);
-    private final static double ANGULAR_COAST_THRESHOLD = Math.toRadians(10);
-    private final static double ANGULAR_COAST_VELOCITY = Math.toRadians(8);
-    private final static double ANGULAR_STOP_THRESHOLD = Math.toRadians(1);
+    private final static double ANGULAR_VELOCITY_SLOWDOWN = Math.toRadians(100);
+    private final static double ANGULAR_COAST_THRESHOLD = Math.toRadians(15);
+    private final static double ANGULAR_COAST_VELOCITY = Math.toRadians(23);
+    private final static double ANGULAR_STOP_THRESHOLD = Math.toRadians(0.5);
 
     public Drivetrain(Robot robot, boolean isOn) {
         this(robot, isOn, new Point(0, 0));
@@ -128,7 +129,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     double angularScale = 1;
 
     double velocityAlongPath;
-    double angularVelocity;
+    double angularVelocityFromTarget;
     double orthTargetVelocity;
     double angularTargetVelocity;
 
@@ -143,7 +144,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         double absoluteAngleToTarget = Math.atan2(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
         double relativeTurnAngle = angleWrap(brakeHeading - robotHeading);
 
-        if (weakBrake && distanceToTarget > .5) {
+        if (weakBrake && distanceToTarget > .4) {
             brakePoint = new Point((brakePoint.x + robotPosition.x) / 2, (brakePoint.y + robotPosition.y) / 2);
 
             distanceToTarget = Math.hypot(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
@@ -167,11 +168,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         // Calculate current velocity along path
         velocityAlongPath = velocityTowardsTarget(absoluteAngleToTarget);
-        angularVelocity = velocityModule.getAngleVel();
+        angularVelocityFromTarget = (Math.abs(relativeTurnAngle) / relativeTurnAngle) * velocityModule.getAngleVel();
 
         // Calculate the target velocity
         orthTargetVelocity = orthTargetVelocity(distanceToTarget);
-        angularTargetVelocity = angularTargetVelocity(relativeTurnAngle);
+        angularTargetVelocity = angularTargetVelocity(Math.abs(relativeTurnAngle));
 
         // Maybe use last change in velocity caused by movement offset as feed forward
         // lol maybe later
@@ -181,14 +182,21 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         if (orthTargetVelocity == 0) {
             orthScale = 0;
         } else {
-            double increment = (orthTargetVelocity - velocityAlongPath) * ORTH_VELOCITY_P;
+            double diff = orthTargetVelocity - velocityAlongPath;
+            double increment = diff * ORTH_VELOCITY_P;
+
+            increment = Range.clip(increment, -0.07, 0.07);
+
             orthScale = Range.clip(orthScale + increment, -1, 1);
         }
 
         if (angularTargetVelocity == 0) {
             angularScale = 0;
         } else {
-            double increment = (angularTargetVelocity - angularVelocity) * ANGULAR_VELOCITY_P;
+            double increment = (angularTargetVelocity - angularVelocityFromTarget) * ANGULAR_VELOCITY_P;
+
+            increment = Range.clip(increment, -0.026, 0.026);
+
             angularScale = Range.clip(angularScale + increment, -1, 1);
         }
 
@@ -198,8 +206,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         // nerf braking if weak brake
         if (weakBrake) {
-            xMovement *= 0.65;
-            yMovement *= 0.65;
+            xMovement *= 0.4;
+            yMovement *= 0.2;
             turnMovement *= 0.4;
         }
 
@@ -229,7 +237,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         } else {
             // linear function with transformations (think back to algii/trigh)
             // use absolute value to calculate target, then add back polarity
-            return (velocitySlowdown * (Math.abs(distanceToTarget) - coastThreshold) + coastVelocity) * (distanceToTarget / Math.abs(distanceToTarget));
+            return velocitySlowdown * (distanceToTarget - coastThreshold) + coastVelocity;
         }
     }
 
@@ -242,10 +250,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public double velocityTowardsTarget(double absoluteAngleToTarget) {
         double xVel = velocityModule.getxVel();
         double yVel = velocityModule.getyVel();
-        double heading = odometryModule.getWorldHeadingRad();
+
+        double heading = angleWrap(Math.atan2(xVel, yVel));
 
         double totalVel = Math.hypot(xVel, yVel);
-        double angleDiff = heading - absoluteAngleToTarget;
+        double angleDiff = angleWrap(heading - absoluteAngleToTarget);
 
         return totalVel * Math.cos(angleDiff);
     }
@@ -254,12 +263,12 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * Set the movements of the drivetrain to go to a target point. Should be called over and over
      * to adjust the movements until reaching the point.
      *
-     * @param targetPoint          The target point.
-     * @param moveSpeed            Speed to move.
-     * @param turnSpeed            Speed to turn.
-     * @param direction            The direction to face while moving.
-     * @param willAngleLock        Whether or not to lock to an angle.
-     * @param angleLockHeading     The angle to lock to.
+     * @param targetPoint      The target point.
+     * @param moveSpeed        Speed to move.
+     * @param turnSpeed        Speed to turn.
+     * @param direction        The direction to face while moving.
+     * @param willAngleLock    Whether or not to lock to an angle.
+     * @param angleLockHeading The angle to lock to.
      */
     public void setMovementsTowardsPoint(Point targetPoint, double moveSpeed, double turnSpeed, double direction, boolean willAngleLock, double angleLockHeading) {
         Point robotPosition = getCurrentPosition();
@@ -287,7 +296,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         double xMovement = xPower * moveSpeed;
         double yMovement = yPower * moveSpeed;
-        double turnMovement = Math.max(Range.clip(relativeTurnAngle / TURN_SCALE, -1, 1), turnSpeed);
+        double turnMovement = Range.clip(relativeTurnAngle / TURN_SCALE, -1, 1);
+        if (Math.abs(turnMovement) > turnSpeed) {
+            turnMovement = (Math.abs(turnMovement) / turnMovement) * turnSpeed;
+        }
 
         setMovements(xMovement, yMovement, turnMovement);
     }
@@ -397,7 +409,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         data.add("--");
         data.add("velo along path: " + velocityAlongPath);
         data.add("target orth velo: " + orthTargetVelocity);
-        data.add("angular velo: " + angularVelocity);
+        data.add("angular velo: " + angularVelocityFromTarget);
         data.add("target angular velo: " + angularTargetVelocity);
         data.add("orth scale: " + orthScale);
         data.add("angular scale: " + angularScale);

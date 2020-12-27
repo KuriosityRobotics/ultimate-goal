@@ -162,7 +162,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
         double distToSegmentStart = Math.hypot(center.x - pathSegmentStartPoint.x, center.y - pathSegmentStartPoint.y);
 
         // If we're close enough to the end of the path, just try to go to the end of the path
-        if (Math.hypot(center.x - path[path.length - 1].x, center.y - path[path.length - 1].y) < FOLLOW_RADIUS * 1.5 && pathIndex == path.length - 2) {
+        if (Math.hypot(center.x - path[path.length - 1].x, center.y - path[path.length - 1].y) < 36 && pathIndex == path.length - 2) {
             followPoint = path[path.length - 1];
             isTargetingLastPoint = true;
         } else {
