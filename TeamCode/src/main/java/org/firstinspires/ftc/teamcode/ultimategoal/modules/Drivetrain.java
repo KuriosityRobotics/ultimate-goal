@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.internal.android.dx.io.instructions.RegisterRangeDecodedInstruction;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
@@ -33,8 +34,9 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     // Velocity controller
     private final static double ORTH_VELOCITY_P = 0.007;
-    //    private final static double ORTH_VELOCITY_P = .00045;
+    private final static double ORTH_VELOCITY_D = 0.007;
     private final static double ANGULAR_VELOCITY_P = 0.15;
+    private final static double ANGULAR_VELOCITY_D = 0.15;
 
     // Velocity target constants (line with a floor, to allow for coasting)
     private final static double ORTH_VELOCITY_SLOWDOWN = 0.8; // The slope of dist vs target velocity
@@ -130,8 +132,12 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     double velocityAlongPath;
     double angularVelocityFromTarget;
+
     double orthTargetVelocity;
     double angularTargetVelocity;
+
+    double lastOrthVelocityError;
+    double lastAngularVelocityError;
 
     /**
      * Sets movement of drivetrain to try to stay on the brake point.
@@ -182,22 +188,38 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         if (orthTargetVelocity == 0) {
             orthScale = 0;
         } else {
-            double diff = orthTargetVelocity - velocityAlongPath;
-            double increment = diff * ORTH_VELOCITY_P;
+            double error = orthTargetVelocity - velocityAlongPath;
 
-            increment = Range.clip(increment, -0.07, 0.07);
+            double increment = error * ORTH_VELOCITY_P;
+
+            double deriv = (error - lastOrthVelocityError) * ORTH_VELOCITY_D;
+            increment += deriv;
 
             orthScale = Range.clip(orthScale + increment, -1, 1);
+
+            lastOrthVelocityError = error;
         }
 
         if (angularTargetVelocity == 0) {
             angularScale = 0;
         } else {
-            double increment = (angularTargetVelocity - angularVelocityFromTarget) * ANGULAR_VELOCITY_P;
+            lastAngularVelocityError = angularTargetVelocity - angularVelocityFromTarget;
+            double increment = lastAngularVelocityError * ANGULAR_VELOCITY_P;
 
             increment = Range.clip(increment, -0.026, 0.026);
 
             angularScale = Range.clip(angularScale + increment, -1, 1);
+
+//            double error = angularTargetVelocity - angularVelocityFromTarget;
+//
+//            double increment = error * ANGULAR_VELOCITY_P;
+//
+//            double deriv = (error - lastAngularVelocityError) * ANGULAR_VELOCITY_D;
+//            increment += deriv;
+//
+//            angularScale = Range.clip(angularScale + increment, -1, 1);
+//
+//            lastAngularVelocityError = error;
         }
 
         xMovement *= orthScale;
@@ -296,10 +318,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         double xMovement = xPower * moveSpeed;
         double yMovement = yPower * moveSpeed;
-        double turnMovement = Range.clip(relativeTurnAngle / TURN_SCALE, -1, 1);
-        if (Math.abs(turnMovement) > turnSpeed) {
-            turnMovement = (Math.abs(turnMovement) / turnMovement) * turnSpeed;
-        }
+        double turnMovement = Range.clip(relativeTurnAngle / TURN_SCALE, -turnSpeed, turnSpeed);
 
         setMovements(xMovement, yMovement, turnMovement);
     }
