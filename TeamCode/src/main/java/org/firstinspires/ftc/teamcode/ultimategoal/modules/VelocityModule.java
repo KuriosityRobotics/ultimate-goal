@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import android.os.SystemClock;
 
-import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 import java.util.ArrayList;
@@ -29,11 +29,6 @@ public class VelocityModule implements Module, TelemetryProvider {
 
     public void initModules() {
         oldUpdateTime = SystemClock.elapsedRealtime();
-    }
-
-    @Override
-    public boolean initCycle() {
-        return true; // No iterative init required
     }
 
     private Point oldWorldPosition;
@@ -65,11 +60,11 @@ public class VelocityModule implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("xVel: " + xVel);
         data.add("yVel: " + yVel);
-        data.add("angleVel: "+ angleVel);
+        data.add("angleVel: " + angleVel);
         return data;
     }
 
-    public boolean isOn(){
+    public boolean isOn() {
         return isOn;
     }
 

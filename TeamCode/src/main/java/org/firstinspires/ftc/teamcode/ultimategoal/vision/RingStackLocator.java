@@ -1,13 +1,30 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.vision;
 
-import org.opencv.core.*;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.opencv.imgproc.Imgproc.*;
+import static org.opencv.imgproc.Imgproc.CHAIN_APPROX_SIMPLE;
+import static org.opencv.imgproc.Imgproc.COLOR_RGB2HSV;
+import static org.opencv.imgproc.Imgproc.FONT_HERSHEY_SCRIPT_COMPLEX;
+import static org.opencv.imgproc.Imgproc.LINE_8;
+import static org.opencv.imgproc.Imgproc.MORPH_CLOSE;
+import static org.opencv.imgproc.Imgproc.MORPH_ELLIPSE;
+import static org.opencv.imgproc.Imgproc.RETR_EXTERNAL;
+import static org.opencv.imgproc.Imgproc.cvtColor;
+import static org.opencv.imgproc.Imgproc.findContours;
 
 public class RingStackLocator {
 

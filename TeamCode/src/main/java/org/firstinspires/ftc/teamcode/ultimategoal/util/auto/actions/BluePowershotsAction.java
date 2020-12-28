@@ -5,7 +5,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.Target;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class BluePowershotsAction extends Action implements TelemetryProvider {

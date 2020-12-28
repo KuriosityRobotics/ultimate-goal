@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
 
-import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
 import java.util.ArrayList;
 
@@ -19,7 +19,7 @@ public class PIDController implements TelemetryProvider {
         this.P = P;
         this.I = I;
         this.D = D;
-        
+
         reset();
     }
 

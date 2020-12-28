@@ -108,7 +108,7 @@ public class Vision {
 
             final ExecutorService executorService = ThreadPool.getDefault();
 
-            while (linearOpMode.opModeIsActive() && SystemClock.elapsedRealtime()-startTime<=100) {
+            while (linearOpMode.opModeIsActive() && SystemClock.elapsedRealtime() - startTime <= 100) {
                 final ConditionVariable resultAvaliable = new ConditionVariable(false);
 
                 vuforia.getFrameOnce(Continuation.create(executorService, new Consumer<Frame>() {
@@ -130,8 +130,8 @@ public class Vision {
                             }
 
 //                            updateBitmapWithBoundingBoxes(bitmap,105, 287, 128, 100);
-                            if(linearOpMode.gamepad1.a){
-                                updateBitmapWithBoundingBoxes(bitmap,135, 315, 75, 60);
+                            if (linearOpMode.gamepad1.a) {
+                                updateBitmapWithBoundingBoxes(bitmap, 135, 315, 75, 60);
 
                                 captureFrameToFile(bitmap);
                             }

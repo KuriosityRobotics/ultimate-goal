@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
@@ -62,10 +59,6 @@ public class WobbleModule implements Module, TelemetryProvider {
         wobbleClaw = robot.getServo("wobbleClaw");
 
         wobbleClaw.setPosition(CLAW_CLAMP_POSITION);
-    }
-
-    public boolean initCycle() {
-        return true;
     }
 
     boolean oldIsClawClamped = !isClawClamped;

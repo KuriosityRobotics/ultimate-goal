@@ -35,15 +35,9 @@ public class VisionModule implements Module {
     }
 
     @Override
-    public boolean initCycle() {
-        return true;
-    }
-
-    @Override
     public void update() {
         goalFinder.isBlue = robot.shooter.target.name().contains("BLUE");
     }
-
 
     @Override
     public boolean isOn() {

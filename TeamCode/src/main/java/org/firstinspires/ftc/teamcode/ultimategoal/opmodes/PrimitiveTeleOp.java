@@ -48,13 +48,14 @@ public class PrimitiveTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     private void initRobot() {
-        robot = new Robot(hardwareMap, telemetry,this);
+        robot = new Robot(hardwareMap, telemetry, this);
 
         robot.drivetrain.weakBrake = true;
     }
 
 
     int numIndexes = 0;
+
     private void updateHopperStates() {
         if (g2a.isToggled(gamepad2.a)) {
             robot.shooter.switchHopperPosition();
@@ -77,6 +78,7 @@ public class PrimitiveTeleOp extends LinearOpMode implements TelemetryProvider {
 
     double flapPosition = 0.63;
     boolean isFlyWheelOn = false;
+
     private void updateShooterStates() {
         flapPosition -= gamepad2.right_stick_y * 0.0000001;
 

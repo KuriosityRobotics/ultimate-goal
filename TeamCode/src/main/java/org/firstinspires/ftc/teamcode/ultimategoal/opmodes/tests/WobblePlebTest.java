@@ -1,12 +1,8 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
-import android.os.SystemClock;
-import android.util.Log;
-
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -16,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Disabled
 @TeleOp
-public class WobblePlebTest extends LinearOpMode{
+public class WobblePlebTest extends LinearOpMode {
     public Servo leftServo;
     public Servo rightServo;
     public DcMotorEx intakeTop;

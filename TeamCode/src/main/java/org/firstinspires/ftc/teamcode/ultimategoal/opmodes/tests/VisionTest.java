@@ -20,8 +20,7 @@ public class VisionTest extends LinearOpMode {
     OpenCvWebcam webcam;
 
     @Override
-    public void runOpMode()
-    {
+    public void runOpMode() {
         VisionTestPipeline pipeline = new VisionTestPipeline();
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"));
 
@@ -37,8 +36,7 @@ public class VisionTest extends LinearOpMode {
 
         waitForStart();
 
-        while (opModeIsActive())
-        {
+        while (opModeIsActive()) {
             telemetry.addData("Frame Count", webcam.getFrameCount());
             telemetry.addData("FPS", String.format(Locale.ENGLISH, "%.2f", webcam.getFps()));
             telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
@@ -49,8 +47,7 @@ public class VisionTest extends LinearOpMode {
 
             telemetry.update();
 
-            if(gamepad1.a)
-            {
+            if (gamepad1.a) {
                 webcam.stopStreaming();
                 //webcam.closeCameraDevice();
             }
@@ -59,29 +56,23 @@ public class VisionTest extends LinearOpMode {
         }
     }
 
-    class VisionTestPipeline extends OpenCvPipeline
-    {
+    class VisionTestPipeline extends OpenCvPipeline {
         public RingStackLocator.TargetZone targetZone = RingStackLocator.TargetZone.TARGET_ZONE_UNKNOWN;
         boolean viewportPaused;
 
         @Override
-        public Mat processFrame(Mat input)
-        {
+        public Mat processFrame(Mat input) {
             this.targetZone = RingStackLocator.processFrame(input, true);
             return input;
         }
 
         @Override
-        public void onViewportTapped()
-        {
+        public void onViewportTapped() {
             viewportPaused = !viewportPaused;
 
-            if(viewportPaused)
-            {
+            if (viewportPaused) {
                 webcam.pauseViewport();
-            }
-            else
-            {
+            } else {
                 webcam.resumeViewport();
             }
         }

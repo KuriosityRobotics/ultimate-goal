@@ -1,12 +1,10 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 
-import java.io.Closeable;
-
 public interface Module {
     /**
      * Initializes the module. This includes setting up all motors/servos
-     * */
+     */
     public void initModules();
 
     /**
@@ -14,7 +12,9 @@ public interface Module {
      *
      * @return whether or not the module has completed initializing, so that this method can stop being called
      */
-    public boolean initCycle();
+    public default boolean initAsync() {
+        return true;
+    }
 
     /**
      * Updates the module, executing all the tasks it should complete on every iteration,

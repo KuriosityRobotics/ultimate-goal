@@ -45,6 +45,7 @@ public class Target {
         Point getLocation();
 
         String name();
+
         /**
          * Returns whether this target is a powershot or not
          *
@@ -135,7 +136,7 @@ public class Target {
 
         public ITarget next() {
             ITarget target;
-            switch(name()) {
+            switch (name()) {
                 case "BLUE_HIGH":
                     target = BLUE_POWERSHOT1;
                     break;

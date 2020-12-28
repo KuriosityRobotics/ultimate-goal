@@ -1,12 +1,9 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
@@ -54,12 +51,9 @@ public class IntakeModule implements Module, TelemetryProvider {
         setIntakeLocks(true);
     }
 
-    public boolean initCycle() {
-        return true;
-    }
-
     long startTime = 0;
     boolean doneUnlocking = false;
+
     public void update() {
         if (!doneUnlocking) {
             if (startTime == 0) {
@@ -70,13 +64,10 @@ public class IntakeModule implements Module, TelemetryProvider {
                 doneUnlocking = true;
             }
         } else {
-            if (robot.shooter.getHopperPosition() == HopperModule.HopperPosition.LOWERED) {
-                intakeTop.setPower(intakePower);
-                intakeBottom.setPower(intakePower);
-            } else {
-                intakeTop.setPower(0);
-                intakeBottom.setPower(0);
-            }
+            double power = robot.shooter.getHopperPosition() == HopperModule.HopperPosition.LOWERED ? intakePower : 0;
+
+            intakeTop.setPower(power);
+            intakeBottom.setPower(power);
         }
     }
 

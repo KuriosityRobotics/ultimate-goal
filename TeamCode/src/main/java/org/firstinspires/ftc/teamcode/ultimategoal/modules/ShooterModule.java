@@ -54,11 +54,6 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     @Override
-    public boolean initCycle() {
-        return true; // No iterative init required
-    }
-
-    @Override
     public void update() {
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
         flyWheel1.setVelocity(flyWheelTargetSpeed);

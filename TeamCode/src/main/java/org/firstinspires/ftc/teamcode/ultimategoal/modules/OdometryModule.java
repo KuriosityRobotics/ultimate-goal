@@ -66,11 +66,6 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         mecanumPodKnownPosition = 0;
     }
 
-    @Override
-    public boolean initCycle() {
-        return true; // No iterative init required
-    }
-
     public void update() {
         calculateRobotPosition();
     }
