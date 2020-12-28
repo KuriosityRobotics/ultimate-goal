@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-//@Disabled
+@Disabled
 @TeleOp
 public class ShooterPlebTest extends LinearOpMode {
     DcMotorEx flyWheel1;

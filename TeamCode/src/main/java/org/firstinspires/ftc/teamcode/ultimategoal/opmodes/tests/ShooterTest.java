@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,7 +11,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
 import java.util.ArrayList;
 
-//@Disabled
+@Disabled
 @TeleOp
 public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     Robot robot;

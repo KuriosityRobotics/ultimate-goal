@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 
-@Disabled
+//@Disabled
 @Autonomous
 public class AutoPathTest extends LinearOpMode {
 

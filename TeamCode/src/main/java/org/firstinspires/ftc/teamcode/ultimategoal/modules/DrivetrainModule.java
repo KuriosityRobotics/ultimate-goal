@@ -13,9 +13,9 @@ public class DrivetrainModule implements Module, TelemetryProvider {
     private boolean isOn;
 
     // States
-    public double yMovement;
-    public double xMovement;
-    public double turnMovement;
+    public double yMovement = 0;
+    public double xMovement = 0;
+    public double turnMovement = 0;
 
     // Constants
     private final static double POWER_SCALE_FACTOR = 0.8;
