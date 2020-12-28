@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.os.SystemClock;
+
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.internal.android.dx.io.instructions.RegisterRangeDecodedInstruction;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
@@ -30,23 +31,22 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     // Constants
     private final static double SLOW_MODE_FACTOR = 0.35;
-    private final static double TURN_SCALE = Math.toRadians(10);
+    private final static double TURN_SCALE = Math.toRadians(30);
 
     // Velocity controller
-    private final static double ORTH_VELOCITY_P = 0.007;
-    private final static double ORTH_VELOCITY_D = 0.007;
-    private final static double ANGULAR_VELOCITY_P = 0.15;
-    private final static double ANGULAR_VELOCITY_D = 0.15;
+    private final static double ORTH_VELOCITY_P = 0.003;
+    private final static double ORTH_VELOCITY_D = 0.259;
+    private final static double ANGULAR_VELOCITY_P = 0.05;
 
     // Velocity target constants (line with a floor, to allow for coasting)
-    private final static double ORTH_VELOCITY_SLOWDOWN = 0.8; // The slope of dist vs target velocity
-    private final static double ORTH_COAST_THRESHOLD = 8; // threshold to start coasting, which means hold a speed until power cutoff
-    private final static double ORTH_COAST_VELOCITY = 3; // velocity to coast at
+    private final static double ORTH_VELOCITY_SLOWDOWN = 1; // The slope of dist vs target velocity
+    private final static double ORTH_COAST_THRESHOLD = 4; // threshold to start coasting, which means hold a speed until power cutoff
+    private final static double ORTH_COAST_VELOCITY = 5; // velocity to coast at
     private final static double ORTH_STOP_THRESHOLD = 0.25; // threshold at which to stop entirely (after coasting)
 
-    private final static double ANGULAR_VELOCITY_SLOWDOWN = Math.toRadians(100);
-    private final static double ANGULAR_COAST_THRESHOLD = Math.toRadians(15);
-    private final static double ANGULAR_COAST_VELOCITY = Math.toRadians(23);
+    private final static double ANGULAR_VELOCITY_SLOWDOWN = Math.toRadians(80);
+    private final static double ANGULAR_COAST_THRESHOLD = Math.toRadians(1);
+    private final static double ANGULAR_COAST_VELOCITY = 0.42;
     private final static double ANGULAR_STOP_THRESHOLD = Math.toRadians(0.5);
 
     public Drivetrain(Robot robot, boolean isOn) {
@@ -104,7 +104,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         brakeHeading = getCurrentHeading();
 
         orthScale = 1;
-        angularScale = 1;
+        angularScale = 0;
     }
 
     boolean isBrake;
@@ -128,16 +128,18 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     }
 
     double orthScale = 1;
-    double angularScale = 1;
+    double angularScale = 0;
 
     double velocityAlongPath;
-    double angularVelocityFromTarget;
+    double angularVelocity;
 
     double orthTargetVelocity;
     double angularTargetVelocity;
 
     double lastOrthVelocityError;
     double lastAngularVelocityError;
+
+    long lastLoopTime = SystemClock.elapsedRealtime();
 
     /**
      * Sets movement of drivetrain to try to stay on the brake point.
@@ -168,23 +170,24 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         double totalPower = Math.abs(relativeYToPoint) + Math.abs(relativeXToPoint);
 
-        double xMovement = relativeXToPoint / totalPower;
-        double yMovement = relativeYToPoint / totalPower;
+        double xMovement = totalPower == 0 ? 0 : relativeXToPoint / totalPower;
+        double yMovement = totalPower == 0 ? 0 : relativeYToPoint / totalPower;
         double turnMovement = Range.clip(relativeTurnAngle / TURN_SCALE, -1, 1);
 
         // Calculate current velocity along path
         velocityAlongPath = velocityTowardsTarget(absoluteAngleToTarget);
-        angularVelocityFromTarget = (Math.abs(relativeTurnAngle) / relativeTurnAngle) * velocityModule.getAngleVel();
+        angularVelocity = velocityModule.getAngleVel();
 
         // Calculate the target velocity
         orthTargetVelocity = orthTargetVelocity(distanceToTarget);
-        angularTargetVelocity = angularTargetVelocity(Math.abs(relativeTurnAngle));
+        angularTargetVelocity = angularTargetVelocity(Math.abs(relativeTurnAngle)) * (Math.abs(relativeTurnAngle) / relativeTurnAngle);
 
         // Maybe use last change in velocity caused by movement offset as feed forward
         // lol maybe later
 
         // Calculate movements
         // PID later? this might be questionable, maybe power should be directly calced instead of scaling
+        long currentTime = robot.getCurrentTimeMilli();
         if (orthTargetVelocity == 0) {
             orthScale = 0;
         } else {
@@ -192,7 +195,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
             double increment = error * ORTH_VELOCITY_P;
 
-            double deriv = (error - lastOrthVelocityError) * ORTH_VELOCITY_D;
+            double deriv = ((error - lastOrthVelocityError) / (currentTime - lastLoopTime)) * ORTH_VELOCITY_D;
             increment += deriv;
 
             orthScale = Range.clip(orthScale + increment, -1, 1);
@@ -203,28 +206,16 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         if (angularTargetVelocity == 0) {
             angularScale = 0;
         } else {
-            lastAngularVelocityError = angularTargetVelocity - angularVelocityFromTarget;
+            lastAngularVelocityError = angularTargetVelocity - angularVelocity;
             double increment = lastAngularVelocityError * ANGULAR_VELOCITY_P;
 
-            increment = Range.clip(increment, -0.026, 0.026);
-
             angularScale = Range.clip(angularScale + increment, -1, 1);
-
-//            double error = angularTargetVelocity - angularVelocityFromTarget;
-//
-//            double increment = error * ANGULAR_VELOCITY_P;
-//
-//            double deriv = (error - lastAngularVelocityError) * ANGULAR_VELOCITY_D;
-//            increment += deriv;
-//
-//            angularScale = Range.clip(angularScale + increment, -1, 1);
-//
-//            lastAngularVelocityError = error;
         }
+        lastLoopTime = currentTime;
 
         xMovement *= orthScale;
         yMovement *= orthScale;
-        turnMovement *= angularScale;
+        turnMovement = angularScale;
 
         // nerf braking if weak brake
         if (weakBrake) {
@@ -428,10 +419,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         data.add("--");
         data.add("velo along path: " + velocityAlongPath);
         data.add("target orth velo: " + orthTargetVelocity);
-        data.add("angular velo: " + angularVelocityFromTarget);
+        data.add("angular velo: " + angularVelocity);
         data.add("target angular velo: " + angularTargetVelocity);
         data.add("orth scale: " + orthScale);
         data.add("angular scale: " + angularScale);
+        data.add("last orth error: " + lastOrthVelocityError);
         return data;
     }
 

@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.vision.Vision;
 
 import java.util.ArrayList;
 
-//@Disabled
+@Disabled
 @TeleOp
 public class VisionTestBitmap extends LinearOpMode {
 
