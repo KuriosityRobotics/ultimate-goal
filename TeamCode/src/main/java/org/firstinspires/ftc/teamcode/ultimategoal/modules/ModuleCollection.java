@@ -17,14 +17,14 @@ public abstract class ModuleCollection implements Module {
     ArrayList<Module> toInitModules = new ArrayList<>();
 
     @Override
-    public boolean initCycle() {
+    public boolean initAsync() {
         if (toInitModules.isEmpty()) {
             toInitModules = new ArrayList<>(Arrays.asList(modules));
         }
 
         Iterator<Module> itr = toInitModules.iterator();
         while (itr.hasNext()) {
-            if (itr.next().initCycle()) {
+            if (itr.next().initAsync()) {
                 itr.remove();
             }
         }

@@ -6,9 +6,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PIDController;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PIDController;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 import java.util.ArrayList;

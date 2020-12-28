@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util;
 
-import android.os.SystemClock;
 import android.util.Log;
 
 import com.qualcomm.robotcore.util.RobotLog;
@@ -11,7 +10,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;

@@ -45,11 +45,6 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         bRight.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    @Override
-    public boolean initCycle() {
-        return true; // No iterative init required
-    }
-
     // drivetrain update method applies the powers based on y x and turn movements
     public void update() {
         double fLPower = ((yMovement) + turnMovement + xMovement * MECANUM_POWER_SCALE_FACTOR);

@@ -16,7 +16,8 @@ public class Point {
     /**
      * Creates a point with null x and y
      */
-    public Point() {}
+    public Point() {
+    }
 
     @Override
     public String toString() {
@@ -25,6 +26,6 @@ public class Point {
 
     @Override
     public boolean equals(Object point) {
-        return ((Point)point).x == x && ((Point)point).y == y;
+        return ((Point) point).x == x && ((Point) point).y == y;
     }
 }

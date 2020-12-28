@@ -1,12 +1,11 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
 
 //@Disabled
 @Autonomous
@@ -21,18 +20,18 @@ public class AutoPathTest extends LinearOpMode {
 
         robot = new Robot(hardwareMap, telemetry, this);
 
-        pf1 = new PathFollow( new Waypoint[]{
-                        new Waypoint(0,0),
-                        new Waypoint(24,24),
-                        new Waypoint(24,48)
-                }, robot, "test1"
+        pf1 = new PathFollow(new Waypoint[]{
+                new Waypoint(0, 0),
+                new Waypoint(24, 24),
+                new Waypoint(24, 48)
+        }, robot, "test1"
         );
 
-        pf2 = new PathFollow( new Waypoint[]{
-                        new Waypoint(24,48),
-                        new Waypoint(24,24),
-                        new Waypoint(0,0)
-                }, robot, "test2"
+        pf2 = new PathFollow(new Waypoint[]{
+                new Waypoint(24, 48),
+                new Waypoint(24, 24),
+                new Waypoint(0, 0)
+        }, robot, "test2"
         );
 
         waitForStart();

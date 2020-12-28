@@ -15,7 +15,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ModuleCollection;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.VisionModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
@@ -119,7 +118,8 @@ public class Robot extends ModuleCollection {
 
         // Initialize modules
         initModules(); // Initial init
-        while (!initCycle()) {} // Cycle init
+        while (!initAsync()) {
+        } // Cycle init
 
         // Start the thread for executing modules.
         moduleExecutor = new ModuleExecutor(this);

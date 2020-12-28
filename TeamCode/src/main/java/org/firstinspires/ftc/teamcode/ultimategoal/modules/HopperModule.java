@@ -1,11 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.os.SystemClock;
-
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
@@ -59,18 +55,10 @@ public class HopperModule implements Module, TelemetryProvider {
         indexerServo.setPosition(INDEX_OPEN_POSITION);
     }
 
-    long initStartTime = 0;
-
-    public boolean initCycle() {
-        return true;
-    }
-
     private long indexTime = 0;
     private long hopperTransitionTime = 0;
 
     private HopperPosition oldHopperPosition = HopperPosition.LOWERED;
-    public int counter = 0;
-    public int counter2 = 0;
 
     @Override
     public void update() {

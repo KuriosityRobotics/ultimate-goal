@@ -133,22 +133,22 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
             backFromStack = new PathFollow(new Waypoint[]{
                     new Waypoint(POWERSHOT.x + 6, STACK.y),
-                    new Waypoint(POWERSHOT.x + 4, STACK.y+2),
-                    new Waypoint(STACK.x-7, STACK.y+3)
+                    new Waypoint(POWERSHOT.x + 4, STACK.y + 2),
+                    new Waypoint(STACK.x - 7, STACK.y + 3)
             }, robot, "Back from stack");
 
             stackToSecondWobble = new PathFollow(new Waypoint[]{
-                    new Waypoint(STACK.x-7, STACK.y+3),
-                    new Waypoint(STACK.x+2, STACK.y),
+                    new Waypoint(STACK.x - 7, STACK.y + 3),
+                    new Waypoint(STACK.x + 2, STACK.y),
             }, robot, "Stack to second wobble");
             stackToSecondWobble2 = new PathFollow(new Waypoint[]{
-                    new Waypoint(STACK.x+2, STACK.y),
+                    new Waypoint(STACK.x + 2, STACK.y),
                     new Waypoint(SECOND_WOBBLE, secondWobbleActions)
             }, robot, "Stack to second wobble");
         } else {
             powerShotToSecondWobble = new PathFollow(new Waypoint[]{
                     new Waypoint(POWERSHOT, secondWobbleStartActions),
-                    new Waypoint(STACK.x+4,STACK.y),
+                    new Waypoint(STACK.x + 4, STACK.y),
                     new Waypoint(STACK),
                     new Waypoint(SECOND_WOBBLE, secondWobbleActions)
             }, robot, "Powershot to second wobble");
@@ -183,7 +183,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         }, robot, "Second wobble drop off to park");
 
         PathFollow shootToPark = new PathFollow(new Waypoint[]{
-                new Waypoint(SHOOT_RING_X,SHOOT_RING_Y),
+                new Waypoint(SHOOT_RING_X, SHOOT_RING_Y),
                 new Waypoint(PARK)
         }, robot, "Second wobble drop off to park");
 
@@ -203,7 +203,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
             stackToSecondWobble.followPath(0, 1, 1, true, Math.toRadians(215));
 
-            stackToSecondWobble2.followPath(0,0.55,1,true,Math.toRadians(215));
+            stackToSecondWobble2.followPath(0, 0.55, 1, true, Math.toRadians(215));
         } else {
             powerShotToSecondWobble.followPath(0, 0.55, 1, true, Math.toRadians(215));
         }
