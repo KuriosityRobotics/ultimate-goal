@@ -95,29 +95,23 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
                 isFlyWheelOn = false;
 
-                shooterModule.flyWheelTargetSpeed = 0;
-
                 robot.drivetrain.weakBrake = weakBrakeOldState;
 
                 robot.shooter.setHopperPosition(HopperModule.HopperPosition.LOWERED);
             }
         }
 
-        if (isFlyWheelOn) {
-            shooterModule.flyWheelTargetSpeed = target.isPowershot() ? POWERSHOT_FLYWHEEL_SPEED : HIGHGOAL_FLYWHEEL_SPEED;
-        }
-
         if (activeToggle) {
+            hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
+            isFlyWheelOn = true;
+
             // Don't move if the indexer is still pushing a ring
-            if (hopperModule.isIndexerPushed()) {
+            if (hopperModule.isIndexerFinishedPushing()) {
                 if (oldTarget != target) {
                     resetAiming();
                     oldTarget = target;
                 }
 
-                hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
-
-                shooterModule.flyWheelTargetSpeed = target.isPowershot() ? POWERSHOT_FLYWHEEL_SPEED : HIGHGOAL_FLYWHEEL_SPEED;
                 aimShooter(target);
 
                 if (queuedIndexes > 0) {
@@ -134,6 +128,12 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             }
         } else {
             aimFlapToTarget(target);
+        }
+
+        if (isFlyWheelOn) {
+            shooterModule.flyWheelTargetSpeed = target.isPowershot() ? POWERSHOT_FLYWHEEL_SPEED : HIGHGOAL_FLYWHEEL_SPEED;
+        } else {
+            shooterModule.flyWheelTargetSpeed = 0;
         }
 
         // Update both modules
@@ -421,7 +421,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     }
 
     public boolean isIndexerPushed() {
-        return hopperModule.isIndexerPushed();
+        return hopperModule.isIndexerFinishedPushing();
     }
 
     public boolean isIndexerReturned() {

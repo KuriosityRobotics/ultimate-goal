@@ -141,13 +141,13 @@ public class HopperModule implements Module, TelemetryProvider {
         return currentTime > indexTime + INDEXER_RETURNED_TIME_MS;
     }
 
-    public boolean isIndexerPushed() {
+    public boolean isIndexerFinishedPushing() {
         long currentTime = robot.getCurrentTimeMilli();
         return currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
     }
 
     public boolean isDoneIndexing() {
-        return isIndexerPushed() && !indexRing;
+        return isIndexerFinishedPushing() && !indexRing;
     }
 
     /**
@@ -180,7 +180,7 @@ public class HopperModule implements Module, TelemetryProvider {
         data.add("hopper transition time: " + hopperTransitionTime);
         data.add("current time: " + robot.getCurrentTimeMilli());
         data.add("is indexer returned: " + isIndexerReturned());
-        data.add("is indexer pushed: " + isIndexerPushed());
+        data.add("is indexer pushed: " + isIndexerFinishedPushing());
         data.add("is hopper at positoin: " + isHopperAtPosition());
 //        data.add("DISTANCE: " + distance.getDistance(DistanceUnit.MM));
         return data;
