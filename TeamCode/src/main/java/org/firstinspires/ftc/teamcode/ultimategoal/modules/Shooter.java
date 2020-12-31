@@ -33,7 +33,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     // -0.0372 + 2.79E-03x + -1.31E-05x^2
     private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -1.31E-05;
     private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
-    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0372
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0222
 
     // 0.48 + -9.05E-03x + 5.34E-05x^2
     private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 5.34E-5;
@@ -51,6 +51,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public double manualAngleFlapCorrection;
 
     private boolean hasSkippedForShooterSpeed = false;
+    private boolean beganBurst = false;
 
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -111,26 +112,16 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
                 aimShooter(target);
                 shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
-                if (queuedIndexes > 0 && isCloseEnough && hopperModule.isIndexerReturned() && (queuedIndexes <= 2 || shooterModule.isUpToSpeed())) {
-                    if (hopperModule.requestRingIndex()) {
-                        queuedIndexes--;
+                if (queuedIndexes > 0) {
+                    boolean shooterReady = beganBurst || shooterModule.isUpToSpeed();
+                    if (isCloseEnough && hopperModule.isIndexerReturned() && shooterReady) {
+                        if (hopperModule.requestRingIndex()) {
+                            queuedIndexes--;
+                            beganBurst = true;
+                        }
                     }
-                }
-            }
-
-            if (oldTarget != target) {
-                resetAiming();
-                oldTarget = target;
-            }
-
-            hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
-
-            aimShooter(target);
-
-            boolean shooterReady = queuedIndexes <= 2 || shooterModule.isUpToSpeed();
-            if (queuedIndexes > 0 && isCloseEnough && hopperModule.isIndexerReturned() && shooterReady) {
-                if (hopperModule.requestRingIndex()) {
-                    queuedIndexes--;
+                } else {
+                    beganBurst = false;
                 }
             }
         } else {
@@ -148,6 +139,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         isDoneAiming = false;
         isCloseEnough = false;
         hasSkippedForShooterSpeed = false;
+
+        beganBurst = false;
 
         shooterModule.flyWheelTargetSpeed = getFlyWheelTargetSpeed(); // Reset PID on shooter by temporarily setting speed to 0
     }
@@ -246,7 +239,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             }
         }
 
-        hasAlignedUsingVision = true; // TODO
+        hasAlignedUsingVision = hasAlignedInitial; // TODO
 
         if (!isDoneAiming && hasAlignedUsingVision) {
             if (target.isPowershot()) {

@@ -42,7 +42,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double ORTH_VELOCITY_SLOWDOWN = 1; // The slope of dist vs target velocity
     private final static double ORTH_COAST_THRESHOLD = 4; // threshold to start coasting, which means hold a speed until power cutoff
     private final static double ORTH_COAST_VELOCITY = 5; // velocity to coast at
-    private final static double ORTH_STOP_THRESHOLD = 0.25; // threshold at which to stop entirely (after coasting)
+    private final static double ORTH_STOP_THRESHOLD = 0.4; // threshold at which to stop entirely (after coasting)
 
     private final static double ANGULAR_VELOCITY_SLOWDOWN = Math.toRadians(80);
     private final static double ANGULAR_COAST_THRESHOLD = Math.toRadians(1);
@@ -152,13 +152,13 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         double absoluteAngleToTarget = Math.atan2(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
         double relativeTurnAngle = angleWrap(brakeHeading - robotHeading);
 
-        if (weakBrake && distanceToTarget > .4) {
+        if (weakBrake && distanceToTarget > 0.6) {
             brakePoint = new Point((brakePoint.x + robotPosition.x) / 2, (brakePoint.y + robotPosition.y) / 2);
 
             distanceToTarget = Math.hypot(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
         }
 
-        if (weakBrake && Math.abs(relativeTurnAngle) > 0.08) {
+        if (weakBrake && Math.abs(relativeTurnAngle) > 0.1) {
             brakeHeading = robotHeading;
 
             relativeTurnAngle = 0;
@@ -221,13 +221,16 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         if (weakBrake) {
             xMovement *= 0.4;
             yMovement *= 0.2;
-            turnMovement *= 0.4;
+            turnMovement *= 0.9;
+
+            xMovement = Math.abs(xMovement) < 0.02 ? 0 : xMovement;
+            yMovement = Math.abs(yMovement) < 0.02 ? 0 : yMovement;
         }
 
         if (isSlowMode) {
             xMovement = Range.clip(xMovement, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
-            yMovement = Range.clip(xMovement, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
-            turnMovement = Range.clip(xMovement, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
+            yMovement = Range.clip(yMovement, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
+            turnMovement = Range.clip(turnMovement, -SLOW_MODE_FACTOR, SLOW_MODE_FACTOR);
         }
 
         // apply movements
@@ -397,6 +400,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      */
     public void setPosition(double x, double y, double heading) {
         odometryModule.setPosition(x, y, heading);
+        brakePoint = new Point(x, y);
+        brakeHeading = heading;
         velocityModule.reset();
     }
 
