@@ -62,10 +62,8 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     public boolean isUpToSpeed() {
-//        return true;
         return flyWheel1.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
                 && flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD;
-//        return flyWheel2.getVelocity() > Math.abs(flyWheelTargetSpeed) - FLYWHEEL_SPEED_THRESHOLD;
     }
 
     @Override
