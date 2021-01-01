@@ -206,7 +206,6 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("How to use: Begin the robot at the front blue corner of the field (away from the tower goal). Use gamepad1 to drive the robot. Press 'a' to toggle aiming mode, and then 'b' to queue a shot.");
         data.add("TeleOp while loop update time: " + loopTime);
         return data;
     }

@@ -36,7 +36,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     // Flywheel constants
     public final static int HIGHGOAL_FLYWHEEL_SPEED = 1550;
-    public final static int POWERSHOT_FLYWHEEL_SPEED = 1500; // todo
+    public final static int POWERSHOT_FLYWHEEL_SPEED = 1200; // todo
 
     // Distance to goal to angle offset constant
     // -0.0372 + 2.79E-03x + -1.31E-05x^2
@@ -44,13 +44,15 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
     private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0222
 
+    // TODO: RETUNE FOR HELLA SLOW FWHEEL?
     // 0.48 + -9.05E-03x + 5.34E-05x^2
     private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 5.34E-5;
     private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = -9.05E-3;
-    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.48;
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.52; // 0.48
 
+    // TODO: RETUNE FOR HELLA SLOW FWHEEL?
     // Powershot distance to flap position -1.75E-04*x + 0.664
-    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.664;
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.674; // 0.664
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -1.75e-4;
 
     public double distanceToGoal;
@@ -98,6 +100,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
                 robot.drivetrain.weakBrake = weakBrakeOldState;
 
                 robot.shooter.setHopperPosition(HopperModule.HopperPosition.LOWERED);
+
+                robot.drivetrain.brakePoint = robot.drivetrain.getCurrentPosition();
             }
         }
 
@@ -115,8 +119,10 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
                 aimShooter(target);
 
                 if (queuedIndexes > 0) {
+                    boolean hopperReady = hopperModule.isIndexerReturned() && hopperModule.isHopperAtPosition();
                     boolean shooterReady = burstNum > 0 || shooterModule.isUpToSpeed();
-                    if (isCloseEnough && hopperModule.isIndexerReturned() && shooterReady) {
+
+                    if (isCloseEnough && hopperReady && shooterReady) {
                         if (hopperModule.requestRingIndex()) {
                             queuedIndexes--;
                             burstNum++;

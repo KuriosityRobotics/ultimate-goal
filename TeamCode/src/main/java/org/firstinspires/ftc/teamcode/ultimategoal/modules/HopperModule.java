@@ -31,8 +31,8 @@ public class HopperModule implements Module, TelemetryProvider {
     private static final double HOPPER_RAISED_POSITION = 0.965;
     private static final double HOPPER_LOWERED_POSITION = 0.63; // TODO find pos
 
-    private static final int HOPPER_RAISE_TIME_MS = 1000;
-    private static final int HOPPER_LOWER_TIME_MS = 750;
+    private static final int HOPPER_RAISE_TIME_MS = 500;
+    private static final int HOPPER_LOWER_TIME_MS = 250;
 
     // Hopper position enum
     public enum HopperPosition {RAISED, LOWERED}
@@ -176,12 +176,9 @@ public class HopperModule implements Module, TelemetryProvider {
         data.add("Hopper position: " + hopperPosition.toString());
         data.add("Will index: " + indexRing);
         data.add("--");
-        data.add("index time: " + indexTime);
-        data.add("hopper transition time: " + hopperTransitionTime);
-        data.add("current time: " + robot.getCurrentTimeMilli());
+        data.add("is indexer finished pushing: " + isIndexerFinishedPushing());
         data.add("is indexer returned: " + isIndexerReturned());
-        data.add("is indexer pushed: " + isIndexerFinishedPushing());
-        data.add("is hopper at positoin: " + isHopperAtPosition());
+        data.add("is hopper at position: " + isHopperAtPosition());
 //        data.add("DISTANCE: " + distance.getDistance(DistanceUnit.MM));
         return data;
     }
