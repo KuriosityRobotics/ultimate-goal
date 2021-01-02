@@ -56,8 +56,16 @@ public class ShooterModule implements Module, TelemetryProvider {
     @Override
     public void update() {
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
-        flyWheel1.setVelocity(flyWheelTargetSpeed);
-        flyWheel2.setVelocity(flyWheelTargetSpeed);
+        double flywheelVelocity = flyWheel1.getVelocity();
+
+        if (flywheelVelocity < flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD) {
+            flyWheel1.setPower(1);
+            flyWheel2.setPower(1);
+        } else {
+            flyWheel1.setVelocity(flyWheelTargetSpeed);
+            flyWheel2.setVelocity(flyWheelTargetSpeed);
+        }
+
         shooterFlap.setPosition(shooterFlapPosition);
     }
 
