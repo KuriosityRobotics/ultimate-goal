@@ -51,7 +51,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public double manualAngleFlapCorrection;
 
     private boolean hasSkippedForShooterSpeed = false;
-    private boolean beganBurst = false;
+    private int burstNum = 0;
 
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -113,15 +113,15 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
                 shooterModule.flyWheelTargetSpeed = Robot.FLY_WHEEL_SPEED;
 
                 if (queuedIndexes > 0) {
-                    boolean shooterReady = beganBurst || shooterModule.isUpToSpeed();
+                    boolean shooterReady = burstNum > 0 || shooterModule.isUpToSpeed();
                     if (isCloseEnough && hopperModule.isIndexerReturned() && shooterReady) {
                         if (hopperModule.requestRingIndex()) {
                             queuedIndexes--;
-                            beganBurst = true;
+                            burstNum++;
                         }
                     }
                 } else {
-                    beganBurst = false;
+                    burstNum = 0;
                 }
             }
         } else {
@@ -140,7 +140,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         isCloseEnough = false;
         hasSkippedForShooterSpeed = false;
 
-        beganBurst = false;
+        burstNum = 0;
 
         shooterModule.flyWheelTargetSpeed = getFlyWheelTargetSpeed(); // Reset PID on shooter by temporarily setting speed to 0
     }
@@ -200,7 +200,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
                 + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
                 + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
                 + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
-                + manualAngleFlapCorrection;
+                + manualAngleFlapCorrection + (burstNum * 0.005);
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {

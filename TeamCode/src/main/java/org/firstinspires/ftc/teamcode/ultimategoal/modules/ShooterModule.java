@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
@@ -15,6 +16,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     boolean isOn;
 
     private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
+    private static final double FLYWHEEL_P = 0.00006;
 
     // States
     public double flyWheelTargetSpeed;
@@ -48,25 +50,45 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         flyWheel1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        flyWheel1.setVelocityPIDFCoefficients(8.5, 0.6, 0, 11.7);
-        flyWheel2.setVelocityPIDFCoefficients(8.5, 0.6, 0, 11.7);
     }
 
     @Override
     public void update() {
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
-        double flywheelVelocity = flyWheel1.getVelocity();
-
-        if (flywheelVelocity < flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD) {
-            flyWheel1.setPower(1);
-            flyWheel2.setPower(1);
-        } else {
-            flyWheel1.setVelocity(flyWheelTargetSpeed);
-            flyWheel2.setVelocity(flyWheelTargetSpeed);
-        }
+        setFlywheelMotors();
 
         shooterFlap.setPosition(shooterFlapPosition);
+    }
+
+    double shooterPower = 1;
+    double oldFlywheelTarget = 0;
+
+    private void setFlywheelMotors() {
+        if (oldFlywheelTarget != flyWheelTargetSpeed) {
+            shooterPower = 1;
+            oldFlywheelTarget = flyWheelTargetSpeed;
+        }
+
+        double flywheelPower = 0;
+        double currentFlywheelVelocity = flyWheel1.getVelocity();
+
+        if (flyWheelTargetSpeed == 0) {
+            flywheelPower = 0;
+        } else if (currentFlywheelVelocity < flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD) {
+            flywheelPower = 1;
+        } else {
+            double diffVelocity = flyWheelTargetSpeed - currentFlywheelVelocity;
+            diffVelocity = Math.abs(diffVelocity) < 20 ? 0 : diffVelocity;
+
+            double increment = diffVelocity * FLYWHEEL_P;
+
+            shooterPower = Range.clip(shooterPower + increment, -1, 1);
+
+            flywheelPower = shooterPower;
+        }
+
+        flyWheel1.setPower(flywheelPower);
+        flyWheel2.setPower(flywheelPower);
     }
 
     public boolean isUpToSpeed() {
@@ -82,10 +104,11 @@ public class ShooterModule implements Module, TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
+        data.add("Target speed: " + flyWheelTargetSpeed);
         data.add("Flywheel1 speed: " + flyWheel1.getVelocity());
         data.add("Flywheel2 speed: " + flyWheel2.getVelocity());
+        data.add("Flywheel power from PID: " + shooterPower);
         data.add("Flap angle: " + shooterFlapPosition);
-        data.add("PID coeefs: " + flyWheel1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER).p);
         return data;
     }
 
