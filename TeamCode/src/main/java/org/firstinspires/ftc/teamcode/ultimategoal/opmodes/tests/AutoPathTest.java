@@ -40,7 +40,7 @@ public class AutoPathTest extends LinearOpMode {
 
         pf1.followPath(0, 0.8, 0.8, true, 0);
 
-        sleep(5000);
+        sleep(2500);
 
         pf2.followPath(Math.PI, 0.8, 0.8, true, 0);
 

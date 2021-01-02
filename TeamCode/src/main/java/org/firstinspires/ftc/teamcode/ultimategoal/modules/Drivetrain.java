@@ -34,14 +34,14 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double TURN_SCALE = Math.toRadians(30);
 
     // Velocity controller
-    private final static double ORTH_VELOCITY_P = 0.003;
-    private final static double ORTH_VELOCITY_D = 0.259;
-    private final static double ANGULAR_VELOCITY_P = 0.05;
+    private final static double ORTH_VELOCITY_P = 0.005;
+    private final static double ORTH_VELOCITY_D = 0.25;
+    private final static double ANGULAR_VELOCITY_P = 0.04;
 
     // Velocity target constants (line with a floor, to allow for coasting)
     private final static double ORTH_VELOCITY_SLOWDOWN = 1; // The slope of dist vs target velocity
     private final static double ORTH_COAST_THRESHOLD = 4; // threshold to start coasting, which means hold a speed until power cutoff
-    private final static double ORTH_COAST_VELOCITY = 5; // velocity to coast at
+    private final static double ORTH_COAST_VELOCITY = 6; // velocity to coast at
     private final static double ORTH_STOP_THRESHOLD = 0.4; // threshold at which to stop entirely (after coasting)
 
     private final static double ANGULAR_VELOCITY_SLOWDOWN = Math.toRadians(80);
@@ -152,7 +152,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         double absoluteAngleToTarget = Math.atan2(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
         double relativeTurnAngle = angleWrap(brakeHeading - robotHeading);
 
-        if (weakBrake && distanceToTarget > 0.6) {
+        if (weakBrake && distanceToTarget > 0.7) {
             brakePoint = new Point((brakePoint.x + robotPosition.x) / 2, (brakePoint.y + robotPosition.y) / 2);
 
             distanceToTarget = Math.hypot(brakePoint.x - robotPosition.x, brakePoint.y - robotPosition.y);
@@ -180,7 +180,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         // Calculate the target velocity
         orthTargetVelocity = orthTargetVelocity(distanceToTarget);
-        angularTargetVelocity = angularTargetVelocity(Math.abs(relativeTurnAngle)) * (Math.abs(relativeTurnAngle) / relativeTurnAngle);
+        angularTargetVelocity = relativeTurnAngle == 0 ? 0 : angularTargetVelocity(Math.abs(relativeTurnAngle)) * (Math.abs(relativeTurnAngle) / relativeTurnAngle);
 
         // Maybe use last change in velocity caused by movement offset as feed forward
         // lol maybe later
