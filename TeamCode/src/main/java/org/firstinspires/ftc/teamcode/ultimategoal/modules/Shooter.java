@@ -56,12 +56,13 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     // Powershot distance to flap position 0.766 + -2.73E-03x + 1.82E-05x^2
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_SQUARE_TERM = 1.82e-05;
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -2.73e-03;
-    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.766;
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.763; // 0.766
 
     public double distanceToGoal;
     public double angleOffset;
 
     private int burstNum = 0;
+    private boolean forceIndex = false;
 
     public Shooter(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -79,8 +80,6 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     boolean weakBrakeOldState;
 
     public void update() {
-        Log.d("SHOOTER SPEED", Double.toString(shooterModule.getFlyWheelVelocity()));
-        Log.d("SHOOTER SPEED", Integer.toString(burstNum));
         // Check if aimbot was toggled
         if (isAimBotActive && !activeToggle) {
             activeToggle = true;
@@ -123,18 +122,25 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
                 aimShooter(target);
 
-                if (queuedIndexes > 0) {
-                    boolean hopperReady = hopperModule.isIndexerReturned() && hopperModule.isHopperAtPosition();
-                    boolean shooterReady = burstNum > 0 || shooterModule.isUpToSpeed();
-
-                    if (isCloseEnough && hopperReady && shooterReady) {
-                        if (hopperModule.requestRingIndex()) {
-                            queuedIndexes--;
-                            burstNum++;
-                        }
-                    }
-                } else {
+                if (forceIndex) {
+                    hopperModule.requestRingIndex();
+                    queuedIndexes--;
+                    forceIndex = false;
                     burstNum = 0;
+                } else {
+                    if (queuedIndexes > 0) {
+                        boolean hopperReady = hopperModule.isIndexerReturned() && hopperModule.isHopperAtPosition();
+                        boolean shooterReady = burstNum > 0 || shooterModule.isUpToSpeed();
+
+                        if (isCloseEnough && hopperReady && shooterReady) {
+                            if (hopperModule.requestRingIndex()) {
+                                queuedIndexes--;
+                                burstNum++;
+                            }
+                        }
+                    } else {
+                        burstNum = 0;
+                    }
                 }
             }
         } else {
@@ -202,24 +208,17 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     }
 
     private double getHighGoalFlapPosition(double distanceToTarget) {
-        if(burstNum == 1){
-            return 0.656 + (41.1 - 0.783*distanceToTarget + 0.00437*Math.pow(distanceToTarget,2))/1000;
+        if (burstNum == 1) {
+            return 0.656 + (41.1 - 0.783 * distanceToTarget + 0.00437 * Math.pow(distanceToTarget, 2)) / 1000;
+        } else if (burstNum == 2) {
+            return 0.662 + (41.1 - 0.783 * distanceToTarget + 0.00437 * Math.pow(distanceToTarget, 2)) / 1000;
+        } else {
+            return 0.7178854 - 8500 * 1 * 0.000001
+                    + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
+                    + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
+                    + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
+                    + manualAngleFlapCorrection;
         }
-        if(burstNum == 2 ){
-            return 0.662 + (41.1 - 0.783*distanceToTarget + 0.00437*Math.pow(distanceToTarget,2))/1000;
-        }
-//0.7188854
-//        return 0.7188854
-//                - (0.00123 * distanceToTarget)
-//                + (0.00000567 * Math.pow(distanceToTarget, 2))
-//                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
-//                + manualAngleFlapCorrection;
-        return 0.7178854 - 8500 * 1 * 0.000001
-                + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
-                + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
-                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
-                + manualAngleFlapCorrection;
-//                + (burstNum * 0.003);
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
@@ -286,7 +285,10 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public void forceAim() {
         hasAlignedInitial = true;
         hasAlignedUsingVision = true;
+        isDoneAiming = true;
         isCloseEnough = true;
+
+        forceIndex = true;
 
         robot.drivetrain.setBrakeHeading(robot.drivetrain.getCurrentHeading());
     }
@@ -370,7 +372,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         return shooterModule.flyWheelTargetSpeed;
     }
 
-    public void setFlyWheelTargetSpeed(double targetSpeed){
+    public void setFlyWheelTargetSpeed(double targetSpeed) {
         shooterModule.flyWheelTargetSpeed = targetSpeed;
     }
 
@@ -456,7 +458,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         data.add("isDoneAiming: " + isDoneAiming);
         data.add("isFinishedIndexing: " + isFinishedIndexing());
         data.add("isCloseEnough: " + isCloseEnough);
-        data.add("burstNumber: "+ burstNum);
+        data.add("burstNumber: " + burstNum);
         return data;
     }
 
