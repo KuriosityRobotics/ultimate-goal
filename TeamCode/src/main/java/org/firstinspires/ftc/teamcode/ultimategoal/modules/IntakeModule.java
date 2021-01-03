@@ -23,13 +23,9 @@ public class IntakeModule implements Module, TelemetryProvider {
     Servo leftIntakeLock;
     Servo rightIntakeLock;
 
-
     // Constants
-    private static final double LEFT_LOCKED_POSITION = 0.20824;
-    private static final double LEFT_UNLOCKED_POSITION = 0.36688;
-
-    private static final double RIGHT_LOCKED_POSITION = 0.80932;
-    private static final double RIGHT_UNLOCKED_POSITION = 0.61842;
+    private static final double LOCKS_LOCKED_POSITION = 0.289; // position for left, right is 1 - left
+    private static final double LOCKS_UNLOCKED_POSITION = 0.402;
 
     public IntakeModule(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -59,8 +55,7 @@ public class IntakeModule implements Module, TelemetryProvider {
             if (startTime == 0) {
                 startTime = robot.getCurrentTimeMilli();
                 setIntakeLocks(false);
-            } else if (robot.getCurrentTimeMilli() > startTime + 1000) {
-                leftIntakeLock.getController().pwmDisable();
+            } else if (robot.getCurrentTimeMilli() > startTime + 750) {
                 doneUnlocking = true;
             }
         } else {
@@ -73,12 +68,15 @@ public class IntakeModule implements Module, TelemetryProvider {
 
     private void setIntakeLocks(boolean isLocked) {
         if (isLocked) {
-            leftIntakeLock.setPosition(LEFT_LOCKED_POSITION);
-            rightIntakeLock.setPosition(RIGHT_LOCKED_POSITION);
+            setIntakeLocksPosition(LOCKS_LOCKED_POSITION);
         } else {
-            leftIntakeLock.setPosition(LEFT_UNLOCKED_POSITION);
-            rightIntakeLock.setPosition(RIGHT_UNLOCKED_POSITION);
+            setIntakeLocksPosition(LOCKS_UNLOCKED_POSITION);
         }
+    }
+
+    private void setIntakeLocksPosition(double position) {
+        leftIntakeLock.setPosition(position);
+        rightIntakeLock.setPosition(1 - position);
     }
 
     public boolean isOn() {
