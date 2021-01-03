@@ -392,6 +392,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         return odometryModule.getWorldHeadingRad();
     }
 
+    public double getAngleVel() {
+        return velocityModule.getAngleVel();
+    }
+
     /**
      * DANGEROUS: Set the position of the robot
      *

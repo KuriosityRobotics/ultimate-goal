@@ -58,7 +58,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
         setFlywheelMotors();
 
-        shooterFlap.setPosition(shooterFlapPosition);
+        shooterFlap.setPosition(Range.clip(shooterFlapPosition, .65, .68));
     }
 
     double shooterPower = 1;
