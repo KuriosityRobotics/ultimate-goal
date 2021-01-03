@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.HopperModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.Target;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
@@ -48,7 +49,9 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
             }
 
             robot.shooter.setFlapPosition(flapPosition);
-            robot.shooter.setFlyWheelSpeed(flyWheelSpeed);
+
+            robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
+            robot.shooter.isFlyWheelOn = true;
 
             if (x.isToggled(gamepad1.y))
                 flapPosition /= 2;

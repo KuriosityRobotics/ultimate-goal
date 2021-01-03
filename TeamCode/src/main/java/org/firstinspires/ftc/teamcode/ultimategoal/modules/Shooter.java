@@ -45,15 +45,16 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0222
 
     // TODO: RETUNE FOR HELLA SLOW FWHEEL?
-    // 0.48 + -9.05E-03x + 5.34E-05x^2
-    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 5.34E-5;
-    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = -9.05E-3;
-    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.52; // 0.48
+    // 0.865 + -0.0184x + 1.22E-04x^2
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 1.22e-04;
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = -0.0184;
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.865;
 
     // TODO: RETUNE FOR HELLA SLOW FWHEEL?
-    // Powershot distance to flap position -1.75E-04*x + 0.664
-    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.674; // 0.664
-    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -1.75e-4;
+    // Powershot distance to flap position 0.766 + -2.73E-03x + 1.82E-05x^2
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_SQUARE_TERM = 1.82e-05;
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -2.73e-03;
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.766;
 
     public double distanceToGoal;
     public double angleOffset;
@@ -167,10 +168,13 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public void aimShooter(ITarget target) {
         double distanceToTargetCenterRobot = distanceToTarget(target);
 
+        double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
+        distanceToGoal = distanceToTarget;
+
         if (target.isPowershot()) {
-            angleOffset = (POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
-                    + (POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
-                    + POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
+            angleOffset = 0.65 * ((POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget)
+                    + (POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget)
+                    + POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
         } else {
             angleOffset = 0.9 * ((HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
                     + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
@@ -178,9 +182,6 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         }
 
         turnToGoal(target, angleOffset);
-
-        double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
-        distanceToGoal = distanceToTarget;
 
         shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
@@ -191,11 +192,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      * @param target The target to aim at.
      */
     private void aimFlapToTarget(ITarget target) {
-        double distanceToTargetCenterRobot = distanceToTarget(target);
-        double angleOffset = (HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot) + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot) + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM;
-
         double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
-        distanceToGoal = distanceToTarget;
 
         shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
@@ -211,11 +208,13 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
                 + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
                 + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
                 + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
-                + manualAngleFlapCorrection + (burstNum * 0.005);
+                + manualAngleFlapCorrection + (burstNum * 0.003);
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
-        return (POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM * distanceToTarget) + POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM;
+        return (POWERSHOT_DISTANCE_TO_FLAP_POSITION_SQUARE_TERM * distanceToTarget * distanceToTarget)
+                + (POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM * distanceToTarget)
+                + POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM;
     }
 
     /**
@@ -265,7 +264,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         if (isDoneAiming) {
             robot.drivetrain.setMovements(0, 0, 0);
 
-            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1.5);
+            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(0.5) && robot.drivetrain.getAngleVel() < 0.01;
 
             if (robot.getCurrentTimeMilli() > doneAimingTime + 2500) {
                 isCloseEnough = true;
@@ -353,18 +352,6 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public void setFlapPosition(double flapPosition) {
         if (!isAimBotActive) {
             shooterModule.shooterFlapPosition = flapPosition;
-        }
-    }
-
-    /**
-     * Set the flap position of the shooter. Only sets the position of the aimbot is not active.
-     *
-     * @param speed Target velocity of flywheels, in ticks per second.
-     * @see #isAimBotActive
-     */
-    public void setFlyWheelSpeed(double speed) {
-        if (!isAimBotActive) {
-            shooterModule.flyWheelTargetSpeed = speed;
         }
     }
 
