@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.os.SystemClock;
+import android.util.Log;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -35,7 +38,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         this.robot = robot;
         this.isOn = isOn;
     }
-
+    long startTime = 0;
     @Override
     public void initModules() {
         flyWheel1 = (DcMotorEx) robot.getDcMotor("flyWheel1");
@@ -51,6 +54,9 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         flyWheel1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        flyWheel1.setVelocityPIDFCoefficients(8, 0.6, 0, 11.7);
+        flyWheel2.setVelocityPIDFCoefficients(8, 0.6, 0, 11.7);
     }
 
     @Override
@@ -68,42 +74,55 @@ public class ShooterModule implements Module, TelemetryProvider {
     long lastTime = 0;
 
     private void setFlywheelMotors() {
-        if (oldFlywheelTarget != flyWheelTargetSpeed) {
-            shooterPower = flyWheelTargetSpeed / 1550;
-            oldFlywheelTarget = flyWheelTargetSpeed;
+        if(startTime == 0){
+            startTime = SystemClock.elapsedRealtime();
         }
-
-        double flywheelPower = 0;
-        double currentFlywheelVelocity = flyWheel1.getVelocity();
-
-        if (flyWheelTargetSpeed == 0) {
-            flywheelPower = 0;
-        } else if (currentFlywheelVelocity < flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD) {
-            flywheelPower = 1;
-        } else {
-            long currentTime = robot.getCurrentTimeMilli();
-
-            double diffVelocity = flyWheelTargetSpeed - currentFlywheelVelocity;
-
-            double changeError = (diffVelocity - lastError) / (currentTime - lastTime);
-
-            double increment = (diffVelocity * FLYWHEEL_P) + (changeError * FLYWHEEL_D);
-
-            shooterPower = Range.clip(shooterPower + increment, -1, 1);
-
-            flywheelPower = shooterPower;
-
-            lastTime = currentTime;
-            lastError = diffVelocity;
+        flyWheel1.setVelocity(flyWheelTargetSpeed);
+        flyWheel2.setVelocity(flyWheelTargetSpeed);
+//
+//        if (oldFlywheelTarget != flyWheelTargetSpeed) {
+//            shooterPower = flyWheelTargetSpeed / 1550;
+//            oldFlywheelTarget = flyWheelTargetSpeed;
+//        }
+//
+//        double flywheelPower = 0;
+//        double currentFlywheelVelocity = flyWheel1.getVelocity();
+//
+//        if (flyWheelTargetSpeed == 0) {
+//            flywheelPower = 0;
+//        } else if (currentFlywheelVelocity < flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD) {
+//            flywheelPower = 1;
+//        } else {
+//            long currentTime = robot.getCurrentTimeMilli();
+//
+//            double diffVelocity = flyWheelTargetSpeed - currentFlywheelVelocity;
+//
+//            double changeError = (diffVelocity - lastError) / (currentTime - lastTime);
+//
+//            double increment = (diffVelocity * FLYWHEEL_P) + (changeError * FLYWHEEL_D);
+//
+//            shooterPower = Range.clip(shooterPower + increment, -1, 1);
+//
+//            flywheelPower = shooterPower;
+//
+//            lastTime = currentTime;
+//            lastError = diffVelocity;
+//        }
+//
+//        flyWheel1.setPower(flywheelPower);
+//        flyWheel2.setPower(flywheelPower);
+        if(isUpToSpeed()){
+            Log.d("NYOOM", Long.toString(SystemClock.elapsedRealtime()-startTime));
         }
-
-        flyWheel1.setPower(flywheelPower);
-        flyWheel2.setPower(flywheelPower);
     }
 
     public boolean isUpToSpeed() {
         return flyWheel1.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
                 && flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD;
+    }
+
+    public double getFlyWheelVelocity(){
+        return flyWheel1.getVelocity();
     }
 
     @Override

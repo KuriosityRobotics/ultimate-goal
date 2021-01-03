@@ -23,7 +23,7 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     // States
 //    final double FLAP_MAX = 0.71;
     double flapPosition = 0.65; // In degrees
-    double flyWheelSpeed = 1200; // In ticks per second
+    double flyWheelSpeed = 1300; // In ticks per second
 
     @Override
     public void runOpMode() {
@@ -37,10 +37,20 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
         robot.startModules();
 
         while (opModeIsActive()) {
+            robot.shooter.setFlyWheelTargetSpeed(flyWheelSpeed);
+
+            if(gamepad1.x){
+                flyWheelSpeed = 1260;
+            }else if(gamepad1.y){
+                flyWheelSpeed = 1320;
+            }else if(gamepad1.b){
+                flyWheelSpeed = 1550;
+            }
+
             robot.shooter.setHopperPosition(HopperModule.HopperPosition.RAISED);
 
             flapPosition -= gamepad1.right_stick_y * 0.0000001;
-            flyWheelSpeed -= gamepad1.left_stick_y * 0.001;
+//            flyWheelSpeed -= gamepad1.left_stick_y * 0.001;
 
             if (flapPosition > 1) {
                 flapPosition = 1;
@@ -50,17 +60,17 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
 
             robot.shooter.setFlapPosition(flapPosition);
 
-            robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
+//            robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
             robot.shooter.isFlyWheelOn = true;
 
-            if (x.isToggled(gamepad1.y))
-                flapPosition /= 2;
+//            if (x.isToggled(gamepad1.y))
+//                flapPosition /= 2;
 
             if (a.isToggled(gamepad1.a)) {
                 robot.shooter.requestRingIndex();
             }
-            if (b.isToggled(gamepad1.b))
-                robot.shooter.nextTarget();
+//            if (b.isToggled(gamepad1.b))
+//                robot.shooter.nextTarget();
 
         }
     }

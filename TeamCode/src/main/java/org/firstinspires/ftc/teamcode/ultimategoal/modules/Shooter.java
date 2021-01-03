@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.util.Log;
+
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
@@ -77,6 +79,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     boolean weakBrakeOldState;
 
     public void update() {
+        Log.d("SHOOTER SPEED", Double.toString(shooterModule.getFlyWheelVelocity()));
+        Log.d("SHOOTER SPEED", Integer.toString(burstNum));
         // Check if aimbot was toggled
         if (isAimBotActive && !activeToggle) {
             activeToggle = true;
@@ -198,17 +202,24 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     }
 
     private double getHighGoalFlapPosition(double distanceToTarget) {
+        if(burstNum == 1){
+            return 0.656 + (41.1 - 0.783*distanceToTarget + 0.00437*Math.pow(distanceToTarget,2))/1000;
+        }
+        if(burstNum == 2 ){
+            return 0.662 + (41.1 - 0.783*distanceToTarget + 0.00437*Math.pow(distanceToTarget,2))/1000;
+        }
 //0.7188854
 //        return 0.7188854
 //                - (0.00123 * distanceToTarget)
 //                + (0.00000567 * Math.pow(distanceToTarget, 2))
 //                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
 //                + manualAngleFlapCorrection;
-        return 0.7188854 - 8500 * 1 * 0.000001
+        return 0.7178854 - 8500 * 1 * 0.000001
                 + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
                 + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
                 + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
-                + manualAngleFlapCorrection + (burstNum * 0.003);
+                + manualAngleFlapCorrection;
+//                + (burstNum * 0.003);
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
@@ -359,6 +370,10 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         return shooterModule.flyWheelTargetSpeed;
     }
 
+    public void setFlyWheelTargetSpeed(double targetSpeed){
+        shooterModule.flyWheelTargetSpeed = targetSpeed;
+    }
+
     /**
      * Add one to the queue of indexes. Only has an effect if the aimbot is active.
      */
@@ -441,6 +456,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         data.add("isDoneAiming: " + isDoneAiming);
         data.add("isFinishedIndexing: " + isFinishedIndexing());
         data.add("isCloseEnough: " + isCloseEnough);
+        data.add("burstNumber: "+ burstNum);
         return data;
     }
 
