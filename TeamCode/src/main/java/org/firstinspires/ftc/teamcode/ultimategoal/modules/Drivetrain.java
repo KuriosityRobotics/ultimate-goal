@@ -35,18 +35,18 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     // Velocity controller
     private final static double ORTH_VELOCITY_P = 0.005;
-    private final static double ORTH_VELOCITY_D = 0.25;
+    private final static double ORTH_VELOCITY_D = 0.255;
     private final static double ANGULAR_VELOCITY_P = 0.04;
 
     // Velocity target constants (line with a floor, to allow for coasting)
-    private final static double ORTH_VELOCITY_SLOWDOWN = 1; // The slope of dist vs target velocity
+    private final static double ORTH_VELOCITY_SLOWDOWN = 1.5; // The slope of dist vs target velocity
     private final static double ORTH_COAST_THRESHOLD = 4; // threshold to start coasting, which means hold a speed until power cutoff
-    private final static double ORTH_COAST_VELOCITY = 6; // velocity to coast at
+    private final static double ORTH_COAST_VELOCITY = 8; // velocity to coast at
     private final static double ORTH_STOP_THRESHOLD = 0.4; // threshold at which to stop entirely (after coasting)
 
     private final static double ANGULAR_VELOCITY_SLOWDOWN = Math.toRadians(80);
     private final static double ANGULAR_COAST_THRESHOLD = Math.toRadians(1);
-    private final static double ANGULAR_COAST_VELOCITY = 0.42;
+    private final static double ANGULAR_COAST_VELOCITY = 0.5;
     private final static double ANGULAR_STOP_THRESHOLD = Math.toRadians(0.5);
 
     public Drivetrain(Robot robot, boolean isOn) {

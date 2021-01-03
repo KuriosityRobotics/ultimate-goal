@@ -127,11 +127,9 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         }
         if (g2DU.isToggled(gamepad2.dpad_up)) {
             robot.shooter.manualAngleFlapCorrection += 0.003;
-            robot.shooter.resetAiming();
         }
         if (g2DD.isToggled(gamepad2.dpad_down)) {
             robot.shooter.manualAngleFlapCorrection -= 0.003;
-            robot.shooter.resetAiming();
         }
         if (g2LB.isToggled(gamepad2.left_bumper)) {
             robot.shooter.manualAngleFlapCorrection = 0;
