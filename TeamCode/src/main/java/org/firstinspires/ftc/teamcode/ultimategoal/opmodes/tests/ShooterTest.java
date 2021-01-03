@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -11,7 +10,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
 import java.util.ArrayList;
 
-@Disabled
+//@Disabled
 @TeleOp
 public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     Robot robot;
@@ -20,11 +19,10 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     Toggle b = new Toggle();
     Toggle x = new Toggle();
 
-
     // States
 //    final double FLAP_MAX = 0.71;
     double flapPosition = 0.65; // In degrees
-    double flyWheelSpeed = 1550; // In ticks per second
+    double flyWheelSpeed = 1200; // In ticks per second
 
     @Override
     public void runOpMode() {

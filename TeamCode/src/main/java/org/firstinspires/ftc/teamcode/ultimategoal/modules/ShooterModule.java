@@ -16,7 +16,8 @@ public class ShooterModule implements Module, TelemetryProvider {
     boolean isOn;
 
     private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
-    private static final double FLYWHEEL_P = 0.00006;
+    private static final double FLYWHEEL_P = 0.00008;
+    private static final double FLYWHEEL_D = 0.04;
 
     // States
     public double flyWheelTargetSpeed;
@@ -63,9 +64,12 @@ public class ShooterModule implements Module, TelemetryProvider {
     double shooterPower = 1;
     double oldFlywheelTarget = 0;
 
+    double lastError = 0;
+    long lastTime = 0;
+
     private void setFlywheelMotors() {
         if (oldFlywheelTarget != flyWheelTargetSpeed) {
-            shooterPower = 1;
+            shooterPower = flyWheelTargetSpeed / 1550;
             oldFlywheelTarget = flyWheelTargetSpeed;
         }
 
@@ -77,14 +81,20 @@ public class ShooterModule implements Module, TelemetryProvider {
         } else if (currentFlywheelVelocity < flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD) {
             flywheelPower = 1;
         } else {
-            double diffVelocity = flyWheelTargetSpeed - currentFlywheelVelocity;
-            diffVelocity = Math.abs(diffVelocity) < 20 ? 0 : diffVelocity;
+            long currentTime = robot.getCurrentTimeMilli();
 
-            double increment = diffVelocity * FLYWHEEL_P;
+            double diffVelocity = flyWheelTargetSpeed - currentFlywheelVelocity;
+
+            double changeError = (diffVelocity - lastError) / (currentTime - lastTime);
+
+            double increment = (diffVelocity * FLYWHEEL_P) + (changeError * FLYWHEEL_D);
 
             shooterPower = Range.clip(shooterPower + increment, -1, 1);
 
             flywheelPower = shooterPower;
+
+            lastTime = currentTime;
+            lastError = diffVelocity;
         }
 
         flyWheel1.setPower(flywheelPower);
