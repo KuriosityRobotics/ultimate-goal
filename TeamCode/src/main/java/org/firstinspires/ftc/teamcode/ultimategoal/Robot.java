@@ -4,6 +4,8 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.lynx.LynxNackException;
+import com.qualcomm.hardware.lynx.commands.standard.LynxSetModuleLEDColorCommand;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -164,6 +166,33 @@ public class Robot extends ModuleCollection {
             return hardwareMap.servo.get(name);
         } catch (IllegalArgumentException exception) {
             throw new Error("Servo with name " + name + " could not be found. Exception: " + exception);
+        }
+    }
+
+    public synchronized void setLedColor(int r, int g, int b) {
+        if (r > 255 || g > 255 || b > 255) {
+            throw new IllegalArgumentException();
+        }
+
+        setLedColor((byte) r, (byte) g, (byte) b);
+    }
+
+    /***
+     * Set the color of the Expansion Hub's RGB status LED
+     *
+     * @param r red value
+     * @param g green value
+     * @param b blue value
+     */
+    public synchronized void setLedColor(byte r, byte g, byte b) {
+        LynxSetModuleLEDColorCommand colorCommand = new LynxSetModuleLEDColorCommand(revHub1, r, g, b);
+        LynxSetModuleLEDColorCommand colorCommand2 = new LynxSetModuleLEDColorCommand(revHub2, r, g, b);
+
+        try {
+            colorCommand.send();
+            colorCommand2.send();
+        } catch (InterruptedException | LynxNackException e) {
+            Log.d("EXCEPTION COLOR", e.toString());
         }
     }
 
