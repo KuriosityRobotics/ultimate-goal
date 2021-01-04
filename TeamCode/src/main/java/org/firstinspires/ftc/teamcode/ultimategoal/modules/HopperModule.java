@@ -22,8 +22,8 @@ public class HopperModule implements Module, TelemetryProvider {
 //    public DistanceSensor distance;
 
     // Constants
-    private static final double INDEX_OPEN_POSITION = 0.385;
-    private static final double INDEX_PUSH_POSITION = 0.125;
+    private static final double INDEX_OPEN_POSITION = 0.405;
+    private static final double INDEX_PUSH_POSITION = 0.145;
 
     private static final int INDEXER_PUSHED_TIME_MS = 150;
     private static final int INDEXER_RETURNED_TIME_MS = 300;
