@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.util.Log;
-
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
