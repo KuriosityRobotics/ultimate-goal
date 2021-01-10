@@ -16,9 +16,19 @@ apply from: '../build.common.gradle'
 
 repositories {
     maven { url = "https://dl.bintray.com/first-tech-challenge/ftcsdk/" }
+
+    jcenter()
+
+    maven {
+        url "https://maven.0x778.tk"
+    }
 }
 
+
+
+
 dependencies {
+    implementation 'com.spartronics4915.lib:ftc265:2.1.2'
     implementation 'org.openftc:easyopencv:1.4.1'
     implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
  

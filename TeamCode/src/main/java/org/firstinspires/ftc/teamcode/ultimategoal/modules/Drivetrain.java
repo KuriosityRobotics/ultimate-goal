@@ -18,7 +18,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public boolean isOn;
 
     private DrivetrainModule drivetrainModule;
-    private OdometryModule odometryModule;
+    public OdometryModule odometryModule;
     public VelocityModule velocityModule;
 
     // States

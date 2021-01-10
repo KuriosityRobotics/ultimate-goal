@@ -7,6 +7,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.LynxNackException;
 import com.qualcomm.hardware.lynx.commands.standard.LynxSetModuleLEDColorCommand;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -37,7 +38,7 @@ public class Robot extends ModuleCollection {
 
     public HardwareMap hardwareMap;
     public Telemetry telemetry;
-    private final LinearOpMode linearOpMode;
+    private LinearOpMode linearOpMode;
 
     public TelemetryDump telemetryDump;
     public FileDump fileDump;
@@ -63,6 +64,24 @@ public class Robot extends ModuleCollection {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
         this.linearOpMode = linearOpMode;
+
+        this.telemetryDump = new TelemetryDump(telemetry);
+        fileDump = new FileDump();
+
+        initHubs();
+        initialize(startingPosition);
+
+        actionExecutor = new ActionExecutor(this);
+    }
+
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, OpMode linearOpMode) {
+        this(hardwareMap, telemetry, linearOpMode, new Point(0, 0));
+        linearOpMode.internalPostLoop();
+    }
+
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, OpMode linearOpMode, Point startingPosition) {
+        this.hardwareMap = hardwareMap;
+        this.telemetry = telemetry;
 
         this.telemetryDump = new TelemetryDump(telemetry);
         fileDump = new FileDump();
