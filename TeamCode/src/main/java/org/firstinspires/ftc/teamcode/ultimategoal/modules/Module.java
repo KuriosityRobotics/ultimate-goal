@@ -26,4 +26,6 @@ public interface Module {
     public boolean isOn();
 
     public String getName();
+
+    public void onStart();
 }

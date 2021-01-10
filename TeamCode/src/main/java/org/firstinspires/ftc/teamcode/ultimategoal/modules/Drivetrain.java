@@ -18,7 +18,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public boolean isOn;
 
     private DrivetrainModule drivetrainModule;
-    private OdometryModule odometryModule;
+    public OdometryModule odometryModule;
     public VelocityModule velocityModule;
 
     // States
@@ -439,5 +439,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     @Override
     public String getName() {
         return "Drivetrain";
+    }
+
+    public void onStart(){
+        odometryModule.onStart();
+        velocityModule.onStart();
+        drivetrainModule.onStart();
     }
 }

@@ -44,6 +44,8 @@ public class VisionModule implements Module {
         return this.isOn;
     }
 
+    public void onStart(){}
+
     @Override
     public String getName() {
         return "VisionModule";
