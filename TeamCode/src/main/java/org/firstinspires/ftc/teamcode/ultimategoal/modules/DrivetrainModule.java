@@ -33,7 +33,7 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         this.isOn = isOn;
     }
 
-    public void initModules() {
+    public void initModule() {
         fLeft = robot.getDcMotor("fLeft");
         fRight = robot.getDcMotor("fRight");
         bLeft = robot.getDcMotor("bLeft");

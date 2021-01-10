@@ -36,7 +36,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     @Override
-    public void initModules() {
+    public void initModule() {
         flyWheel1 = (DcMotorEx) robot.getDcMotor("flyWheel1");
         flyWheel2 = (DcMotorEx) robot.getDcMotor("flyWheel2");
 

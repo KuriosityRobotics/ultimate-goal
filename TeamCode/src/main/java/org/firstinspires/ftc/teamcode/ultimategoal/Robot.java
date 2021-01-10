@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ModuleCollection;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.VisionCollection;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
@@ -29,7 +30,7 @@ public class Robot extends ModuleCollection {
 
     public IntakeModule intakeModule;
     public WobbleModule wobbleModule;
-//    public VisionModule visionModule;
+    public VisionCollection visionCollection;
 
     private long currentTimeMilli;
 
@@ -109,16 +110,17 @@ public class Robot extends ModuleCollection {
 
         this.intakeModule = new IntakeModule(this, true);
         this.wobbleModule = new WobbleModule(this, true);
-//        this.visionModule = new VisionModule(this, true);
+        this.visionCollection = new VisionCollection(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.intakeModule, this.wobbleModule, this.shooter
+                this.drivetrain, this.intakeModule, this.wobbleModule, this.shooter, this.visionCollection
         };
 
         // Initialize modules
-        initModules(); // Initial init
+        initModule(); // Initial init
         while (!initAsync()) {
-        } // Cycle init
+            // Cycle init
+        }
 
         // Start the thread for executing modules.
         moduleExecutor = new ModuleExecutor(this);

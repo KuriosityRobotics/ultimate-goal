@@ -19,8 +19,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.openftc:easyopencv:1.4.1'
-    implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
- 
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
+    implementation 'com.quickbirdstudios:opencv:4.3.0-contrib'
 }

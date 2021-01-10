@@ -45,8 +45,8 @@ public class HopperModule implements Module, TelemetryProvider {
     }
 
     @Override
-    public void initModules() {
-        //distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
+    public void initModule() {
+        // distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
 
         indexerServo = robot.getServo("indexerServo");
         hopperLinkage = robot.getServo("hopperLinkage");

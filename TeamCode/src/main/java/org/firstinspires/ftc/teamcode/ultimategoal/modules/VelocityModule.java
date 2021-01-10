@@ -27,7 +27,7 @@ public class VelocityModule implements Module, TelemetryProvider {
         this.isOn = isOn;
     }
 
-    public void initModules() {
+    public void initModule() {
         oldUpdateTime = SystemClock.elapsedRealtime();
     }
 

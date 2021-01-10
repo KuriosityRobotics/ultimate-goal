@@ -25,6 +25,10 @@ android {
     }
 }
 
+dependencies {
+    implementation fileTree(dir: '../libs/opencv', include: ['*.aar', '*.jar'], exclude: [])
+}
+
 repositories {
     maven { url = "https://dl.bintray.com/first-tech-challenge/ftcsdk/" }
 

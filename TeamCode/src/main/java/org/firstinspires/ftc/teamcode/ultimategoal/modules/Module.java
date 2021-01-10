@@ -5,7 +5,7 @@ public interface Module {
     /**
      * Initializes the module. This includes setting up all motors/servos
      */
-    public void initModules();
+    public void initModule();
 
     /**
      * Any logic for initialization that requires repetitive calling should go here.

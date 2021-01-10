@@ -34,7 +34,7 @@ public class IntakeModule implements Module, TelemetryProvider {
         robot.telemetryDump.registerProvider(this);
     }
 
-    public void initModules() {
+    public void initModule() {
         intakeTop = robot.getDcMotor("intakeTop");
         intakeBottom = robot.getDcMotor("intakeBottom");
 

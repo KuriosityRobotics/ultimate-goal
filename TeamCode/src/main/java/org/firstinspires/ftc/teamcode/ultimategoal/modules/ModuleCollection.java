@@ -8,9 +8,9 @@ public abstract class ModuleCollection implements Module {
     protected Module[] modules;
 
     @Override
-    public void initModules() {
+    public void initModule() {
         for (Module module : modules) {
-            module.initModules();
+            module.initModule();
         }
     }
 

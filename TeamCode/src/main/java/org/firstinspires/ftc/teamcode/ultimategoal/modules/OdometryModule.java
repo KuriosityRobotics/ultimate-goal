@@ -44,7 +44,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         this.worldY = startingPosition.y;
     }
 
-    public void initModules() {
+    public void initModule() {
         yLeftEncoder = robot.getDcMotor("fLeft");
         yRightEncoder = robot.getDcMotor("fRight");
         mecanumEncoder = robot.getDcMotor("bLeft");

@@ -52,7 +52,7 @@ public class WobbleModule implements Module, TelemetryProvider {
         robot.telemetryDump.registerProvider(this);
     }
 
-    public void initModules() {
+    public void initModule() {
         wobbleLeft = robot.getServo("wobbleLeft");
         wobbleRight = robot.getServo("wobbleRight");
 
