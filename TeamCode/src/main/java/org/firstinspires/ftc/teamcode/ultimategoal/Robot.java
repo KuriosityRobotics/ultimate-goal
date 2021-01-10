@@ -7,6 +7,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.LynxNackException;
 import com.qualcomm.hardware.lynx.commands.standard.LynxSetModuleLEDColorCommand;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -24,6 +25,8 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.ActionExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
+import static org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule.slamra;
+
 public class Robot extends ModuleCollection {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
@@ -37,7 +40,7 @@ public class Robot extends ModuleCollection {
 
     public HardwareMap hardwareMap;
     public Telemetry telemetry;
-    private final LinearOpMode linearOpMode;
+    private LinearOpMode linearOpMode;
 
     public TelemetryDump telemetryDump;
     public FileDump fileDump;
@@ -73,6 +76,24 @@ public class Robot extends ModuleCollection {
         actionExecutor = new ActionExecutor(this);
     }
 
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, OpMode linearOpMode) {
+        this(hardwareMap, telemetry, linearOpMode, new Point(0, 0));
+        linearOpMode.internalPostLoop();
+    }
+
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, OpMode linearOpMode, Point startingPosition) {
+        this.hardwareMap = hardwareMap;
+        this.telemetry = telemetry;
+
+        this.telemetryDump = new TelemetryDump(telemetry);
+        fileDump = new FileDump();
+
+        initHubs();
+        initialize(startingPosition);
+
+        actionExecutor = new ActionExecutor(this);
+    }
+
     public void update() {
         refreshHubData();
 
@@ -98,6 +119,7 @@ public class Robot extends ModuleCollection {
     private void cleanUp() {
         this.fileDump.writeFilesToDevice();
         try {
+            slamra.stop();
             this.moduleExecutor.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -133,7 +155,14 @@ public class Robot extends ModuleCollection {
      * Starts running the loop that updates modules
      */
     public void startModules() {
+        onStartModules();
         moduleExecutor.start();
+    }
+
+    public void onStartModules(){
+        for(Module module : modules){
+            module.onStart();
+        }
     }
 
     private void initHubs() {
@@ -225,6 +254,8 @@ public class Robot extends ModuleCollection {
     public boolean isOn() {
         return true;
     }
+
+    public void onStart(){}
 
     @Override
     public String getName() {

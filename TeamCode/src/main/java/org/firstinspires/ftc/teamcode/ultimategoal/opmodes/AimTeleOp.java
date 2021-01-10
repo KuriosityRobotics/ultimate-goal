@@ -2,16 +2,30 @@ package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
 
 import android.os.SystemClock;
 
+import com.arcrobotics.ftclib.geometry.Rotation2d;
+import com.arcrobotics.ftclib.geometry.Transform2d;
+import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.spartronics4915.lib.T265Camera;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
 
+
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
+import com.arcrobotics.ftclib.geometry.Translation2d;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.spartronics4915.lib.T265Camera;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
+//import static org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule.slamra;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
 
 @TeleOp
@@ -88,6 +102,11 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             loopTime = currentTime - lastUpdateTime;
             lastUpdateTime = currentTime;
         }
+        OdometryModule.slamra.stop();
+        try {
+            OdometryModule.slamra.getClass().getMethod("cleanup").setAccessible(true);
+            OdometryModule.slamra.getClass().getMethod("cleanup").invoke(OdometryModule.slamra);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {}
     }
 
     private void updateShooterStates() {
