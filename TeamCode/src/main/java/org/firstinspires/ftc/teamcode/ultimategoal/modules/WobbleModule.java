@@ -142,6 +142,8 @@ public class WobbleModule implements Module, TelemetryProvider {
         return data;
     }
 
+    public void onStart(){}
+
     public String getName() {
         return "WobbleModule";
     }

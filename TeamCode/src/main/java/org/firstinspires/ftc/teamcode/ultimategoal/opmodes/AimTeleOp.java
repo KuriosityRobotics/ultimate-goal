@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.spartronics4915.lib.T265Camera;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
@@ -24,7 +25,7 @@ import com.spartronics4915.lib.T265Camera;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
-import static org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule.slamra;
+//import static org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule.slamra;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
 
 @TeleOp
@@ -62,8 +63,6 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         robot.telemetryDump.registerProvider(this);
 
         waitForStart();
-
-        slamra.start();
 
         robot.startModules();
 
@@ -103,12 +102,11 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             loopTime = currentTime - lastUpdateTime;
             lastUpdateTime = currentTime;
         }
-        slamra.stop();
+        OdometryModule.slamra.stop();
         try {
-            slamra.getClass().getMethod("cleanup").setAccessible(true);
-            slamra.getClass().getMethod("cleanup").invoke(slamra);
+            OdometryModule.slamra.getClass().getMethod("cleanup").setAccessible(true);
+            OdometryModule.slamra.getClass().getMethod("cleanup").invoke(OdometryModule.slamra);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {}
-
     }
 
     private void updateShooterStates() {
@@ -175,7 +173,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     private void initRobot() {
         robot = new Robot(hardwareMap, telemetry, this, BlueAuto.PARK);
 
-        robot.drivetrain.zeroPowerBrake = false;
+        robot.drivetrain.weakBrake = true;
     }
 
     private void updateDrivetrainStates() {

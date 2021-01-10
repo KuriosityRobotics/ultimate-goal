@@ -466,4 +466,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public String getName() {
         return "Shooter";
     }
+
+    public void onStart(){}
+
 }

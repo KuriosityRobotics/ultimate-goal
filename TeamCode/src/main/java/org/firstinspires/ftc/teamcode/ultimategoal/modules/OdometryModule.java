@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.util.Log;
+
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
@@ -16,6 +18,7 @@ import com.arcrobotics.ftclib.geometry.Transform2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.spartronics4915.lib.T265Camera;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -23,7 +26,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     private Robot robot;
     private boolean isOn;
 
-    public static T265Camera slamra = null;
+    public static T265Camera slamra;
 
     Translation2d translation;
     Rotation2d rotation;
@@ -63,11 +66,11 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         yRightEncoder = robot.getDcMotor("fRight");
         mecanumEncoder = robot.getDcMotor("bLeft");
 
-        if (slamra == null) {
-            slamra = new T265Camera(new Transform2d(), 0.1, robot.hardwareMap.appContext);
-        }
+        slamra = new T265Camera(new Transform2d(), 0.1, robot.hardwareMap.appContext);
+
         slamra.setPose(new Pose2d(0,0,new Rotation2d(0)));
 
+        robot.telemetry.addLine("DONE INITING T625");
         resetEncoders();
     }
 
@@ -248,6 +251,11 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
 
     public boolean isOn() {
         return isOn;
+    }
+
+    public void onStart(){
+        slamra.start();
+        Log.d("CAMERA", "STARTING");
     }
 
     public String getName() {

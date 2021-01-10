@@ -25,6 +25,8 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.ActionExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
+import static org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule.slamra;
+
 public class Robot extends ModuleCollection {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
@@ -117,6 +119,7 @@ public class Robot extends ModuleCollection {
     private void cleanUp() {
         this.fileDump.writeFilesToDevice();
         try {
+            slamra.stop();
             this.moduleExecutor.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -152,7 +155,14 @@ public class Robot extends ModuleCollection {
      * Starts running the loop that updates modules
      */
     public void startModules() {
+        onStartModules();
         moduleExecutor.start();
+    }
+
+    public void onStartModules(){
+        for(Module module : modules){
+            module.onStart();
+        }
     }
 
     private void initHubs() {
@@ -250,6 +260,8 @@ public class Robot extends ModuleCollection {
     public boolean isOn() {
         return true;
     }
+
+    public void onStart(){}
 
     @Override
     public String getName() {

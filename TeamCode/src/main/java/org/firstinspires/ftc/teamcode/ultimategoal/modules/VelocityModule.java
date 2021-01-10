@@ -63,6 +63,7 @@ public class VelocityModule implements Module, TelemetryProvider {
         data.add("angleVel: " + angleVel);
         return data;
     }
+    public void onStart(){}
 
     public boolean isOn() {
         return isOn;

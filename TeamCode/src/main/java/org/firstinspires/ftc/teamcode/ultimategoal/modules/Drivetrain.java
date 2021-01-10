@@ -440,4 +440,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public String getName() {
         return "Drivetrain";
     }
+
+    public void onStart(){
+        odometryModule.onStart();
+        velocityModule.onStart();
+        drivetrainModule.onStart();
+    }
 }
