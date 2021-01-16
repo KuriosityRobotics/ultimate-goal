@@ -183,8 +183,6 @@ public class HopperModule implements Module, TelemetryProvider {
         return data;
     }
 
-    public void onStart(){}
-
     @Override
     public String getName() {
         return "HopperModule";

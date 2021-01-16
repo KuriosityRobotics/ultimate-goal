@@ -90,8 +90,6 @@ public class IntakeModule implements Module, TelemetryProvider {
         return data;
     }
 
-    public void onStart(){}
-
     public String getName() {
         return "IntakeModule";
     }

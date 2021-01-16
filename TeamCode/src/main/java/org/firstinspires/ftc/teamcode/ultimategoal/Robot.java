@@ -155,14 +155,8 @@ public class Robot extends ModuleCollection {
      * Starts running the loop that updates modules
      */
     public void startModules() {
-        onStartModules();
+        onStart();
         moduleExecutor.start();
-    }
-
-    public void onStartModules(){
-        for(Module module : modules){
-            module.onStart();
-        }
     }
 
     private void initHubs() {
@@ -254,8 +248,6 @@ public class Robot extends ModuleCollection {
     public boolean isOn() {
         return true;
     }
-
-    public void onStart(){}
 
     @Override
     public String getName() {
