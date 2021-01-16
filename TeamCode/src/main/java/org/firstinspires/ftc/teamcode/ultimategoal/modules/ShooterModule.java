@@ -95,7 +95,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         data.add("isUpToSpeed: " + isUpToSpeed());
         return data;
     }
-    public void onStart(){}
 
     public String getName() {
         return "ShooterModule";

@@ -16,6 +16,12 @@ public interface Module {
         return true;
     }
 
+    public default void onStart() {
+    }
+
+    public default void onClose() {
+    }
+
     /**
      * Updates the module, executing all the tasks it should complete on every iteration,
      * utilizing the module's states. This separate method allows for each module to be updated
@@ -26,6 +32,4 @@ public interface Module {
     public boolean isOn();
 
     public String getName();
-
-    public void onStart();
 }
