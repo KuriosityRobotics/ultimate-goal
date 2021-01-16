@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
+import com.arcrobotics.ftclib.geometry.Transform2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.spartronics4915.lib.T265Camera;
@@ -12,11 +13,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
-
-import com.arcrobotics.ftclib.geometry.Rotation2d;
-import com.arcrobotics.ftclib.geometry.Transform2d;
-import com.arcrobotics.ftclib.geometry.Translation2d;
-import com.spartronics4915.lib.T265Camera;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -68,7 +64,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
 
         slamra = new T265Camera(new Transform2d(), 0.1, robot.hardwareMap.appContext);
 
-        slamra.setPose(new Pose2d(0,0,new Rotation2d(0)));
+        slamra.setPose(new Pose2d(0, 0, new Rotation2d(0)));
 
         robot.telemetry.addLine("DONE INITING T625");
         resetEncoders();
@@ -88,12 +84,26 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         mecanumPodKnownPosition = 0;
     }
 
+    public void onStart() {
+        slamra.start();
+        Log.d("CAMERA", "STARTING");
+    }
+
     public void update() {
 //        calculateRobotPosition();
         calculateRobotPositionT625();
     }
 
-    public void calculateRobotPositionT625(){
+    public void onClose() { // TODO cleanup and stuff
+        OdometryModule.slamra.stop();
+        try {
+            OdometryModule.slamra.getClass().getMethod("cleanup").setAccessible(true);
+            OdometryModule.slamra.getClass().getMethod("cleanup").invoke(OdometryModule.slamra);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+        }
+    }
+
+    public void calculateRobotPositionT625() {
         T265Camera.CameraUpdate up = slamra.getLastReceivedCameraUpdate();
         if (up == null) return;
 
@@ -101,9 +111,9 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         translation = new Translation2d(up.pose.getTranslation().getX() / 0.0254, up.pose.getTranslation().getY() / 0.0254);
         rotation = up.pose.getRotation();
 
-        worldX = -1*translation.getY();
+        worldX = -1 * translation.getY();
         worldY = translation.getX();
-        worldHeadingRad = -1*rotation.getRadians();
+        worldHeadingRad = -1 * rotation.getRadians();
     }
 
     public Point getCurrentPosition() {
@@ -245,17 +255,8 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         resetEncoders();
     }
 
-    public void stopT625(){
-//        slamra.stop();
-    }
-
     public boolean isOn() {
         return isOn;
-    }
-
-    public void onStart(){
-        slamra.start();
-        Log.d("CAMERA", "STARTING");
     }
 
     public String getName() {

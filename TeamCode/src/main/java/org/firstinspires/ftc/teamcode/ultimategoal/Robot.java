@@ -155,14 +155,8 @@ public class Robot extends ModuleCollection {
      * Starts running the loop that updates modules
      */
     public void startModules() {
-        onStartModules();
+        onStart();
         moduleExecutor.start();
-    }
-
-    public void onStartModules(){
-        for(Module module : modules){
-            module.onStart();
-        }
     }
 
     private void initHubs() {
@@ -198,14 +192,12 @@ public class Robot extends ModuleCollection {
         }
     }
 
-    public synchronized void setLedColor(int r, int g, int b)
-    {
-        if(r > 255 || g > 255 || b > 255)
-        {
+    public synchronized void setLedColor(int r, int g, int b) {
+        if (r > 255 || g > 255 || b > 255) {
             throw new IllegalArgumentException();
         }
 
-        setLedColor((byte)r, (byte)g, (byte)b);
+        setLedColor((byte) r, (byte) g, (byte) b);
     }
 
     /***
@@ -215,18 +207,14 @@ public class Robot extends ModuleCollection {
      * @param g green value
      * @param b blue value
      */
-    public synchronized void setLedColor(byte r, byte g, byte b)
-    {
+    public synchronized void setLedColor(byte r, byte g, byte b) {
         LynxSetModuleLEDColorCommand colorCommand = new LynxSetModuleLEDColorCommand(revHub1, r, g, b);
         LynxSetModuleLEDColorCommand colorCommand2 = new LynxSetModuleLEDColorCommand(revHub2, r, g, b);
 
-        try
-        {
+        try {
             colorCommand.send();
             colorCommand2.send();
-        }
-        catch (InterruptedException | LynxNackException e)
-        {
+        } catch (InterruptedException | LynxNackException e) {
             Log.d("EXCEPTION COLOR", e.toString());
         }
     }
@@ -260,8 +248,6 @@ public class Robot extends ModuleCollection {
     public boolean isOn() {
         return true;
     }
-
-    public void onStart(){}
 
     @Override
     public String getName() {
