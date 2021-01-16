@@ -26,10 +26,12 @@ public class HighGoalDetector implements VisionModule {
     public boolean isOn;
 
     private CameraPosition cameraPosition;
-    private Point robotPosition;
+    private org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point robotPosition;
 
     // constants
     double fx = 965, fy = 964, cx = 627, cy = 356;
+
+    private static final Point CAMERA_POSITION = new Point(0, 8.23); // Relative to center of robot
 
     // helpers
     private static final int[] VALUES = new int[]{80, 151, 50, 93, 255, 255}; // Tuned values to detect high goal contours
@@ -67,6 +69,7 @@ public class HighGoalDetector implements VisionModule {
         this.cameraPosition = calculateCameraPosition(inputMat);
 
         // todo translate to robit pos
+        this.robotPosition = convertCameraToRobotPosition(this.cameraPosition);
     }
 
     private CameraPosition calculateCameraPosition(Mat inputMat) {
@@ -179,6 +182,20 @@ public class HighGoalDetector implements VisionModule {
         return solvePnP(threeDimensionalPoints, approxDP, cameraMatrix, distortCoeffs);
     }
 
+    private org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point convertCameraToRobotPosition(CameraPosition cameraPosition) {
+        // we ignore rotation around the x and y axis, because that's just stinky. and also because it doesn't really matter if the camera thinks the robot is phasing into the ground.
+
+        Point cameraLocation = new Point(cameraPosition.position[0], cameraPosition.position[1]);
+
+        double cameraZRotation = Math.toRadians(90) - (-1 * cameraPosition.rotation[2]); // clockwise better, convert from heading to from the y axis
+        double cameraToRobotCenter = Math.hypot(CAMERA_POSITION.x, CAMERA_POSITION.y); // for now this is enough, if the cam was not centered on the robot's heading then we would need more math
+
+        double robotCenterXOffset = -1 * cameraToRobotCenter * Math.cos(cameraZRotation);
+        double robotCenterYOffset = -1 * cameraToRobotCenter * Math.sin(cameraZRotation);
+
+        return new org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point(cameraLocation.x - robotCenterXOffset, cameraLocation.y - robotCenterYOffset);
+    }
+
     private CameraPosition solvePnP(MatOfPoint3f _objPoints, MatOfPoint2f _imgPoints, Mat cameraMatrix, MatOfDouble distortionCoefficients) {
         Mat rvecs = new Mat(3, 1, CvType.CV_64FC1);
         Mat tvecs = new Mat(3, 1, CvType.CV_64FC1);
@@ -285,7 +302,7 @@ public class HighGoalDetector implements VisionModule {
         return cameraPosition;
     }
 
-    public Point getRobotPosition() {
+    public org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point getRobotPosition() {
         return robotPosition;
     }
 
