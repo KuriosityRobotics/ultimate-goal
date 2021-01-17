@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
+import android.os.SystemClock;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -7,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Disabled
+//@Disabled
 @TeleOp
 public class ShooterPlebTest extends LinearOpMode {
     DcMotorEx flyWheel1;
@@ -15,10 +17,10 @@ public class ShooterPlebTest extends LinearOpMode {
     Servo shooterFlap;
     Servo indexerServo;
     Servo hopperLinkage;
-    private static final double INDEX_OPEN_POSITION = 0.385;
-    private static final double INDEX_PUSH_POSITION = 0.125;
+    private static final double INDEX_OPEN_POSITION = 0.405;
+    private static final double INDEX_PUSH_POSITION = 0.145;
     private static final double HOPPER_RAISED_POSITION = 0.965;
-    double flyWheelSpeed = 1900;
+    double flyWheelSpeed = 1550;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -31,23 +33,33 @@ public class ShooterPlebTest extends LinearOpMode {
         flyWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
         flyWheel2.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        flyWheel1.setVelocityPIDFCoefficients(8.5, 0.6, 0, 11.7);
-        flyWheel2.setVelocityPIDFCoefficients(8.5, 0.6, 0, 11.7);
 
+
+        flyWheel1.setVelocityPIDFCoefficients(0.7, 0.2, 0, 13);
+        flyWheel2.setVelocityPIDFCoefficients(0.7, 0.2, 0, 13);
+
+        boolean isIndexed = false;
         waitForStart();
-        double pos = 0.63;
+        double pos = 0.657;
+        long start = 0;
+        long start2 = 0;
         while (opModeIsActive()) {
             hopperLinkage.setPosition(HOPPER_RAISED_POSITION);
-            flyWheelSpeed += gamepad1.left_stick_y * 1;
+            //flyWheelSpeed += gamepad1.left_stick_y * 1;
 
             flyWheel1.setVelocity(flyWheelSpeed);
             flyWheel2.setVelocity(flyWheelSpeed);
             pos += gamepad1.right_stick_y * 0.005;
-            if (gamepad1.a) {
+            if (flyWheel1.getVelocity()>1520 && flyWheel1.getVelocity()<1575 && SystemClock.elapsedRealtime()-start2>=500) {
                 indexerServo.setPosition(INDEX_PUSH_POSITION);
-            } else if (gamepad1.b) {
+                isIndexed = true;
+                start = SystemClock.elapsedRealtime();
+            } else if(isIndexed && SystemClock.elapsedRealtime()-start >= 500){
                 indexerServo.setPosition(INDEX_OPEN_POSITION);
+                start2 = SystemClock.elapsedRealtime();
+                isIndexed = false;
             }
+
             shooterFlap.setPosition(pos);
             telemetry.addLine("target: " + flyWheelSpeed);
             telemetry.addLine("flyWheel1 speed: " + flyWheel1.getVelocity());

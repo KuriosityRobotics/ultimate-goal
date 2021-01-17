@@ -5,6 +5,7 @@ import android.util.Log;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
+import com.intel.realsense.librealsense.UsbUtilities;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.spartronics4915.lib.T265Camera;
 
@@ -66,7 +67,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         yRightEncoder = robot.getDcMotor("fRight");
         mecanumEncoder = robot.getDcMotor("bLeft");
 
-        slamra = new T265Camera(new Transform2d(), 0.1, robot.hardwareMap.appContext);
+        slamra = new T265Camera(new Transform2d(),0.1, robot.hardwareMap.appContext);
 
         slamra.setPose(new Pose2d(0,0,new Rotation2d(0)));
 
@@ -96,6 +97,8 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     public void calculateRobotPositionT625(){
         T265Camera.CameraUpdate up = slamra.getLastReceivedCameraUpdate();
         if (up == null) return;
+        slamra.sendOdometry(0,0);
+//        slamra.sendOdometry(robot.drivetrain.velocityModule.getyVel(),-1*robot.drivetrain.velocityModule.getxVel());
 
         // We divide by 0.0254 to convert meters to inches
         translation = new Translation2d(up.pose.getTranslation().getX() / 0.0254, up.pose.getTranslation().getY() / 0.0254);
@@ -255,6 +258,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
 
     public void onStart(){
         slamra.start();
+
         Log.d("CAMERA", "STARTING");
     }
 

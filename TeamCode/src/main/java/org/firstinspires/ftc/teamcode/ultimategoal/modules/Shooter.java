@@ -191,7 +191,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
                     + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
         }
 
-        turnToGoal(target, angleOffset);
+//        turnToGoal(target, angleOffset);
+        turnToGoal(target, 0);
 
         shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
@@ -208,17 +209,23 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     }
 
     private double getHighGoalFlapPosition(double distanceToTarget) {
-        if (burstNum == 1) {
-            return 0.656 + (41.1 - 0.783 * distanceToTarget + 0.00437 * Math.pow(distanceToTarget, 2)) / 1000;
-        } else if (burstNum == 2) {
-            return 0.662 + (41.1 - 0.783 * distanceToTarget + 0.00437 * Math.pow(distanceToTarget, 2)) / 1000;
-        } else {
-            return 0.7178854 - 8500 * 1 * 0.000001
+//
+//        if (burstNum == 1) {
+//            return 0.656 + (41.1 - 0.783 * distanceToTarget + 0.00437 * Math.pow(distanceToTarget, 2)) / 1000;
+//        } else if (burstNum == 2) {
+//            return 0.662 + (41.1 - 0.783 * distanceToTarget + 0.00437 * Math.pow(distanceToTarget, 2)) / 1000;
+//        } else {
+//            return 0.7178854 - 8500 * 1 * 0.000001
+//                    + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
+//                    + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
+//                    + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
+//                    + manualAngleFlapCorrection;
+        //}
+        return 0.710854 - 8500 * 1 * 0.000001
                     + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
                     + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
                     + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
                     + manualAngleFlapCorrection;
-        }
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
