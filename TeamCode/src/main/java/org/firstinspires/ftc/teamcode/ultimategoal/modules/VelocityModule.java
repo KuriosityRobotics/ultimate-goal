@@ -35,8 +35,8 @@ public class VelocityModule implements Module, TelemetryProvider {
     private double oldWorldAngle = 0;
 
     public void update() {
-        Point robotPosition = robot.drivetrain.getCurrentPosition();
-        double robotHeading = robot.drivetrain.getCurrentHeading();
+        Point robotPosition = robot.drivetrain.getCurrentOdometryPosition();
+        double robotHeading = robot.drivetrain.getCurrentOdometryHeading();
 
         currentUpdateTime = robot.getCurrentTimeMilli();
 
@@ -63,7 +63,6 @@ public class VelocityModule implements Module, TelemetryProvider {
         data.add("angleVel: " + angleVel);
         return data;
     }
-    public void onStart(){}
 
     public boolean isOn() {
         return isOn;

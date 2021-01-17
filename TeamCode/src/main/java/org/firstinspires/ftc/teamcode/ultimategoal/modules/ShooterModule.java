@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.os.SystemClock;
-import android.util.Log;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -48,9 +45,11 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         flyWheel1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        flyWheel1.setVelocityPIDFCoefficients(8, 0.6, 0, 11.7);
-        flyWheel2.setVelocityPIDFCoefficients(8, 0.6, 0, 11.7);
+//
+//        flyWheel1.setVelocityPIDFCoefficients(8, 0.6, 0, 11.7);
+//        flyWheel2.setVelocityPIDFCoefficients(8, 0.6, 0, 11.7);
+        flyWheel1.setVelocityPIDFCoefficients(0.7, 0.2, 0, 13);
+        flyWheel2.setVelocityPIDFCoefficients(0.7, 0.2, 0, 13);
 
         shooterFlap = robot.getServo("shooterFlap");
     }
@@ -59,10 +58,10 @@ public class ShooterModule implements Module, TelemetryProvider {
     public void update() {
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
         setFlywheelMotors();
-        if(flyWheel1.getVelocity() >= 1500){
-            robot.setLedColor(0,200,200);
-        }else{
-            robot.setLedColor(25,25,25);
+        if (flyWheel1.getVelocity() >= 1550) {
+            robot.setLedColor(0, 200, 200);
+        } else {
+            robot.setLedColor(25, 25, 25);
         }
         shooterFlap.setPosition(Range.clip(shooterFlapPosition, 0.598, 0.73));
     }
@@ -93,10 +92,9 @@ public class ShooterModule implements Module, TelemetryProvider {
         data.add("Flywheel1 speed: " + flyWheel1.getVelocity());
         data.add("Flywheel2 speed: " + flyWheel2.getVelocity());
         data.add("Flap angle: " + shooterFlapPosition);
-        data.add("isUpToSpeed: " +isUpToSpeed());
+        data.add("isUpToSpeed: " + isUpToSpeed());
         return data;
     }
-    public void onStart(){}
 
     public String getName() {
         return "ShooterModule";

@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.util.Log;
-
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
@@ -130,7 +128,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
                 } else {
                     if (queuedIndexes > 0) {
                         boolean hopperReady = hopperModule.isIndexerReturned() && hopperModule.isHopperAtPosition();
-                        boolean shooterReady = burstNum > 0 || shooterModule.isUpToSpeed();
+                        boolean shooterReady = shooterModule.isUpToSpeed();
 
                         if (isCloseEnough && hopperReady && shooterReady) {
                             if (hopperModule.requestRingIndex()) {
@@ -221,7 +219,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 //                    + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
 //                    + manualAngleFlapCorrection;
         //}
-        return 0.710854 - 8500 * 1 * 0.000001
+        return 0.712854 - 8500 * 1 * 0.000001
                     + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
                     + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
                     + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
@@ -473,7 +471,4 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public String getName() {
         return "Shooter";
     }
-
-    public void onStart(){}
-
 }

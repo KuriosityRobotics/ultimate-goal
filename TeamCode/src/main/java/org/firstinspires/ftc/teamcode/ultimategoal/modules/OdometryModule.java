@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
+import com.arcrobotics.ftclib.geometry.Transform2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
-import com.intel.realsense.librealsense.UsbUtilities;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.spartronics4915.lib.T265Camera;
 
@@ -13,11 +14,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
-
-import com.arcrobotics.ftclib.geometry.Rotation2d;
-import com.arcrobotics.ftclib.geometry.Transform2d;
-import com.arcrobotics.ftclib.geometry.Translation2d;
-import com.spartronics4915.lib.T265Camera;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -33,9 +29,9 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     Rotation2d rotation;
 
     // Position of the robot
-    public double worldX;
-    public double worldY;
-    public double worldHeadingRad;
+    public double worldXOdometry;
+    public double worldYOdometry;
+    public double worldHeadingRadOdometry;
 
     // Encoders (as Motors)
     private DcMotor yLeftEncoder;
@@ -58,8 +54,8 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         this.robot = robot;
         this.isOn = isOn;
 
-        this.worldX = startingPosition.x;
-        this.worldY = startingPosition.y;
+        this.worldXOdometry = startingPosition.x;
+        this.worldYOdometry = startingPosition.y;
     }
 
     public void initModules() {
@@ -67,9 +63,9 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         yRightEncoder = robot.getDcMotor("fRight");
         mecanumEncoder = robot.getDcMotor("bLeft");
 
-        slamra = new T265Camera(new Transform2d(),0.1, robot.hardwareMap.appContext);
-
-        slamra.setPose(new Pose2d(0,0,new Rotation2d(0)));
+//        slamra = new T265Camera(new Transform2d(new Translation2d(0, -0.09042), new Rotation2d(0)), 0.1, robot.hardwareMap.appContext);
+//
+//        slamra.setPose(new Pose2d(0, 0, new Rotation2d(0)));
 
         robot.telemetry.addLine("DONE INITING T625");
         resetEncoders();
@@ -90,11 +86,26 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     public void update() {
-//        calculateRobotPosition();
-        calculateRobotPositionT625();
+        calculateRobotPosition();
+//        calculateRobotPositionT625();
     }
 
-    public void calculateRobotPositionT625(){
+    public void onClose() { // TODO cleanup and stuff
+        OdometryModule.slamra.stop();
+        try {
+            OdometryModule.slamra.getClass().getMethod("cleanup").setAccessible(true);
+            OdometryModule.slamra.getClass().getMethod("cleanup").invoke(OdometryModule.slamra);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+        }
+    }
+
+    public double worldYVision = 0;
+    public double worldXVision = 0;
+    public double worldAngleVision = 0;
+    /**
+     * side effects: sends odo data to t265
+     */
+    public void calculateRobotPositionT625() {
         T265Camera.CameraUpdate up = slamra.getLastReceivedCameraUpdate();
         if (up == null) return;
         slamra.sendOdometry(0,0);
@@ -104,13 +115,20 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         translation = new Translation2d(up.pose.getTranslation().getX() / 0.0254, up.pose.getTranslation().getY() / 0.0254);
         rotation = up.pose.getRotation();
 
-        worldX = -1*translation.getY();
-        worldY = translation.getX();
-        worldHeadingRad = -1*rotation.getRadians();
+        worldXVision = -1 * translation.getY();
+        worldYVision = translation.getX();
+        worldAngleVision = -1 * rotation.getRadians();
+
+        slamra.sendOdometry(robot.drivetrain.velocityModule.getyVel()*0.0254, -robot.drivetrain.velocityModule.getxVel()*0.0254);
+
     }
 
     public Point getCurrentPosition() {
-        return new Point(worldX, worldY);
+        return new Point(worldXOdometry, worldYOdometry);
+    }
+
+    public Point getCurrentOdometryPosition() {
+        return new Point(worldXOdometry, worldYOdometry);
     }
 
     /**
@@ -122,15 +140,21 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         return new double[]{leftPodKnownPosition, rightPodKnownPosition, mecanumPodKnownPosition};
     }
 
+    @SuppressLint("DefaultLocale")
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("worldX: " + worldX);
-        data.add("worldY: " + worldY);
-        data.add("heading: " + worldHeadingRad);
-//        data.add("--");
-//        data.add("left: " + leftPodKnownPosition);
-//        data.add("right: " + rightPodKnownPosition);
-//        data.add("mecanum: " + mecanumPodKnownPosition);
+        data.add("worldX: " + worldXOdometry);
+        data.add("worldY: " + worldYOdometry);
+        data.add("heading: " + worldHeadingRadOdometry);
+        data.add("worldXVision: " + worldXVision);
+        data.add("worldYVision: " + worldYVision);
+        data.add("headingVision: " + worldAngleVision);
+        data.add(String.format("X vel: %f, y vel: %f", robot.drivetrain.velocityModule.getxVel(), robot.drivetrain.velocityModule.getyVel()));
+
+        data.add("--");
+        data.add("left: " + leftPodKnownPosition);
+        data.add("right: " + rightPodKnownPosition);
+        data.add("mecanum: " + mecanumPodKnownPosition);
         return data;
     }
 
@@ -139,7 +163,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     public String getFileData() {
-        return String.format(Locale.CANADA_FRENCH, "(%f, %f), %f", worldX, worldY, worldHeadingRad);
+        return String.format(Locale.CANADA_FRENCH, "(%f, %f), %f", worldXOdometry, worldYOdometry, worldHeadingRadOdometry);
     }
 
     // Helper variables
@@ -184,10 +208,10 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         double dRobotX = M * sinXOverX(dTheta) + Q * Math.sin(dTheta) - L * cosXMinusOneOverX(dTheta) + P * (Math.cos(dTheta) - 1);
         double dRobotY = L * sinXOverX(dTheta) - P * Math.sin(dTheta) + M * cosXMinusOneOverX(dTheta) + Q * (Math.cos(dTheta) - 1);
 
-        worldX += dRobotX * Math.cos(worldHeadingRad) + dRobotY * Math.sin(worldHeadingRad);
-        worldY += dRobotY * Math.cos(worldHeadingRad) - dRobotX * Math.sin(worldHeadingRad);
+        worldXOdometry += dRobotX * Math.cos(worldHeadingRadOdometry) + dRobotY * Math.sin(worldHeadingRadOdometry);
+        worldYOdometry += dRobotY * Math.cos(worldHeadingRadOdometry) - dRobotX * Math.sin(worldHeadingRadOdometry);
         //worldAngleRad =  (leftPodNewPosition - rightPodNewPosition) * INCHES_PER_ENCODER_TICK / (2 * P);
-        worldHeadingRad += dTheta;
+        worldHeadingRadOdometry += dTheta;
     }
 
     /*
@@ -241,15 +265,11 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     public void setPosition(double x, double y, double heading) {
-        worldX = x;
-        worldY = y;
-        worldHeadingRad = heading;
+        worldXOdometry = x;
+        worldYOdometry = y;
+        worldHeadingRadOdometry = heading;
 
         resetEncoders();
-    }
-
-    public void stopT625(){
-//        slamra.stop();
     }
 
     public boolean isOn() {
@@ -257,7 +277,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     public void onStart(){
-        slamra.start();
+//        slamra.start();
 
         Log.d("CAMERA", "STARTING");
     }
@@ -267,14 +287,18 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     public double getWorldX() {
-        return worldX;
+        return worldXOdometry;
     }
 
     public double getWorldY() {
-        return worldY;
+        return worldYOdometry;
     }
 
     public double getWorldHeadingRad() {
-        return worldHeadingRad;
+        return worldHeadingRadOdometry;
+    }
+
+    public double getWorlOdometrydHeadingRad() {
+        return worldHeadingRadOdometry;
     }
 }
