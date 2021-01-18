@@ -20,7 +20,7 @@ public class ShooterPlebTest extends LinearOpMode {
     private static final double INDEX_OPEN_POSITION = 0.405;
     private static final double INDEX_PUSH_POSITION = 0.145;
     private static final double HOPPER_RAISED_POSITION = 0.965;
-    double flyWheelSpeed = 1550;
+    double flyWheelSpeed = 2000;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -34,9 +34,8 @@ public class ShooterPlebTest extends LinearOpMode {
         flyWheel2.setDirection(DcMotorSimple.Direction.FORWARD);
 
 
-
-        flyWheel1.setVelocityPIDFCoefficients(0.7, 0.2, 0, 13);
-        flyWheel2.setVelocityPIDFCoefficients(0.7, 0.2, 0, 13);
+        flyWheel1.setVelocityPIDFCoefficients(1.1, 0.25, 0, 13);
+        flyWheel2.setVelocityPIDFCoefficients(1.1, 0.25, 0, 13);
 
         boolean isIndexed = false;
         waitForStart();
@@ -50,11 +49,11 @@ public class ShooterPlebTest extends LinearOpMode {
             flyWheel1.setVelocity(flyWheelSpeed);
             flyWheel2.setVelocity(flyWheelSpeed);
             pos += gamepad1.right_stick_y * 0.005;
-            if (flyWheel1.getVelocity()>1520 && flyWheel1.getVelocity()<1575 && SystemClock.elapsedRealtime()-start2>=500) {
+            if (flyWheel1.getVelocity()>1980 && flyWheel1.getVelocity()<2080 && SystemClock.elapsedRealtime()-start2>=200) {
                 indexerServo.setPosition(INDEX_PUSH_POSITION);
                 isIndexed = true;
                 start = SystemClock.elapsedRealtime();
-            } else if(isIndexed && SystemClock.elapsedRealtime()-start >= 500){
+            } else if(isIndexed && SystemClock.elapsedRealtime()-start >= 200){
                 indexerServo.setPosition(INDEX_OPEN_POSITION);
                 start2 = SystemClock.elapsedRealtime();
                 isIndexed = false;

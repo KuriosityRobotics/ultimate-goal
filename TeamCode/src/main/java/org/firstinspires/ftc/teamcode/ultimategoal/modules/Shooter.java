@@ -35,7 +35,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private static final double FLAP_ANGLE_TO_POSITION_CONSTANT_TERM = 0.607;
 
     // Flywheel constants
-    public final static int HIGHGOAL_FLYWHEEL_SPEED = 1550;
+    public final static int HIGHGOAL_FLYWHEEL_SPEED = 2000;
     public final static int POWERSHOT_FLYWHEEL_SPEED = 1200; // todo
 
     // Distance to goal to angle offset constant
@@ -128,7 +128,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
                 } else {
                     if (queuedIndexes > 0) {
                         boolean hopperReady = hopperModule.isIndexerReturned() && hopperModule.isHopperAtPosition();
-                        boolean shooterReady = shooterModule.isUpToSpeed();
+                        boolean shooterReady = burstNum > 0 || shooterModule.isUpToSpeed();
 
                         if (isCloseEnough && hopperReady && shooterReady) {
                             if (hopperModule.requestRingIndex()) {
@@ -179,18 +179,20 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         double distanceToTarget = distanceFromFlapToTarget(target, angleWrap(headingToTarget(target) + angleOffset));
         distanceToGoal = distanceToTarget;
 
-        if (target.isPowershot()) {
-            angleOffset = 0.65 * ((POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget)
-                    + (POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget)
-                    + POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
-        } else {
-            angleOffset = 0.9 * ((HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
-                    + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
-                    + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
-        }
+//        if (target.isPowershot()) {
+//            angleOffset = 0.65 * ((POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget)
+//                    + (POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget)
+//                    + POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
+//        } else {
+////            angleOffset = 0.9 * ((HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
+////                    + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
+////                    + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
+////            angl
+//        }
+        angleOffset = Math.atan(5/distanceToTargetCenterRobot);
 
 //        turnToGoal(target, angleOffset);
-        turnToGoal(target, 0);
+        turnToGoal(target, angleOffset);
 
         shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
@@ -219,7 +221,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 //                    + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
 //                    + manualAngleFlapCorrection;
         //}
-        return 0.712854 - 8500 * 1 * 0.000001
+        return 0.72054 - 8500 * 1 * 0.000001
                     + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
                     + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
                     + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
@@ -268,9 +270,9 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         if (!isDoneAiming && hasAlignedUsingVision) {
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset * 1.075) + (manualAngleCorrection * 0.925));
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() - offset  + (manualAngleCorrection * 0.925));
             } else {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() + (offset + manualAngleCorrection) * 0.925);
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() - offset + manualAngleCorrection * 0.925);
             }
             isDoneAiming = true;
             doneAimingTime = robot.getCurrentTimeMilli();
