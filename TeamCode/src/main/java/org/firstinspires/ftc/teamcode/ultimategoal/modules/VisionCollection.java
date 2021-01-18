@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.vision.HighGoalDetector;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.vision.BlueHighGoalDetector;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.vision.VisionModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.opencv.core.Mat;
@@ -17,7 +17,7 @@ public class VisionCollection implements Module, TelemetryProvider {
 
     VisionModule[] visionModules;
 
-    public HighGoalDetector highGoalDetector;
+    public BlueHighGoalDetector highGoalDetector;
 
     public VisionCollection(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -28,7 +28,7 @@ public class VisionCollection implements Module, TelemetryProvider {
 
     @Override
     public void initModule() {
-        highGoalDetector = new HighGoalDetector(true);
+        highGoalDetector = new BlueHighGoalDetector(true);
 
         visionModules = new VisionModule[]{
                 highGoalDetector

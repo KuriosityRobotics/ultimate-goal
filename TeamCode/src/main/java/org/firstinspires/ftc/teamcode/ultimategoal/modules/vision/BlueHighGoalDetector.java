@@ -22,7 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HighGoalDetector implements VisionModule {
+public class BlueHighGoalDetector implements VisionModule {
     public boolean isOn;
 
     private CameraPosition cameraPosition;
@@ -35,6 +35,7 @@ public class HighGoalDetector implements VisionModule {
 
     // helpers
     private static final int[] VALUES = new int[]{80, 151, 50, 93, 255, 255}; // Tuned values to detect high goal contours
+    private static final Point PNP_ORIGIN_POSITION = new Point(70.5 - (22.75 + 24), 141 + 1.07); // half field - powershot to high goal corner, field length + wall
     private MatOfPoint3f threeDimensionalPoints; // Coordinate of labelled 3D points to solve for position
     private Mat cameraMatrix; // Camera matrix
     private MatOfDouble distortCoeffs; // Distortion coefficients
@@ -49,7 +50,7 @@ public class HighGoalDetector implements VisionModule {
         }
     }
 
-    public HighGoalDetector(boolean isOn) {
+    public BlueHighGoalDetector(boolean isOn) {
         this.isOn = isOn;
 
         cameraMatrix = new Mat(3, 3, CvType.CV_64F);
@@ -185,15 +186,17 @@ public class HighGoalDetector implements VisionModule {
     private org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point convertCameraToRobotPosition(CameraPosition cameraPosition) {
         // we ignore rotation around the x and y axis, because that's just stinky. and also because it doesn't really matter if the camera thinks the robot is phasing into the ground.
 
-        Point cameraLocation = new Point(cameraPosition.position[0], cameraPosition.position[1]);
+        Point cameraLocationGlobal = new Point(PNP_ORIGIN_POSITION.x + cameraPosition.position[0], PNP_ORIGIN_POSITION.y + cameraPosition.position[1]);
 
-        double cameraZRotation = Math.toRadians(90) - (-1 * cameraPosition.rotation[2]); // clockwise better, convert from heading to from the y axis
+        double cameraZRotation = Math.toRadians(90) + cameraPosition.rotation[2]; // clockwise better, convert from heading to from the y axis
         double cameraToRobotCenter = Math.hypot(CAMERA_POSITION.x, CAMERA_POSITION.y); // for now this is enough, if the cam was not centered on the robot's heading then we would need more math
 
         double robotCenterXOffset = -1 * cameraToRobotCenter * Math.cos(cameraZRotation);
         double robotCenterYOffset = -1 * cameraToRobotCenter * Math.sin(cameraZRotation);
 
-        return new org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point(cameraLocation.x - robotCenterXOffset, cameraLocation.y - robotCenterYOffset);
+        Point robotPosition = new Point(cameraLocationGlobal.x + robotCenterXOffset, cameraLocationGlobal.y + robotCenterYOffset);
+
+        return new org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point(robotPosition.x, robotPosition.y);
     }
 
     private CameraPosition solvePnP(MatOfPoint3f _objPoints, MatOfPoint2f _imgPoints, Mat cameraMatrix, MatOfDouble distortionCoefficients) {
