@@ -189,7 +189,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 ////                    + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
 ////            angl
 //        }
-        angleOffset = Math.atan(5/distanceToTargetCenterRobot);
+        angleOffset = Math.atan(5 / distanceToTargetCenterRobot);
 
 //        turnToGoal(target, angleOffset);
         turnToGoal(target, angleOffset);
@@ -222,10 +222,10 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 //                    + manualAngleFlapCorrection;
         //}
         return 0.72054 - 8500 * 1 * 0.000001
-                    + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
-                    + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
-                    + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
-                    + manualAngleFlapCorrection;
+                + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
+                + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
+                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
+                + manualAngleFlapCorrection;
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
@@ -270,7 +270,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         if (!isDoneAiming && hasAlignedUsingVision) {
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() - offset  + (manualAngleCorrection * 0.925));
+                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() - offset + (manualAngleCorrection * 0.925));
             } else {
                 robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() - offset + manualAngleCorrection * 0.925);
             }

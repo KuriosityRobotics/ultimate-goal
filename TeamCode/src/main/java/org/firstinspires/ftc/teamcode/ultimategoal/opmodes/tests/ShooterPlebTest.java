@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
 import android.os.SystemClock;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -49,11 +48,11 @@ public class ShooterPlebTest extends LinearOpMode {
             flyWheel1.setVelocity(flyWheelSpeed);
             flyWheel2.setVelocity(flyWheelSpeed);
             pos += gamepad1.right_stick_y * 0.005;
-            if (flyWheel1.getVelocity()>1980 && flyWheel1.getVelocity()<2080 && SystemClock.elapsedRealtime()-start2>=200) {
+            if (flyWheel1.getVelocity() > 1980 && flyWheel1.getVelocity() < 2080 && SystemClock.elapsedRealtime() - start2 >= 200) {
                 indexerServo.setPosition(INDEX_PUSH_POSITION);
                 isIndexed = true;
                 start = SystemClock.elapsedRealtime();
-            } else if(isIndexed && SystemClock.elapsedRealtime()-start >= 200){
+            } else if (isIndexed && SystemClock.elapsedRealtime() - start >= 200) {
                 indexerServo.setPosition(INDEX_OPEN_POSITION);
                 start2 = SystemClock.elapsedRealtime();
                 isIndexed = false;

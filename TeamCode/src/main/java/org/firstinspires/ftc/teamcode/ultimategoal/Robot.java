@@ -25,8 +25,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.ActionExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
-import static org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule.slamra;
-
 public class Robot extends ModuleCollection {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
     public Drivetrain drivetrain;
@@ -113,16 +111,6 @@ public class Robot extends ModuleCollection {
 
         if (isStopRequested()) {
             this.cleanUp();
-        }
-    }
-
-    private void cleanUp() {
-        this.fileDump.writeFilesToDevice();
-        try {
-//            slamra.stop();
-            this.moduleExecutor.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
@@ -219,20 +207,16 @@ public class Robot extends ModuleCollection {
         }
     }
 
-    public boolean isOpModeActive() {
-        return linearOpMode.opModeIsActive();
-    }
+    private void cleanUp() {
+        this.fileDump.writeFilesToDevice();
 
-    public boolean isStopRequested() {
-        return linearOpMode.isStopRequested();
-    }
+        onClose();
 
-    public long getCurrentTimeMilli() {
-        return currentTimeMilli;
-    }
-
-    public void opModeSleep(long milliseconds) {
-        linearOpMode.sleep(milliseconds);
+        try {
+            this.moduleExecutor.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void ಢ_ಢ() {
@@ -247,6 +231,22 @@ public class Robot extends ModuleCollection {
     @Override
     public boolean isOn() {
         return true;
+    }
+
+    public boolean isOpModeActive() {
+        return linearOpMode.opModeIsActive();
+    }
+
+    public boolean isStopRequested() {
+        return linearOpMode.isStopRequested();
+    }
+
+    public long getCurrentTimeMilli() {
+        return currentTimeMilli;
+    }
+
+    public void opModeSleep(long milliseconds) {
+        linearOpMode.sleep(milliseconds);
     }
 
     @Override
