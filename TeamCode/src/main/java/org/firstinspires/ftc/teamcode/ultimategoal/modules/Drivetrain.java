@@ -404,9 +404,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      */
     public void setPosition(double x, double y, double heading) {
         odometryModule.setPosition(x, y, heading);
+        velocityModule.reset(x, y, heading);
+
         brakePoint = new Point(x, y);
         brakeHeading = heading;
-        velocityModule.reset();
     }
 
     @Override
