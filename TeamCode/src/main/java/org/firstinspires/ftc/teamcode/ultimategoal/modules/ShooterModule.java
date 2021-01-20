@@ -57,7 +57,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
         setFlywheelMotors();
 
-        if (isUpToSpeed()) {
+        if (isUpToSpeed() && flyWheelTargetSpeed > 0) {
             robot.setLedColor(0, 200, 200);
         } else {
             robot.setLedColor(25, 25, 25);
