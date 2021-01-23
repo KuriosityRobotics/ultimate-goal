@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.AnalogSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
@@ -20,6 +22,7 @@ public class HopperModule implements Module, TelemetryProvider {
     private Servo hopperLinkage;
 
 //    public DistanceSensor distance;
+    public AnalogInput distance;
 
     // Constants
     private static final double INDEX_OPEN_POSITION = 0.405;
@@ -46,7 +49,7 @@ public class HopperModule implements Module, TelemetryProvider {
 
     @Override
     public void initModules() {
-        //distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
+        distance = robot.hardwareMap.get(AnalogInput.class, "distance");
 
         indexerServo = robot.getServo("indexerServo");
         hopperLinkage = robot.getServo("hopperLinkage");
@@ -59,7 +62,7 @@ public class HopperModule implements Module, TelemetryProvider {
     private long hopperTransitionTime = 0;
 
     private HopperPosition oldHopperPosition = HopperPosition.LOWERED;
-
+    int counter = 0;
     @Override
     public void update() {
         long currentTime = robot.getCurrentTimeMilli();
@@ -90,30 +93,30 @@ public class HopperModule implements Module, TelemetryProvider {
             indexerServo.setPosition(INDEX_OPEN_POSITION);
         }
 
-//        if(distance.getDistance(DistanceUnit.MM) <= 57){
-//            counter++;
-//        }else{
-//            counter = 0;
-//        }
-//
-//        if(counter >= 8){
-//            hopperLinkage.setPosition(HOPPER_RAISED_POSITION);
-//            counter = 0;
-//            robot.intakeModule.intakePower = -1;
-//        }
+        if(getDistance() <= 55){
+            counter++;
+        }else{
+            counter = 0;
+        }
 
-//        if(distance.getDistance(DistanceUnit.MM) <= 67){
-//            counter2++;
-//        }else{
-//            counter2 = 0;
-//        }
-//
-//        if(counter2 >= 8){
-//            robot.shooter.setFlyWheelSpeed(-1550);
-//            counter2 = 0;
-//        }
+        if(counter >= 15){
+            hopperLinkage.setPosition(HOPPER_RAISED_POSITION);
+            counter = 0;
+            robot.intakeModule.intakePower = -1;
+        }
+
+        if(getDistance() <= 75){
+            counter2++;
+        }else{
+            counter2 = 0;
+        }
+
+        if(counter2 >= 15){
+            robot.shooter.isFlyWheelOn = true;
+            counter2 = 0;
+        }
     }
-
+    public int counter2;
     public void switchHopperPosition() {
         if (hopperPosition == HopperPosition.LOWERED) {
             hopperPosition = HopperPosition.RAISED;
@@ -165,6 +168,19 @@ public class HopperModule implements Module, TelemetryProvider {
         }
     }
 
+    public double getDistance(){
+        double voltage_temp_average=0;
+
+        for(int i=0; i < 2; i++)
+        {
+            voltage_temp_average += distance.getVoltage();
+
+        }
+        voltage_temp_average /= 2;
+
+        //33.9 + -69.5x + 62.3x^2 + -25.4x^3 + 3.83x^4
+        return (33.9 + -69.5*(voltage_temp_average) + 62.3*Math.pow(voltage_temp_average,2) + -25.4*Math.pow(voltage_temp_average,3) + 3.83*Math.pow(voltage_temp_average,4))*10;
+    }
     @Override
     public boolean isOn() {
         return isOn;
@@ -179,7 +195,7 @@ public class HopperModule implements Module, TelemetryProvider {
         data.add("is indexer finished pushing: " + isIndexerFinishedPushing());
         data.add("is indexer returned: " + isIndexerReturned());
         data.add("is hopper at position: " + isHopperAtPosition());
-//        data.add("DISTANCE: " + distance.getDistance(DistanceUnit.MM));
+        data.add("DISTANCE: " + getDistance());
         return data;
     }
 
