@@ -78,6 +78,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     boolean weakBrakeOldState;
 
     public void update() {
+        autoHopperLogic();
+
         // Check if aimbot was toggled
         if (isAimBotActive && !activeToggle) {
             activeToggle = true;
@@ -154,6 +156,21 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         // Update both modules
         hopperModule.update();
         shooterModule.update();
+    }
+
+    private int oldRingsInHopper = 0;
+
+    private void autoHopperLogic() {
+        int ringsInHopper = hopperModule.getRingsInHopper();
+        if (ringsInHopper != oldRingsInHopper) {
+            if (ringsInHopper == 3) {
+                hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
+                robot.intakeModule.intakePower = -1;
+            } else if (ringsInHopper == 2) {
+                robot.shooter.isFlyWheelOn = true;
+            }
+        }
+        oldRingsInHopper = ringsInHopper;
     }
 
     public void resetAiming() {

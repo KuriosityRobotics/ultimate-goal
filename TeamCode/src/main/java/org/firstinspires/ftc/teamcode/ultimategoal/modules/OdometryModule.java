@@ -71,7 +71,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         resetEncoders();
 
         // init cam
-        slamra = new T265Camera(new Transform2d(new Translation2d(-0.2296668, 0), new Rotation2d(0)), 0.044, robot.hardwareMap.appContext);
+        //slamra = new T265Camera(new Transform2d(new Translation2d(-0.2296668, 0), new Rotation2d(0)), 0.044, robot.hardwareMap.appContext);
 
         // set starting positions
         this.worldXOdometry = startingPosition.x;
@@ -84,19 +84,19 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
 
     public void update() {
         calculateRobotPosition();
-        calculateRobotPositionT625();
+        //calculateRobotPositionT625();
     }
 
     public void onStart() {
-        slamra.start();
+        //slamra.start();
 
         Log.d("CAMERA", "STARTING");
     }
 
     public void onClose() { // TODO cleanup and stuff
-        slamra.stop();
+        //slamra.stop();
 
-        slamra.free();
+        //slamra.free();
 
 //        try {
 //           slamra.getClass().getMethod("cleanup").setAccessible(true);
@@ -274,7 +274,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     private void setRealsensePose(double x, double y, double heading) {
-        slamra.setPose(new Pose2d(y * 0.0254, -x * 0.0254, new Rotation2d(heading)));
+        //slamra.setPose(new Pose2d(y * 0.0254, -x * 0.0254, new Rotation2d(heading)));
     }
 
     public boolean isOn() {
