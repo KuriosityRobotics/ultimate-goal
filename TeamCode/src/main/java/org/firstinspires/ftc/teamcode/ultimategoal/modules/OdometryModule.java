@@ -1,14 +1,9 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
+import android.os.SystemClock;
 
-import com.arcrobotics.ftclib.geometry.Pose2d;
-import com.arcrobotics.ftclib.geometry.Rotation2d;
-import com.arcrobotics.ftclib.geometry.Transform2d;
-import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.spartronics4915.lib.T265Camera;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
@@ -22,19 +17,15 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     private Robot robot;
     private boolean isOn;
 
-    public static T265Camera slamra;
-
-    Translation2d translation;
-    Rotation2d rotation;
-
     // Position of the robot
-    public double worldXOdometry = 0;
-    public double worldYOdometry = 0;
-    public double worldHeadingRadOdometry = 0;
+    public double worldX = 0;
+    public double worldY = 0;
+    public double worldHeadingRad = 0;
 
-    public double worldYVision = 0;
-    public double worldXVision = 0;
-    public double worldAngleVision = 0;
+    // Velocity of the robot, in/s and rad/s
+    private double xVel;
+    private double yVel;
+    private double angleVel;
 
     Point startingPosition;
 
@@ -42,6 +33,16 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     private DcMotor yLeftEncoder;
     private DcMotor yRightEncoder;
     private DcMotor mecanumEncoder;
+
+    // Helpers
+    private double leftPodKnownPosition = 0;
+    private double rightPodKnownPosition = 0;
+    private double mecanumPodKnownPosition = 0;
+
+    private long oldUpdateTime;
+    private long currentUpdateTime;
+    private Point oldWorldPosition;
+    private double oldWorldAngle;
 
     // Constants
     private final static double INCHES_PER_ENCODER_TICK = 0.0007284406721 * 100.0 / 101.9889;
@@ -70,103 +71,20 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
 
         resetEncoders();
 
-        // init cam
-        //slamra = new T265Camera(new Transform2d(new Translation2d(-0.2296668, 0), new Rotation2d(0)), 0.044, robot.hardwareMap.appContext);
-
         // set starting positions
-        this.worldXOdometry = startingPosition.x;
-        this.worldYOdometry = startingPosition.y;
+        this.worldX = startingPosition.x;
+        this.worldY = startingPosition.y;
 
-        setRealsensePose(startingPosition.x, startingPosition.y, 0);
-
-        robot.telemetry.addLine("DONE INITING T625");
+        // reset helpers
+        oldUpdateTime = SystemClock.elapsedRealtime();
+        oldWorldAngle = 0;
     }
 
     public void update() {
         calculateRobotPosition();
-        //calculateRobotPositionT625();
+
+        calculateRobotVelocity();
     }
-
-    public void onStart() {
-        //slamra.start();
-
-        Log.d("CAMERA", "STARTING");
-    }
-
-    public void onClose() { // TODO cleanup and stuff
-        //slamra.stop();
-
-        //slamra.free();
-
-//        try {
-//           slamra.getClass().getMethod("cleanup").setAccessible(true);
-//           slamra.getClass().getMethod("cleanup").invoke(slamra);
-//        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
-//        }
-    }
-
-    private void resetEncoders() {
-        yLeftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        yRightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        mecanumEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        yLeftEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        yRightEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        mecanumEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        leftPodKnownPosition = 0;
-        rightPodKnownPosition = 0;
-        mecanumPodKnownPosition = 0;
-    }
-
-    /**
-     * side effects: sends odo data to t265
-     */
-    public void calculateRobotPositionT625() {
-        T265Camera.CameraUpdate update = slamra.getLastReceivedCameraUpdate();
-
-        if (update == null) return;
-
-        // We divide by 0.0254 to convert meters to inches
-        translation = new Translation2d(update.pose.getTranslation().getX() / 0.0254, update.pose.getTranslation().getY() / 0.0254);
-        rotation = update.pose.getRotation();
-
-        worldXVision = -1 * translation.getY();
-        worldYVision = translation.getX();
-        worldAngleVision = -1 * rotation.getRadians();
-
-        slamra.sendOdometry(robot.drivetrain.velocityModule.getyVel() * 0.0254, -robot.drivetrain.velocityModule.getxVel() * 0.0254);
-    }
-
-    public Point getCurrentPosition() {
-        return new Point(worldXOdometry, worldYOdometry);
-    }
-
-    public Point getCurrentOdometryPosition() {
-        return new Point(worldXOdometry, worldYOdometry);
-    }
-
-    /**
-     * Get the current positions of the encoders.
-     *
-     * @return The position of the encoders in a double[], with left, right, then mecanum values.
-     */
-    public double[] getEncoderPositions() {
-        return new double[]{leftPodKnownPosition, rightPodKnownPosition, mecanumPodKnownPosition};
-    }
-
-    public String getFileName() {
-        return "odometry.txt";
-    }
-
-    public String getFileData() {
-        return String.format(Locale.CANADA_FRENCH, "(%f, %f), %f", worldXOdometry, worldYOdometry, worldHeadingRadOdometry);
-    }
-
-    // Helper variables
-    private double leftPodKnownPosition = 0;
-    private double rightPodKnownPosition = 0;
-    private double mecanumPodKnownPosition = 0;
 
     /**
      * Calculates the robot's position.
@@ -187,6 +105,37 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         mecanumPodKnownPosition = mecanumPodNewPosition;
     }
 
+    private void calculateRobotVelocity() {
+        Point robotPosition = new Point(worldX, worldY);
+        double robotHeading = worldHeadingRad;
+
+        currentUpdateTime = robot.getCurrentTimeMilli();
+
+        if (oldWorldPosition != null) {
+            xVel = 1000 * (robotPosition.x - oldWorldPosition.x) / (currentUpdateTime - oldUpdateTime);
+            yVel = 1000 * (robotPosition.y - oldWorldPosition.y) / (currentUpdateTime - oldUpdateTime);
+            angleVel = 1000 * (robotHeading - oldWorldAngle) / (currentUpdateTime - oldUpdateTime);
+        }
+
+        oldWorldPosition = robotPosition;
+        oldWorldAngle = robotHeading;
+        oldUpdateTime = currentUpdateTime;
+    }
+
+    private void resetEncoders() {
+        yLeftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        yRightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        mecanumEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        yLeftEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        yRightEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        mecanumEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        leftPodKnownPosition = 0;
+        rightPodKnownPosition = 0;
+        mecanumPodKnownPosition = 0;
+    }
+
     public void calculateNewPosition(double dLeftPod, double dRightPod, double dMecanumPod) {
         // convert all inputs to inches
         double dLeftPodInches = dLeftPod * INCHES_PER_ENCODER_TICK;
@@ -205,10 +154,10 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         double dRobotX = M * sinXOverX(dTheta) + Q * Math.sin(dTheta) - L * cosXMinusOneOverX(dTheta) + P * (Math.cos(dTheta) - 1);
         double dRobotY = L * sinXOverX(dTheta) - P * Math.sin(dTheta) + M * cosXMinusOneOverX(dTheta) + Q * (Math.cos(dTheta) - 1);
 
-        worldXOdometry += dRobotX * Math.cos(worldHeadingRadOdometry) + dRobotY * Math.sin(worldHeadingRadOdometry);
-        worldYOdometry += dRobotY * Math.cos(worldHeadingRadOdometry) - dRobotX * Math.sin(worldHeadingRadOdometry);
+        worldX += dRobotX * Math.cos(worldHeadingRad) + dRobotY * Math.sin(worldHeadingRad);
+        worldY += dRobotY * Math.cos(worldHeadingRad) - dRobotX * Math.sin(worldHeadingRad);
         //worldAngleRad =  (leftPodNewPosition - rightPodNewPosition) * INCHES_PER_ENCODER_TICK / (2 * P);
-        worldHeadingRadOdometry += dTheta;
+        worldHeadingRad += dTheta;
     }
 
     /*
@@ -249,6 +198,31 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         }
     }
 
+    public Point getCurrentPosition() {
+        return new Point(worldX, worldY);
+    }
+
+    public Point getCurrentOdometryPosition() {
+        return new Point(worldX, worldY);
+    }
+
+    /**
+     * Get the current positions of the encoders.
+     *
+     * @return The position of the encoders in a double[], with left, right, then mecanum values.
+     */
+    public double[] getEncoderPositions() {
+        return new double[]{leftPodKnownPosition, rightPodKnownPosition, mecanumPodKnownPosition};
+    }
+
+    public String getFileName() {
+        return "odometry.txt";
+    }
+
+    public String getFileData() {
+        return String.format(Locale.CANADA_FRENCH, "(%f, %f), %f", worldX, worldY, worldHeadingRad);
+    }
+
     public DcMotor getyLeftEncoder() {
         return yLeftEncoder;
     }
@@ -262,19 +236,25 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     public void setPosition(double x, double y, double heading) {
-        worldXOdometry = x;
-        worldYOdometry = y;
-        worldHeadingRadOdometry = heading;
+        setOdometryPosition(x, y, heading);
+        setVelocityPosition(x, y, heading);
+    }
 
-        if (slamra != null) {
-            setRealsensePose(x, y, heading);
-        }
+    private void setOdometryPosition(double x, double y, double heading) {
+        worldX = x;
+        worldY = y;
+        worldHeadingRad = heading;
 
         resetEncoders();
     }
 
-    private void setRealsensePose(double x, double y, double heading) {
-        //slamra.setPose(new Pose2d(y * 0.0254, -x * 0.0254, new Rotation2d(heading)));
+    private void setVelocityPosition(double x, double y, double heading) {
+        oldWorldPosition = new Point(x, y);
+        oldWorldAngle = heading;
+
+        xVel = 0;
+        yVel = 0;
+        angleVel = 0;
     }
 
     public boolean isOn() {
@@ -286,36 +266,39 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     }
 
     public double getWorldX() {
-        return worldXOdometry;
+        return worldX;
     }
 
     public double getWorldY() {
-        return worldYOdometry;
+        return worldY;
     }
 
     public double getWorldHeadingRad() {
-        return worldHeadingRadOdometry;
+        return worldHeadingRad;
     }
 
-    public double getWorlOdometrydHeadingRad() {
-        return worldHeadingRadOdometry;
+    public double getXVel() {
+        return xVel;
+    }
+
+    public double getYVel() {
+        return yVel;
+    }
+
+    public double getAngleVel() {
+        return angleVel;
     }
 
     @SuppressLint("DefaultLocale")
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("worldX: " + worldXOdometry);
-        data.add("worldY: " + worldYOdometry);
-        data.add("heading: " + worldHeadingRadOdometry);
-        data.add("worldXVision: " + worldXVision);
-        data.add("worldYVision: " + worldYVision);
-        data.add("headingVision: " + worldAngleVision);
-        data.add(String.format("X vel: %f, y vel: %f", robot.drivetrain.velocityModule.getxVel(), robot.drivetrain.velocityModule.getyVel()));
-
+        data.add("worldX: " + worldX);
+        data.add("worldY: " + worldY);
+        data.add("heading: " + worldHeadingRad);
         data.add("--");
-        data.add("left: " + leftPodKnownPosition);
-        data.add("right: " + rightPodKnownPosition);
-        data.add("mecanum: " + mecanumPodKnownPosition);
+        data.add("xVel: " + xVel);
+        data.add("yVel: " + yVel);
+        data.add("angleVel: " + angleVel);
         return data;
     }
 }

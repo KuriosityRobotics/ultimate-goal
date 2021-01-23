@@ -289,7 +289,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         if (isDoneAiming) {
             robot.drivetrain.setMovements(0, 0, 0);
 
-            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(0.5) && robot.drivetrain.getAngleVel() < 0.01;
+            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(0.5) && robot.drivetrain.getOdometryAngleVel() < 0.01;
 
             if (robot.getCurrentTimeMilli() > doneAimingTime + 2500) {
                 isCloseEnough = true;

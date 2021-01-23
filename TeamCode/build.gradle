@@ -28,7 +28,7 @@ repositories {
 
 
 dependencies {
-    implementation 'com.spartronics4915.lib:ftc265:2.1.2'
+    implementation 'com.spartronics4915.lib:ftc265:2.1.4'
     implementation 'org.openftc:easyopencv:1.4.1'
     implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
  
