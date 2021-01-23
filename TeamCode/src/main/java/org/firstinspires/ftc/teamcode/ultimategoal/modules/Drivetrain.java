@@ -18,8 +18,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public boolean isOn;
 
     private DrivetrainModule drivetrainModule;
-    public OdometryModule odometryModule;
-    public VelocityModule velocityModule;
+    private OdometryModule odometryModule;
+    private T265Module t265Module;
 
     // States
     public boolean zeroPowerBrake = true;
@@ -59,9 +59,9 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         drivetrainModule = new DrivetrainModule(robot, isOn);
         odometryModule = new OdometryModule(robot, isOn, startingPosition);
-        velocityModule = new VelocityModule(robot, isOn);
+        t265Module = new T265Module(robot, isOn, startingPosition);
 
-        modules = new Module[]{drivetrainModule, odometryModule, velocityModule};
+        modules = new Module[]{drivetrainModule, odometryModule, t265Module};
 
         robot.telemetryDump.registerProvider(this);
     }
@@ -69,7 +69,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     @Override
     public void update() {
         odometryModule.update();
-        velocityModule.update();
+        t265Module.update();
 
         setDrivetrainMovements();
 
@@ -176,7 +176,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         // Calculate current velocity along path
         velocityAlongPath = velocityTowardsTarget(absoluteAngleToTarget);
-        angularVelocity = velocityModule.getAngleVel();
+        angularVelocity = odometryModule.getAngleVel();
 
         // Calculate the target velocity
         orthTargetVelocity = orthTargetVelocity(distanceToTarget);
@@ -264,8 +264,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @return The velocity of the robot towards that point
      */
     public double velocityTowardsTarget(double absoluteAngleToTarget) {
-        double xVel = velocityModule.getxVel();
-        double yVel = velocityModule.getyVel();
+        double xVel = odometryModule.getXVel();
+        double yVel = odometryModule.getYVel();
 
         double heading = angleWrap(Math.atan2(xVel, yVel));
 
@@ -379,10 +379,6 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         return odometryModule.getCurrentPosition();
     }
 
-    public double[] getEncoderPositions() {
-        return odometryModule.getEncoderPositions();
-    }
-
     /**
      * Returns the heading of the robot, in radians.
      *
@@ -392,8 +388,28 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         return odometryModule.getWorldHeadingRad();
     }
 
-    public double getAngleVel() {
-        return velocityModule.getAngleVel();
+    public Point getCurrentOdometryPosition() {
+        return odometryModule.getCurrentOdometryPosition();
+    }
+
+    public double getCurrentOdometryHeading() {
+        return odometryModule.getWorldHeadingRad();
+    }
+
+    public double[] getEncoderPositions() {
+        return odometryModule.getEncoderPositions();
+    }
+
+    public double getOdometryXVel() {
+        return odometryModule.getXVel();
+    }
+
+    public double getOdometryYVel() {
+        return odometryModule.getYVel();
+    }
+
+    public double getOdometryAngleVel() {
+        return odometryModule.getAngleVel();
     }
 
     /**
@@ -404,10 +420,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      */
     public void setPosition(double x, double y, double heading) {
         odometryModule.setPosition(x, y, heading);
-        velocityModule.reset(x, y, heading);
+        t265Module.setPosition(x, y, heading);
 
         brakePoint = new Point(x, y);
         brakeHeading = heading;
+        resetBrake();
     }
 
     @Override
@@ -427,13 +444,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         data.add("Brake Point: " + brakePoint);
         data.add("Brake heading: " + brakeHeading);
         data.add("--");
-        data.add("velo along path: " + velocityAlongPath);
-        data.add("target orth velo: " + orthTargetVelocity);
-        data.add("angular velo: " + angularVelocity);
-        data.add("target angular velo: " + angularTargetVelocity);
         data.add("orth scale: " + orthScale);
         data.add("angular scale: " + angularScale);
-        data.add("last orth error: " + lastOrthVelocityError);
         return data;
     }
 
