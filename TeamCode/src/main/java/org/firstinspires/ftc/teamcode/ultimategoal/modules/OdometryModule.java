@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 import android.annotation.SuppressLint;
 import android.os.SystemClock;
 
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
@@ -27,7 +29,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     private double yVel;
     private double angleVel;
 
-    Point startingPosition;
+    Pose2d startingPosition;
 
     // Encoders (as Motors)
     private DcMotor yLeftEncoder;
@@ -50,10 +52,10 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     private final static double M_ENCODER_DIST_FROM_CENTER = 4.5;
 
     public OdometryModule(Robot robot, boolean isOn) {
-        this(robot, isOn, new Point(0, 0));
+        this(robot, isOn, new Pose2d(0, 0, new Rotation2d(0)));
     }
 
-    public OdometryModule(Robot robot, boolean isOn, Point startingPosition) {
+    public OdometryModule(Robot robot, boolean isOn, Pose2d startingPosition) {
         robot.fileDump.registerProvider(this);
         robot.telemetryDump.registerProvider(this);
 
@@ -72,8 +74,9 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         resetEncoders();
 
         // set starting positions
-        this.worldX = startingPosition.x;
-        this.worldY = startingPosition.y;
+        this.worldX = startingPosition.getTranslation().getX();
+        this.worldY = startingPosition.getTranslation().getY();
+        this.worldHeadingRad = startingPosition.getRotation().getRadians();
 
         // reset helpers
         oldUpdateTime = SystemClock.elapsedRealtime();
@@ -294,7 +297,7 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         ArrayList<String> data = new ArrayList<>();
         data.add("worldX: " + worldX);
         data.add("worldY: " + worldY);
-        data.add("heading: " + worldHeadingRad);
+        data.add("headingDeg: " + Math.toDegrees(worldHeadingRad));
         data.add("--");
         data.add("xVel: " + xVel);
         data.add("yVel: " + yVel);

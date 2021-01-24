@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.ultimategoal;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.LynxNackException;
 import com.qualcomm.hardware.lynx.commands.standard.LynxSetModuleLEDColorCommand;
@@ -57,10 +59,10 @@ public class Robot extends ModuleCollection {
     public final static boolean WILL_FILE_DUMP = false;
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode) {
-        this(hardwareMap, telemetry, linearOpMode, new Point(0, 0));
+        this(hardwareMap, telemetry, linearOpMode, new Pose2d(0, 0, new Rotation2d(0)));
     }
 
-    public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode, Point startingPosition) {
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode, Pose2d startingPosition) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
         this.linearOpMode = linearOpMode;
@@ -75,11 +77,11 @@ public class Robot extends ModuleCollection {
     }
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, OpMode linearOpMode) {
-        this(hardwareMap, telemetry, linearOpMode, new Point(0, 0));
+        this(hardwareMap, telemetry, linearOpMode, new Pose2d(0, 0, new Rotation2d(0)));
         linearOpMode.internalPostLoop();
     }
 
-    public Robot(HardwareMap hardwareMap, Telemetry telemetry, OpMode linearOpMode, Point startingPosition) {
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, OpMode linearOpMode, Pose2d startingPosition) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
 
@@ -114,7 +116,7 @@ public class Robot extends ModuleCollection {
         }
     }
 
-    private void initialize(Point startingPosition) {
+    private void initialize(Pose2d startingPosition) {
         // Add individual modules into the array here
         this.drivetrain = new Drivetrain(this, true, startingPosition);
         this.shooter = new Shooter(this, true);
@@ -208,7 +210,7 @@ public class Robot extends ModuleCollection {
     }
 
     private void cleanUp() {
-        this.fileDump.writeFilesToDevice();
+        this.fileDump. writeFilesToDevice();
 
         onClose();
 
