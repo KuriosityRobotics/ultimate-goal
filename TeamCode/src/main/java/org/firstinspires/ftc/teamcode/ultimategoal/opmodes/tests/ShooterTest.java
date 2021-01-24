@@ -22,7 +22,7 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     // States
 //    final double FLAP_MAX = 0.71;
     double flapPosition = 0.65; // In degrees
-    double flyWheelSpeed = 1300; // In ticks per second
+    double flyWheelSpeed = 1600; // In ticks per second
 
     @Override
     public void runOpMode() {
@@ -39,11 +39,11 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
             robot.shooter.setFlyWheelTargetSpeed(flyWheelSpeed);
 
             if (gamepad1.x) {
-                flyWheelSpeed = 1260;
+                flyWheelSpeed = 1600;
             } else if (gamepad1.y) {
-                flyWheelSpeed = 1320;
+                flyWheelSpeed = 1700;
             } else if (gamepad1.b) {
-                flyWheelSpeed = 1550;
+                flyWheelSpeed = 2000;
             }
 
             robot.shooter.setHopperPosition(HopperModule.HopperPosition.RAISED);

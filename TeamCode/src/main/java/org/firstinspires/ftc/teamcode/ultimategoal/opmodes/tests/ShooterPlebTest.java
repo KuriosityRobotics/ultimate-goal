@@ -33,8 +33,8 @@ public class ShooterPlebTest extends LinearOpMode {
         flyWheel2.setDirection(DcMotorSimple.Direction.FORWARD);
 
 
-        flyWheel1.setVelocityPIDFCoefficients(1.1, 0.25, 0, 13);
-        flyWheel2.setVelocityPIDFCoefficients(1.1, 0.25, 0, 13);
+        flyWheel1.setVelocityPIDFCoefficients(1.7, 0.25, 0, 13);
+        flyWheel2.setVelocityPIDFCoefficients(1.7, 0.25, 0, 13);
 
         boolean isIndexed = false;
         waitForStart();

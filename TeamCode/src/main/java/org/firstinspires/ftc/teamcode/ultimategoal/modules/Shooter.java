@@ -36,7 +36,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     // Flywheel constants
     public final static int HIGHGOAL_FLYWHEEL_SPEED = 2000;
-    public final static int POWERSHOT_FLYWHEEL_SPEED = 1200; // todo
+    public final static int POWERSHOT_FLYWHEEL_SPEED = 1600; // todo
 
     // Distance to goal to angle offset constant
     // -0.0372 + 2.79E-03x + -1.31E-05x^2
@@ -221,17 +221,16 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 //                    + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
 //                    + manualAngleFlapCorrection;
         //}
-        return 0.72054 - 8500 * 1 * 0.000001
-                + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
-                + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
-                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
-                + manualAngleFlapCorrection;
+        return 0.814 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3);
+//        return 0.72054 - 8500 * 1 * 0.000001
+//                + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
+//                + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
+//                + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
+//                + manualAngleFlapCorrection;
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
-        return (POWERSHOT_DISTANCE_TO_FLAP_POSITION_SQUARE_TERM * distanceToTarget * distanceToTarget)
-                + (POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM * distanceToTarget)
-                + POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM;
+        return 1.406 - 0.0281*distanceToTarget + 0.000347*Math.pow(distanceToTarget,2) - 0.00000142*Math.pow(distanceToTarget,3);
     }
 
     /**
