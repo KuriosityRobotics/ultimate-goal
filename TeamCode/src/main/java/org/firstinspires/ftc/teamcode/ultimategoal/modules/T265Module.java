@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.arcrobotics.ftclib.geometry.Pose2d;
@@ -24,13 +25,24 @@ public class T265Module implements Module, TelemetryProvider {
     // Data
     public double worldX = 0;
     public double worldY = 0;
-    public double worldAngleRad = 0;
+    public double worldHeadingRad = 0;
+
+    // Velocity of the robot, in/s and rad/s
+    private double xVel;
+    private double yVel;
+    private double angleVel;
+
+    private Point oldWorldPosition;
+    private double oldWorldAngle;
+    private long oldUpdateTime;
 
     private double trueWorldX = 0;
     private double trueWorldY = 0;
-    private double trueWorldAngleRad = 0;
+    private double trueWorldHeadingRad = 0;
 
-    Point startingPosition;
+    Pose2d startingPosition;
+
+    private long currentUpdateTime;
 
     // Helpers
     private Pose2d resetOrigin;
@@ -42,13 +54,15 @@ public class T265Module implements Module, TelemetryProvider {
     private static final double INCHES_TO_METERS = 0.0254;
 
     public T265Module(Robot robot, boolean isOn) {
-        this(robot, isOn, new Point(0, 0));
+        this(robot, isOn, new Pose2d(0, 0, new Rotation2d(0)));
     }
 
-    public T265Module(Robot robot, boolean isOn, Point startingPosition) {
+    public T265Module(Robot robot, boolean isOn, Pose2d startingPosition) {
         this.robot = robot;
         this.isOn = isOn;
         this.startingPosition = startingPosition;
+
+        this.resetOrigin = new Pose2d(0,0,new Rotation2d(0));
 
         robot.telemetryDump.registerProvider(this);
     }
@@ -56,9 +70,14 @@ public class T265Module implements Module, TelemetryProvider {
     @Override
     public void initModules() {
         // init cam
-        t265Camera = new T265Camera(new Transform2d(new Translation2d(-0.2296668, 0), new Rotation2d(0)), 0.044, robot.hardwareMap.appContext);
+        t265Camera = new T265Camera(new Transform2d(new Translation2d(-0.2032, 0.0762), new Rotation2d(Math.toRadians(180))), 0, robot.hardwareMap.appContext);
+        t265Camera.setPose(new Pose2d(0,0,new Rotation2d(Math.toRadians(180))));
 
-        setRealsensePose(startingPosition.x, startingPosition.y, 0);
+        setPosition(startingPosition.getTranslation().getX(), startingPosition.getTranslation().getY(), resetOrigin.getRotation().getRadians());
+
+        // reset helpers
+        oldUpdateTime = SystemClock.elapsedRealtime();
+        oldWorldAngle = 0;
 
         robot.telemetry.addLine("DONE INITING T265");
     }
@@ -72,7 +91,8 @@ public class T265Module implements Module, TelemetryProvider {
     @Override
     public void update() {
         calculateTruePosition();
-        calculateRelativePosition();
+        calculateRobotPosition();
+        calculateRobotVelocity();
     }
 
     @Override
@@ -82,11 +102,11 @@ public class T265Module implements Module, TelemetryProvider {
     }
 
     /**
-     * side effects: sends odo data to t265
+     * side effects: sends ogdo data to t265
+     * ^removed because it will be screwed up from reset origin
+     * covariance will be manually done by us
      */
     public void calculateTruePosition() {
-        t265Camera.sendOdometry(robot.drivetrain.getOdometryYVel() * INCHES_TO_METERS, -robot.drivetrain.getOdometryXVel() * INCHES_TO_METERS);
-
         T265Camera.CameraUpdate update = t265Camera.getLastReceivedCameraUpdate();
 
         if (update == null) return;
@@ -95,33 +115,50 @@ public class T265Module implements Module, TelemetryProvider {
         translation = new Translation2d(update.pose.getTranslation().getX() / INCHES_TO_METERS, update.pose.getTranslation().getY() / INCHES_TO_METERS);
         rotation = update.pose.getRotation();
 
-        trueWorldX = -1 * translation.getY();
+        trueWorldX = -translation.getY();
         trueWorldY = translation.getX();
-        trueWorldAngleRad = -1 * rotation.getRadians();
+        trueWorldHeadingRad = -1 * rotation.getRadians();
     }
 
-    private void calculateRelativePosition() {
+    private void calculateRobotPosition() {
         double originX = resetOrigin.getTranslation().getX();
         double originY = resetOrigin.getTranslation().getY();
         double originAngle = resetOrigin.getRotation().getRadians();
 
-        double globalPositionToOrigindX = trueWorldX - originX;
-        double globalPositionToOrigindY = trueWorldY - originY;
+        double dCx = trueWorldX - originX;
+        double dCy = trueWorldY - originY;
 
-        double hypot = Math.hypot(globalPositionToOrigindX, globalPositionToOrigindY);
-        double globalOriginToPositiondHeading = Math.atan2(globalPositionToOrigindY, globalPositionToOrigindX);
+        double hypot = Math.hypot(dCx, dCy);
+        double atan = Math.atan2(dCy, dCx);
 
-        double relativeHeadingFromX = globalOriginToPositiondHeading + originAngle;
+        double a = atan + originAngle;
 
-        worldX = hypot * Math.cos(relativeHeadingFromX);
-        worldY = hypot * Math.sin(relativeHeadingFromX);
+        worldX = hypot * Math.cos(a);
+        worldY = hypot * Math.sin(a);
+        worldHeadingRad = trueWorldHeadingRad - originAngle;
+    }
 
-        trueWorldAngleRad = trueWorldAngleRad - originAngle;
+    private void calculateRobotVelocity(){
+        Point robotPosition = new Point(worldX, worldY);
+        double robotHeading = worldHeadingRad;
+
+        currentUpdateTime = robot.getCurrentTimeMilli();
+
+        if (oldWorldPosition != null) {
+            xVel = 1000 * (robotPosition.x - oldWorldPosition.x) / (currentUpdateTime - oldUpdateTime);
+            yVel = 1000 * (robotPosition.y - oldWorldPosition.y) / (currentUpdateTime - oldUpdateTime);
+            angleVel = 1000 * (robotHeading - oldWorldAngle) / (currentUpdateTime - oldUpdateTime);
+        }
+
+        oldWorldPosition = robotPosition;
+        oldWorldAngle = robotHeading;
+        oldUpdateTime = currentUpdateTime;
     }
 
     public void setPosition(double x, double y, double heading) {
         if (t265Camera != null) {
-            setRealsensePose(x, y, heading);
+            setOriginFromPosition(x, y, heading);
+            setVelocityPosition(x, y, heading);
         }
     }
 
@@ -132,16 +169,25 @@ public class T265Module implements Module, TelemetryProvider {
      * @param y       Desired y position
      * @param heading Desired heading
      */
-    private void setRealsensePose(double x, double y, double heading) {
+    private void setOriginFromPosition(double x, double y, double heading) {
         double atan = Math.atan2(y, x);
         double hypot = Math.hypot(x, y);
 
-        double relativeAngle = atan - (trueWorldAngleRad - heading);
+        double a = atan - (trueWorldHeadingRad - heading);
 
-        double relativeX = hypot * Math.cos(relativeAngle);
-        double relativeY = hypot * Math.sin(relativeAngle);
+        double relativeX = hypot * Math.cos(a);
+        double relativeY = hypot * Math.sin(a);
 
-        resetOrigin = new Pose2d(trueWorldX - relativeX, trueWorldY - relativeY, new Rotation2d(trueWorldAngleRad - heading));
+        resetOrigin = new Pose2d(trueWorldX - relativeX, trueWorldY - relativeY, new Rotation2d(trueWorldHeadingRad - heading));
+    }
+
+    private void setVelocityPosition(double x, double y, double heading) {
+        oldWorldPosition = new Point(x, y);
+        oldWorldAngle = heading;
+
+        xVel = 0;
+        yVel = 0;
+        angleVel = 0;
     }
 
     @Override
@@ -149,11 +195,15 @@ public class T265Module implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("trueWorldX: " + trueWorldX);
         data.add("trueWorldY: " + trueWorldY);
-        data.add("trueWorldAngleRad: " + trueWorldAngleRad);
+        data.add("trueWorldAngleDeg: " + Math.toDegrees(trueWorldHeadingRad));
         data.add("--");
         data.add("worldX: " + worldX);
         data.add("worldY: " + worldY);
-        data.add("worldAngleRad: " + worldAngleRad);
+        data.add("worldAngleDeg: " + Math.toDegrees(worldHeadingRad));
+        data.add("--");
+        data.add("originX: " + resetOrigin.getTranslation().getX());
+        data.add("originY: " + resetOrigin.getTranslation().getY());
+        data.add("originAngleDeg: " + Math.toDegrees(resetOrigin.getRotation().getRadians()));
         return data;
     }
 

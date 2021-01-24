@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import android.os.SystemClock;
 
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
@@ -50,10 +52,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double ANGULAR_STOP_THRESHOLD = Math.toRadians(0.5);
 
     public Drivetrain(Robot robot, boolean isOn) {
-        this(robot, isOn, new Point(0, 0));
+        this(robot, isOn, new Pose2d(0, 0, new Rotation2d(0)));
     }
 
-    public Drivetrain(Robot robot, boolean isOn, Point startingPosition) {
+    public Drivetrain(Robot robot, boolean isOn, Pose2d startingPosition) {
         this.robot = robot;
         this.isOn = isOn;
 
