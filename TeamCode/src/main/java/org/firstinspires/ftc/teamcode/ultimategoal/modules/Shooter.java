@@ -189,9 +189,19 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 ////                    + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
 ////            angl
 //        }
-        angleOffset = Math.atan(5 / distanceToTargetCenterRobot);
+//        angleOffset = Math.atan(5.0 / distanceToTargetCenterRobot);
 
 //        turnToGoal(target, angleOffset);
+        if (target.isPowershot()) {
+            angleOffset = 0.65 * ((POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget)
+                    + (POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget)
+                    + POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
+        } else {
+            angleOffset = 0.9 * ((HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTargetCenterRobot * distanceToTargetCenterRobot)
+                    + (HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTargetCenterRobot)
+                    + HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
+        }
+
         turnToGoal(target, angleOffset);
 
         shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
@@ -221,7 +231,11 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 //                    + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
 //                    + manualAngleFlapCorrection;
         //}
-        return 0.814 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3);
+        if(burstNum >1){
+            return 0.82 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3) + manualAngleFlapCorrection;
+        }
+
+        return 0.814 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3) + manualAngleFlapCorrection;
 //        return 0.72054 - 8500 * 1 * 0.000001
 //                + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
 //                + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
@@ -256,22 +270,25 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
     private void turnToGoal(ITarget target, double offset) {
         if (!hasAlignedInitial) {
-            double headingToTarget = headingToTarget(target);
-
-            robot.drivetrain.setBrakeHeading(headingToTarget);
-
-            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(2)) {
-                hasAlignedInitial = true;
-            }
+//            double headingToTarget = headingToTarget(target);
+//
+//            robot.drivetrain.setBrakeHeading(headingToTarget);
+//
+//            if (Math.abs(angleWrap(headingToTarget - robot.drivetrain.getCurrentHeading())) < Math.toRadians(2)) {
+//                hasAlignedInitial = true;
+//            }
+            hasAlignedInitial = true;
         }
 
         hasAlignedUsingVision = hasAlignedInitial; // TODO
 
         if (!isDoneAiming && hasAlignedUsingVision) {
+            double headingToTarget = headingToTarget(target);
+
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() - offset + (manualAngleCorrection * 0.925));
+                robot.drivetrain.setBrakeHeading(headingToTarget + (offset * 1.075) + (manualAngleCorrection * 0.925));
             } else {
-                robot.drivetrain.setBrakeHeading(robot.drivetrain.getBrakeHeading() - offset + manualAngleCorrection * 0.925);
+                robot.drivetrain.setBrakeHeading(headingToTarget + (offset + manualAngleCorrection) * 0.925);
             }
             isDoneAiming = true;
             doneAimingTime = robot.getCurrentTimeMilli();
@@ -280,7 +297,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         if (isDoneAiming) {
             robot.drivetrain.setMovements(0, 0, 0);
 
-            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(0.5) && robot.drivetrain.getAngleVel() < 0.01;
+            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(1) && robot.drivetrain.getAngleVel() < 0.1;
 
             if (robot.getCurrentTimeMilli() > doneAimingTime + 2500) {
                 isCloseEnough = true;
@@ -457,7 +474,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         data.add("Target: " + target.toString());
         data.add("Queued indexes: " + queuedIndexes);
         data.add("Distance: " + distanceToGoal);
-        data.add("angleOffset: " + angleOffset);
+        data.add("angleOffset: " + Math.toDegrees(angleOffset));
         data.add("--");
         data.add("hasAlignedInitial: " + hasAlignedInitial);
         data.add("hasAlignedUsingVision: " + hasAlignedUsingVision);

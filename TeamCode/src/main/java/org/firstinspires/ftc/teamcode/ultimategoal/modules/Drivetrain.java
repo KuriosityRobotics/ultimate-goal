@@ -379,9 +379,9 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         return odometryModule.getCurrentPosition();
     }
 
-    public Point getCurrentOdometryPosition() {
-        return odometryModule.getCurrentOdometryPosition();
-    }
+//    public Point getCurrentOdometryPosition() {
+//        return odometryModule.getCurrentOdometryPosition();
+//    }
 
     public double[] getEncoderPositions() {
         return odometryModule.getEncoderPositions();
@@ -395,10 +395,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public double getCurrentHeading() {
         return odometryModule.getWorldHeadingRad();
     }
-
-    public double getCurrentOdometryHeading() {
-        return odometryModule.getWorlOdometrydHeadingRad();
-    }
+//
+//    public double getCurrentOdometryHeading() {
+//        return odometryModule.getWorlOdometrydHeadingRad();
+//    }
 
     public double getAngleVel() {
         return velocityModule.getAngleVel();

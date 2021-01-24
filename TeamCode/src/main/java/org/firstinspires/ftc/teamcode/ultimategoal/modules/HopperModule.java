@@ -93,29 +93,45 @@ public class HopperModule implements Module, TelemetryProvider {
             indexerServo.setPosition(INDEX_OPEN_POSITION);
         }
 
-        if(getDistance() <= 55){
+        double distanceReading = getDistance();
+
+        if(distanceReading <= 55){
             counter++;
         }else{
             counter = 0;
         }
 
-        if(counter >= 15){
+        if(counter >= 17 && robot.intakeModule.intakePower != 0){
             hopperLinkage.setPosition(HOPPER_RAISED_POSITION);
             counter = 0;
             robot.intakeModule.intakePower = -1;
         }
 
-        if(getDistance() <= 75){
+        if(distanceReading <= 75){
             counter2++;
         }else{
             counter2 = 0;
         }
 
-        if(counter2 >= 15){
+        if(counter2 >= 17 && robot.intakeModule.intakePower != 0){
             robot.shooter.isFlyWheelOn = true;
             counter2 = 0;
         }
+
+        if(distanceReading >= 120){
+            counter3++;
+        }else{
+            counter3 = 0;
+        }
+
+        if(counter3 >= 20){
+            robot.shooter.isAimBotActive = false;
+            counter3 = 0;
+        }
     }
+
+    int counter3;
+
     public int counter2;
     public void switchHopperPosition() {
         if (hopperPosition == HopperPosition.LOWERED) {
