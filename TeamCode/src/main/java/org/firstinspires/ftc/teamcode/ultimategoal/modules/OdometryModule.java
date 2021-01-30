@@ -20,9 +20,9 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     private boolean isOn;
 
     // Position of the robot
-    public double worldX = 0;
-    public double worldY = 0;
-    public double worldHeadingRad = 0;
+    private double worldX;
+    private double worldY;
+    private double worldHeadingRad;
 
     // Velocity of the robot, in/s and rad/s
     private double xVel;
