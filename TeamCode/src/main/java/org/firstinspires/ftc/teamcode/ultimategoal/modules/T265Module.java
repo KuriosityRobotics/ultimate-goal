@@ -23,9 +23,9 @@ public class T265Module implements Module, TelemetryProvider {
     public static T265Camera t265Camera;
 
     // Data
-    public double worldX = 0;
-    public double worldY = 0;
-    public double worldHeadingRad = 0;
+    private double worldX = 0;
+    private double worldY = 0;
+    private double worldHeadingRad = 0;
 
     // Velocity of the robot, in/s and rad/s
     private double xVel;
@@ -62,7 +62,7 @@ public class T265Module implements Module, TelemetryProvider {
         this.isOn = isOn;
         this.startingPosition = startingPosition;
 
-        this.resetOrigin = new Pose2d(0,0,new Rotation2d(0));
+        this.resetOrigin = new Pose2d(0, 0, new Rotation2d(0));
 
         robot.telemetryDump.registerProvider(this);
     }
@@ -71,7 +71,7 @@ public class T265Module implements Module, TelemetryProvider {
     public void initModules() {
         // init cam
         t265Camera = new T265Camera(new Transform2d(new Translation2d(-0.2032, 0.0762), new Rotation2d(Math.toRadians(180))), 0, robot.hardwareMap.appContext);
-        t265Camera.setPose(new Pose2d(0,0,new Rotation2d(Math.toRadians(180))));
+        t265Camera.setPose(new Pose2d(0, 0, new Rotation2d(Math.toRadians(180))));
 
         setPosition(startingPosition.getTranslation().getX(), startingPosition.getTranslation().getY(), resetOrigin.getRotation().getRadians());
 
@@ -138,7 +138,7 @@ public class T265Module implements Module, TelemetryProvider {
         worldHeadingRad = trueWorldHeadingRad - originAngle;
     }
 
-    private void calculateRobotVelocity(){
+    private void calculateRobotVelocity() {
         Point robotPosition = new Point(worldX, worldY);
         double robotHeading = worldHeadingRad;
 
@@ -188,6 +188,34 @@ public class T265Module implements Module, TelemetryProvider {
         xVel = 0;
         yVel = 0;
         angleVel = 0;
+    }
+
+    public double getWorldX() {
+        return worldX;
+    }
+
+    public double getWorldY() {
+        return worldY;
+    }
+
+    public double getWorldHeadingRad() {
+        return worldHeadingRad;
+    }
+
+    public double getxVel() {
+        return xVel;
+    }
+
+    public double getyVel() {
+        return yVel;
+    }
+
+    public double getAngleVel() {
+        return angleVel;
+    }
+
+    public Point getCurrentPosition() {
+        return new Point(worldX, worldY);
     }
 
     @Override

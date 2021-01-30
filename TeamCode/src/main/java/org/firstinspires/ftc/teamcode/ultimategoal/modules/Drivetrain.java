@@ -378,7 +378,9 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @return The position of the robot, as a point.
      */
     public Point getCurrentPosition() {
-        return odometryModule.getCurrentPosition();
+        return t265Module.getCurrentPosition();
+
+        //return odometryModule.getCurrentPosition();
     }
 
     /**
@@ -387,7 +389,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @return A double in radians, of the robot's heading.
      */
     public double getCurrentHeading() {
-        return odometryModule.getWorldHeadingRad();
+        return t265Module.getWorldHeadingRad();
     }
 
     public Point getCurrentOdometryPosition() {
