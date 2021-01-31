@@ -34,7 +34,7 @@ public class HopperModule implements Module, TelemetryProvider {
     private static final double HOPPER_RAISED_POSITION = 0.965;
     private static final double HOPPER_LOWERED_POSITION = 0.63; // TODO find pos
 
-    private static final int HOPPER_RAISE_TIME_MS = 500;
+    private static final int HOPPER_RAISE_TIME_MS = 1000;
     private static final int HOPPER_LOWER_TIME_MS = 250;
 
     // Hopper position enum
@@ -100,12 +100,12 @@ public class HopperModule implements Module, TelemetryProvider {
         }else{
             counter = 0;
         }
-
-        if(counter >= 17 && robot.intakeModule.intakePower != 0){
-            hopperLinkage.setPosition(HOPPER_RAISED_POSITION);
-            counter = 0;
-            robot.intakeModule.intakePower = -1;
-        }
+//
+//        if(counter >= 17 && robot.intakeModule.intakePower != 0){
+//            hopperLinkage.setPosition(HOPPER_RAISED_POSITION);
+//            counter = 0;
+//            robot.intakeModule.intakePower = -1;
+//        }
 
         if(distanceReading <= 75){
             counter2++;
@@ -113,10 +113,10 @@ public class HopperModule implements Module, TelemetryProvider {
             counter2 = 0;
         }
 
-        if(counter2 >= 17 && robot.intakeModule.intakePower != 0){
-            robot.shooter.isFlyWheelOn = true;
-            counter2 = 0;
-        }
+//        if(counter2 >= 17 && robot.intakeModule.intakePower != 0){
+//            robot.shooter.isFlyWheelOn = true;
+//            counter2 = 0;
+//        }
 
         if(distanceReading >= 120){
             counter3++;
@@ -124,8 +124,8 @@ public class HopperModule implements Module, TelemetryProvider {
             counter3 = 0;
         }
 
-        if(counter3 >= 20){
-            robot.shooter.isAimBotActive = false;
+        if(counter3 >= 100){
+//            robot.shooter.isAimBotActive = false;
             counter3 = 0;
         }
     }

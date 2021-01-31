@@ -404,6 +404,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         return velocityModule.getAngleVel();
     }
 
+    public double getAbsVel(){
+        return Math.sqrt(Math.pow(velocityModule.getxVel(),2)+Math.pow(velocityModule.getyVel(),2));
+    }
+
     /**
      * DANGEROUS: Set the position of the robot
      *

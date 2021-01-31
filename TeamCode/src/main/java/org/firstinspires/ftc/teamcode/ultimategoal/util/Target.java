@@ -35,6 +35,8 @@ public class Target {
          */
         ITarget switchColour();
 
+        ITarget powershotType();
+
         /**
          * Returns the position of <code>this</code>, relative to (0,0) being the bottom left (blue and audience side)
          * of the field.
@@ -62,6 +64,7 @@ public class Target {
         RED_POWERSHOT1(new Point(POWERSHOT_CENTRE_X + SHOT1_OFFSET, GOAL_CENTER_Y), true),
         RED_POWERSHOT2(new Point(POWERSHOT_CENTRE_X + SHOT2_OFFSET, GOAL_CENTER_Y), true),
         RED_POWERSHOT3(new Point(POWERSHOT_CENTRE_X + SHOT3_OFFSET, GOAL_CENTER_Y), true);
+        ITarget target;
 
         private final Point location;
         private final boolean isPowershot;
@@ -70,18 +73,21 @@ public class Target {
             this.location = location;
             this.isPowershot = isPowershot;
         }
+        @Override
+        public boolean isPowershot() {
+            return isPowershot;
+        }
 
         @Override
         public Point getLocation() {
             return location;
         }
 
-        public boolean isPowershot() {
-            return isPowershot;
+        public ITarget powershotType() {
+            return target;
         }
 
         public ITarget next() {
-            ITarget target;
             switch (name()) {
                 case "RED_HIGH":
                     target = RED_POWERSHOT1;
@@ -112,9 +118,14 @@ public class Target {
 //        BLUE_MIDDLE(new Point(BLUE_GOAL_CENTER_X, GOAL_CENTER_Y), false),
 //        BLUE_LOW(new Point(BLUE_GOAL_CENTER_X, GOAL_CENTER_Y), false),
 
+//        BLUE_POWERSHOT1(new Point(POWERSHOT_CENTRE_X - SHOT1_OFFSET, GOAL_CENTER_Y), true),
+//        BLUE_POWERSHOT2(new Point(POWERSHOT_CENTRE_X - SHOT2_OFFSET, GOAL_CENTER_Y), true),
+//        BLUE_POWERSHOT3((new Point(POWERSHOT_CENTRE_X - SHOT3_OFFSET, GOAL_CENTER_Y)), true);
+
         BLUE_POWERSHOT1(new Point(POWERSHOT_CENTRE_X - SHOT1_OFFSET, GOAL_CENTER_Y), true),
         BLUE_POWERSHOT2(new Point(POWERSHOT_CENTRE_X - SHOT2_OFFSET, GOAL_CENTER_Y), true),
         BLUE_POWERSHOT3((new Point(POWERSHOT_CENTRE_X - SHOT3_OFFSET, GOAL_CENTER_Y)), true);
+        ITarget target;
 
         private final Point location;
         private final boolean isPowershot;
@@ -134,8 +145,11 @@ public class Target {
             return isPowershot;
         }
 
+        public ITarget powershotType() {
+            return target;
+        }
+
         public ITarget next() {
-            ITarget target;
             switch (name()) {
                 case "BLUE_HIGH":
                     target = BLUE_POWERSHOT1;

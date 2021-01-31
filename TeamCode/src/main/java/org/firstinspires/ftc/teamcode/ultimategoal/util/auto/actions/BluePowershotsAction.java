@@ -39,13 +39,13 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
             case -1:
                 break;
             case 0:
-                robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
+                robot.shooter.target = Target.Blue.BLUE_POWERSHOT3;
                 break;
             case 1:
                 robot.shooter.target = Target.Blue.BLUE_POWERSHOT2;
                 break;
             case 2:
-                robot.shooter.target = Target.Blue.BLUE_POWERSHOT3;
+                robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
                 break;
             default:
                 return false;

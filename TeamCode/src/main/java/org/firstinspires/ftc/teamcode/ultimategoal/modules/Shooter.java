@@ -231,11 +231,14 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 //                    + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
 //                    + manualAngleFlapCorrection;
         //}
-        if(burstNum >1){
-            return 0.82 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3) + manualAngleFlapCorrection;
-        }
+//        if(burstNum > 1){
+//            return 0.822 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3) + manualAngleFlapCorrection;
+//        }
+//        if(burstNum ==3){
+//            return 0.822 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3) + manualAngleFlapCorrection;
+//        }
 
-        return 0.814 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3) + manualAngleFlapCorrection;
+        return 0.813 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3) + manualAngleFlapCorrection;
 //        return 0.72054 - 8500 * 1 * 0.000001
 //                + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
 //                + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
@@ -286,7 +289,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             double headingToTarget = headingToTarget(target);
 
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(headingToTarget + (offset * 1.075) + (manualAngleCorrection * 0.925));
+                robot.drivetrain.setBrakeHeading(headingToTarget + (offset * 0.9) + (manualAngleCorrection * 0.925));
             } else {
                 robot.drivetrain.setBrakeHeading(headingToTarget + (offset + manualAngleCorrection) * 0.925);
             }
