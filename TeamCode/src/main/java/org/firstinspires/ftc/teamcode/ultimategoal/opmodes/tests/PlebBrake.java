@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 @Autonomous
 public class PlebBrake extends LinearOpMode {

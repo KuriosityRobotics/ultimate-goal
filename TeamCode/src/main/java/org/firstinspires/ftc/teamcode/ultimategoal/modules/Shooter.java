@@ -2,13 +2,13 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.ITarget;
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
 
 public class Shooter extends ModuleCollection implements Module, TelemetryProvider {
     private final Robot robot;

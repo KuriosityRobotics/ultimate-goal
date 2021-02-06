@@ -1,4 +1,7 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
+package org.firstinspires.ftc.teamcode.ultimategoal.util.math;
+
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
 
 import java.util.ArrayList;
 
@@ -239,5 +242,34 @@ public class MathFunctions {
             //if there are no roots
         }
         return solutions;
+    }
+
+    /**
+     * Transforms a given position, relative to a given origin, to its position in a new coordinate
+     * system. Requires the position of the new coordinate system, relative to the same origin.
+     *
+     * @param targetCoordinateSystemPosition The position of the coordinate system to map the point
+     *                                       to.
+     * @param toTransformPosition            The position to map to the new coordinate system.
+     * @return The position of the given point in the target coordinate system.
+     */
+    public static Pose2d transformToCoordinateSystem(Pose2d targetCoordinateSystemPosition, Pose2d toTransformPosition) {
+        double originX = targetCoordinateSystemPosition.getTranslation().getX();
+        double originY = targetCoordinateSystemPosition.getTranslation().getY();
+        double originAngle = targetCoordinateSystemPosition.getRotation().getRadians();
+
+        double dCx = toTransformPosition.getTranslation().getX() - originX;
+        double dCy = toTransformPosition.getTranslation().getY() - originY;
+
+        double hypot = Math.hypot(dCx, dCy);
+        double atan = Math.atan2(dCy, dCx);
+
+        double a = atan + originAngle;
+
+        double resultX = hypot * Math.cos(a);
+        double resultY = hypot * Math.sin(a);
+        double resultRotation = toTransformPosition.getRotation().getRadians() - originAngle;
+
+        return new Pose2d(resultX, resultY, new Rotation2d(resultRotation));
     }
 }

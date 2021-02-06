@@ -9,11 +9,11 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 import java.util.ArrayList;
 
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
 
 public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     Robot robot;
@@ -378,7 +378,9 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @return The position of the robot, as a point.
      */
     public Point getCurrentPosition() {
-        return t265Module.getCurrentPosition();
+        Pose2d robotPose = t265Module.getRobotPose();
+
+        return new Point(robotPose.getTranslation());
 
         //return odometryModule.getCurrentPosition();
     }

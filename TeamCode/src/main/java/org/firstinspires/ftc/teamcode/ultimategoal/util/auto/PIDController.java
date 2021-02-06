@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
 import java.util.ArrayList;

@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.FlywheelAction;
