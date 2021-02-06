@@ -25,7 +25,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.ActionExecutor;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 public class Robot extends ModuleCollection {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)

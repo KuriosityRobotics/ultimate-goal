@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 import java.util.ArrayList;
 import java.util.Locale;
