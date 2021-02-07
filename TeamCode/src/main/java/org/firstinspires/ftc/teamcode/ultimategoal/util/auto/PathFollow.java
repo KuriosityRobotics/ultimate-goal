@@ -46,6 +46,9 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     }
 
     public void followPath(double direction, double moveSpeed, double turnSpeed, boolean willAngleLockAtEnd, double angleLockHeadingAtEnd) {
+        robot.drivetrain.moveScale = moveSpeed;
+        robot.drivetrain.turnScale = turnSpeed;
+
         this.pathIndex = 0; // Reset pathIndex
         this.registeredLastAction = false;
         this.direction = direction;

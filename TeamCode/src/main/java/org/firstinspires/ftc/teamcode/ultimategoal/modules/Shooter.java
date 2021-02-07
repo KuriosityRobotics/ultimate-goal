@@ -238,7 +238,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 //            return 0.822 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3) + manualAngleFlapCorrection;
 //        }
 
-        return 0.813 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3) + manualAngleFlapCorrection;
+        return 0.819 - 0.0049*distanceToTarget + 0.0000496*Math.pow(distanceToTarget,2) - 0.000000168*Math.pow(distanceToTarget,3) + manualAngleFlapCorrection;
 //        return 0.72054 - 8500 * 1 * 0.000001
 //                + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
 //                + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
@@ -289,9 +289,9 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
             double headingToTarget = headingToTarget(target);
 
             if (target.isPowershot()) {
-                robot.drivetrain.setBrakeHeading(headingToTarget + (offset * 0.9) + (manualAngleCorrection * 0.925));
+                robot.drivetrain.setBrakeHeading(headingToTarget + (offset * 1.2) + (manualAngleCorrection * 0.925));
             } else {
-                robot.drivetrain.setBrakeHeading(headingToTarget + (offset + manualAngleCorrection) * 0.925);
+                robot.drivetrain.setBrakeHeading(headingToTarget + offset * 0.85 + manualAngleCorrection * 0.925);
             }
             isDoneAiming = true;
             doneAimingTime = robot.getCurrentTimeMilli();

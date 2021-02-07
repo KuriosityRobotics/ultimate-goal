@@ -18,7 +18,7 @@ public class DrivetrainModule implements Module, TelemetryProvider {
     public double turnMovement = 0;
 
     // Constants
-    private final static double POWER_SCALE_FACTOR = 0.8;
+    private final static double POWER_SCALE_FACTOR = 1;
     private final static double MECANUM_POWER_SCALE_FACTOR = 1.414;
 
     // Motors

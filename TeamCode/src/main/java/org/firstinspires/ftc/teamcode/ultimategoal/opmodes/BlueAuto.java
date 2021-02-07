@@ -4,12 +4,14 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.AutoShootAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.FlywheelAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.IntakeAction;
@@ -114,9 +116,11 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         ArrayList<Action> secondWobbleActions = new ArrayList<>();
         secondWobbleActions.add(new IntakeAction(false));
         secondWobbleActions.add(new WobbleClawAction(true));
+        secondWobbleActions.add(new FlywheelAction(true));
+
 
         ArrayList<Action> secondWobbleStartActions = new ArrayList<>();
-        secondWobbleStartActions.add(new IntakeAction(true));
+        secondWobbleStartActions.add(new IntakeAction(false));
         secondWobbleStartActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.LOWERED));
 
         PathFollow powerShotToSecondWobble = new PathFollow(new Waypoint[]{}, robot, "filler");
@@ -148,9 +152,8 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         } else {
             powerShotToSecondWobble = new PathFollow(new Waypoint[]{
                     new Waypoint(POWERSHOT, secondWobbleStartActions),
-                    new Waypoint(STACK.x + 4, STACK.y),
-                    new Waypoint(STACK),
-                    new Waypoint(SECOND_WOBBLE, secondWobbleActions)
+                    new Waypoint(STACK.x + 25, STACK.y),
+                    new Waypoint(SECOND_WOBBLE.x+6, SECOND_WOBBLE.y-8, secondWobbleActions)
             }, robot, "Powershot to second wobble");
         }
 
@@ -158,64 +161,83 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         secondDropOffActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.LOWERED));
         secondDropOffActions.add(new IntakeAction(true));
         secondDropOffActions.add(new WobbleClawAction(false));
+        secondDropOffActions.add(new FlywheelAction(false));
 
 
         ArrayList<Action> secondDropOffStartActions = new ArrayList<>();
         secondDropOffStartActions.add(new IntakeAction(true));
-        secondDropOffStartActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.WALL_DROP));
+        secondDropOffStartActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.AUTO_DROP));
 
         PathFollow secondWobbleToSecondWobbleDropOff = new PathFollow(new Waypoint[]{
-                new Waypoint(SECOND_WOBBLE, secondDropOffStartActions),
-                new Waypoint(secondWobbleDropoff, secondDropOffActions)
+                new Waypoint(SECOND_WOBBLE.x+6,SECOND_WOBBLE.y-8, secondDropOffStartActions),
+                new Waypoint(STACK.x, STACK.y - 20)
         }, robot, "Second wobble to second wobble dropoff");
 
         ArrayList<Action> fromSecondWobbleActions = new ArrayList<>();
-        fromSecondWobbleActions.add(new FlywheelAction(true));
-        fromSecondWobbleActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.RAISED));
+        fromSecondWobbleActions.add(new IntakeAction(true));
 
         ArrayList<Action> shootActions = new ArrayList<>();
-        shootActions.add(new ShootAction(BLUE_HIGH));
+        shootActions.add(new IntakeAction(true));
+        shootActions.add(new AutoShootAction(BLUE_HIGH));
+        shootActions.add(new FlywheelAction(true));
 
+        ArrayList<Action> shootAction2 = new ArrayList<>();
+        shootAction2.add(new IntakeAction(false));
+        shootAction2.add(new AutoShootAction(BLUE_HIGH));
 
         PathFollow secondWobbleDropOffToShoot = new PathFollow(new Waypoint[]{
-                new Waypoint(secondWobbleDropoff, fromSecondWobbleActions),
-                new Waypoint(SHOOT_RING_X, SHOOT_RING_Y, shootActions),
+                new Waypoint(STACK.x, STACK.y - 20, fromSecondWobbleActions),
+                new Waypoint(STACK.x, STACK.y-6.5),
         }, robot, "Second wobble drop off to park");
 
+        ArrayList<Action> afterFirstShotActions = new ArrayList<>();
+        afterFirstShotActions.add(new IntakeAction(true));
+        afterFirstShotActions.add(new FlywheelAction(true));
+
         PathFollow shootToPark = new PathFollow(new Waypoint[]{
-                new Waypoint(SHOOT_RING_X, SHOOT_RING_Y),
-                new Waypoint(PARK)
+                new Waypoint(STACK.x, STACK.y-6.5,shootActions),
+                new Waypoint(STACK.x,STACK.y+8, afterFirstShotActions)
+        }, robot, "Second wobble drop off to park");
+
+        PathFollow shootToPark2 = new PathFollow(new Waypoint[]{
+                new Waypoint(STACK.x, STACK.y+8,shootAction2),
+                new Waypoint(secondWobbleDropoff,secondDropOffActions)
         }, robot, "Second wobble drop off to park");
 
         startToFirstWobbleDropOff.followPath(0, 1, 1, true, Math.toRadians(-45));
-        sleep(500);
 
         firstWobbleDropOffToPowerShot.followPath(Math.toRadians(180), 1, 1, true, 0);
-        sleep(500);
 
-        if (measuredZone == Vision.TargetGoal.C) {
-            robot.drivetrain.brakeHeading = Math.toRadians(90);
-            sleep(500);
+//        if (measuredZone == Vision.TargetGoal.C) {
+//            robot.drivetrain.brakeHeading = Math.toRadians(90);
+//            sleep(500);
+//
+//            powerShotToStack.followPath(Math.toRadians(180), 1, 1, true, Math.toRadians(-90));
+//
+//            backFromStack.followPath(0, 1, 1, true, Math.toRadians(-90));
+//
+//            stackToSecondWobble.followPath(0, 1, 1, true, Math.toRadians(215));
+//
+//            stackToSecondWobble2.followPath(0, 0.55, 1, true, Math.toRadians(215));
+//        } else {
+        robot.shooter.setFlyWheelTargetSpeed(Shooter.HIGHGOAL_FLYWHEEL_SPEED);
+            powerShotToSecondWobble.followPath(0, 0.7, 1, true, Math.toRadians(250));
+//        }
 
-            powerShotToStack.followPath(Math.toRadians(180), 1, 1, true, Math.toRadians(-90));
 
-            backFromStack.followPath(0, 1, 1, true, Math.toRadians(-90));
-
-            stackToSecondWobble.followPath(0, 1, 1, true, Math.toRadians(215));
-
-            stackToSecondWobble2.followPath(0, 0.55, 1, true, Math.toRadians(215));
-        } else {
-            powerShotToSecondWobble.followPath(0, 0.55, 1, true, Math.toRadians(215));
-        }
-        sleep(500);
 
         secondWobbleToSecondWobbleDropOff.followPath(0, 1, 1, true, 0);
-        sleep(500);
 
-        secondWobbleDropOffToShoot.followPath(Math.toRadians(180), 1, 1, false, 0);
+        secondWobbleDropOffToShoot.followPath(Math.toRadians(0), 1, 1, true, 0);
+
+        sleep(750);
 
         shootToPark.followPath(0, 1, 1, true, 0);
-        sleep(2000);
+
+        sleep(750);
+
+        shootToPark2.followPath(0,1,1,true,0);
+
     }
 
     @Override

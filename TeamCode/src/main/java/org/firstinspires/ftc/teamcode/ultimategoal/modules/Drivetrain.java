@@ -29,6 +29,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public double turnMovement = 0;
     public boolean weakBrake = false;
 
+    public double moveScale = 1.0;
+    public double turnScale = 1.0;
     // Constants
     private final static double SLOW_MODE_FACTOR = 0.35;
     private final static double TURN_SCALE = Math.toRadians(30);
@@ -234,7 +236,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         }
 
         // apply movements
-        drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
+        drivetrainModule.setMovements(xMovement*moveScale, yMovement*moveScale, turnMovement *turnScale);
     }
 
     public double orthTargetVelocity(double distanceToTarget) {
@@ -289,6 +291,9 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public void setMovementsTowardsPoint(Point targetPoint, double moveSpeed, double turnSpeed, double direction, boolean willAngleLock, double angleLockHeading) {
         Point robotPosition = getCurrentPosition();
         double robotHeading = getCurrentHeading();
+
+        moveScale = moveSpeed;
+        turnScale = turnSpeed;
 
         double distanceToTarget = Math.hypot(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y);
         double absoluteAngleToTarget = Math.atan2(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y);
@@ -446,6 +451,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         data.add("orth scale: " + orthScale);
         data.add("angular scale: " + angularScale);
         data.add("last orth error: " + lastOrthVelocityError);
+        data.add("movescale " + moveScale);
         return data;
     }
 
