@@ -13,6 +13,7 @@
 
 // Include common definitions from above.
 apply from: '../build.common.gradle'
+apply from: '../build.dependencies.gradle'
 
 repositories {
     maven { url = "https://dl.bintray.com/first-tech-challenge/ftcsdk/" }
@@ -24,13 +25,11 @@ repositories {
     }
 }
 
-
-
-
 dependencies {
     implementation 'com.spartronics4915.lib:ftc265:2.1.4'
     implementation 'org.openftc:easyopencv:1.4.1'
     implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
  
+    implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 }
