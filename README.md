@@ -1,7 +1,6 @@
-[![works badge](https://cdn.jsdelivr.net/gh/nikku/works-on-my-machine@v0.2.0/badge.svg)](https://github.com/nikku/works-on-my-machine)
 ## NOTICE
 
-This repository contains Kuriosity Robotics's code for the Ultimate Goal (2020-2021) competition season.
+This repository contains the public FTC SDK for the Ultimate Goal (2020-2021) competition season.
 
 Formerly this software project was hosted [here](https://github.com/FIRST-Tech-Challenge/Skystone).  Teams who are competing in the Ultimate Goal Challenge should use this [new FtcRobotController repository](https://github.com/FIRST-Tech-Challenge/FtcRobotController) instead of last season's (no longer updated) Skystone repository.
 
@@ -41,7 +40,7 @@ Note that the online documentation is an "evergreen" document that is constantly
 ### Javadoc Reference Material
 The Javadoc reference documentation for the FTC SDK is now available online.  Click on the following link to view the FTC SDK Javadoc documentation as a live website:
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[FTC Javadoc Documentation](https://first-tech-challenge.github.io/FtcRobotController/doc/javadoc/index.html)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[FTC Javadoc Documentation](https://first-tech-challenge.github.io/FtcRobotController)
 
 ### Online User Forum
 For technical questions regarding the Control System or the FTC SDK, please visit the FTC Technology forum:
