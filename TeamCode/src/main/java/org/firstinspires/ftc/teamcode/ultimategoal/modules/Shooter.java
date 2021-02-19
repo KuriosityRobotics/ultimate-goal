@@ -56,8 +56,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -2.73e-03;
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.763; // 0.766
 
-    public double distanceToGoal;
-    public double angleOffset;
+    private double distanceToGoal;
+    private double angleOffset;
 
     private int burstNum = 0;
     private boolean forceIndex = false;
