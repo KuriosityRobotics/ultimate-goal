@@ -52,7 +52,6 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         double bLPower = ((yMovement) + turnMovement - xMovement * MECANUM_POWER_SCALE_FACTOR);
         double bRPower = ((yMovement) - turnMovement + xMovement * MECANUM_POWER_SCALE_FACTOR);
 
-
         double maxPower = Math.abs(fLPower);
         if (Math.abs(fRPower) > maxPower) {
             maxPower = Math.abs(fRPower);
@@ -79,10 +78,6 @@ public class DrivetrainModule implements Module, TelemetryProvider {
         bRPower *= POWER_SCALE_FACTOR;
 
         setMotorPowers(fLPower, fRPower, bLPower, bRPower);
-    }
-
-    public void fileDump() {
-
     }
 
     public void setMovements(double xMovement, double yMovement, double turnMovement) {

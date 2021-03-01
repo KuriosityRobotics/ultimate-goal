@@ -73,7 +73,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         odometryModule.update();
         t265Module.update();
 
-        setDrivetrainMovements();
+        applyMovements();
 
         drivetrainModule.update();
     }
@@ -117,7 +117,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * Set the movements of the drivetrain according to the target movement states of this module.
      * These two movements are different when braking must be applied.
      */
-    private void setDrivetrainMovements() {
+    private void applyMovements() {
         if (isBrake) {
             applyMovementsToBrakePosition();
         } else {
