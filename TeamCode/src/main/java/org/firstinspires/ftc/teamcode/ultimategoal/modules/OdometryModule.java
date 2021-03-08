@@ -205,10 +205,6 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         return new Point(worldX, worldY);
     }
 
-    public Point getCurrentOdometryPosition() {
-        return new Point(worldX, worldY);
-    }
-
     /**
      * Get the current positions of the encoders.
      *
