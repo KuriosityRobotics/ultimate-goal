@@ -209,7 +209,7 @@ public class Robot extends ModuleCollection {
     }
 
     private void cleanUp() {
-        this.fileDump. writeFilesToDevice();
+        this.fileDump.writeFilesToDevice();
 
         onClose();
 
