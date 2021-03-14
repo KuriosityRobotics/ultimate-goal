@@ -21,8 +21,7 @@ public class Target {
 
     public interface ITarget {
         /**
-         * Our next target (for toggling)
-         * In order: HIGH, POWERSHOT1, POWERSHOT2, POWERSHOT3
+         * Our next target (for toggling) In order: HIGH, POWERSHOT1, POWERSHOT2, POWERSHOT3
          *
          * @return The next target
          */
@@ -36,8 +35,8 @@ public class Target {
         ITarget switchColour();
 
         /**
-         * Returns the position of <code>this</code>, relative to (0,0) being the bottom left (blue and audience side)
-         * of the field.
+         * Returns the position of <code>this</code>, relative to (0,0) being the bottom left (blue
+         * and audience side) of the field.
          *
          * @return The position of that goal, as a Point.
          * @see Point
@@ -56,8 +55,8 @@ public class Target {
 
     public enum Red implements ITarget {
         RED_HIGH(new Point(RED_GOAL_CENTER_X, GOAL_CENTER_Y), false),
-//        RED_MIDDLE(new Point(RED_GOAL_CENTER_X, GOAL_CENTER_Y), false),
-//        RED_LOW(new Point(RED_GOAL_CENTER_X, GOAL_CENTER_Y), false),
+        //        RED_MIDDLE(new Point(RED_GOAL_CENTER_X, GOAL_CENTER_Y), false),
+        //        RED_LOW(new Point(RED_GOAL_CENTER_X, GOAL_CENTER_Y), false),
 
         RED_POWERSHOT1(new Point(POWERSHOT_CENTRE_X + SHOT1_OFFSET, GOAL_CENTER_Y), true),
         RED_POWERSHOT2(new Point(POWERSHOT_CENTRE_X + SHOT2_OFFSET, GOAL_CENTER_Y), true),
@@ -66,7 +65,7 @@ public class Target {
         private final Point location;
         private final boolean isPowershot;
 
-        private Red(Point location, boolean isPowershot) {
+        Red(Point location, boolean isPowershot) {
             this.location = location;
             this.isPowershot = isPowershot;
         }
@@ -109,8 +108,8 @@ public class Target {
 
     public enum Blue implements ITarget {
         BLUE_HIGH(new Point(BLUE_GOAL_CENTER_X, GOAL_CENTER_Y), false),
-//        BLUE_MIDDLE(new Point(BLUE_GOAL_CENTER_X, GOAL_CENTER_Y), false),
-//        BLUE_LOW(new Point(BLUE_GOAL_CENTER_X, GOAL_CENTER_Y), false),
+        //        BLUE_MIDDLE(new Point(BLUE_GOAL_CENTER_X, GOAL_CENTER_Y), false),
+        //        BLUE_LOW(new Point(BLUE_GOAL_CENTER_X, GOAL_CENTER_Y), false),
 
         BLUE_POWERSHOT1(new Point(POWERSHOT_CENTRE_X - SHOT1_OFFSET, GOAL_CENTER_Y), true),
         BLUE_POWERSHOT2(new Point(POWERSHOT_CENTRE_X - SHOT2_OFFSET, GOAL_CENTER_Y), true),

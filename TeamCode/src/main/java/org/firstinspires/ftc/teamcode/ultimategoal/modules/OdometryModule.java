@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class OdometryModule implements Module, TelemetryProvider, FileDumpProvider {
-    private Robot robot;
-    private boolean isOn;
+    private final Robot robot;
+    private final boolean isOn;
 
     // Position of the robot
     private double worldX;

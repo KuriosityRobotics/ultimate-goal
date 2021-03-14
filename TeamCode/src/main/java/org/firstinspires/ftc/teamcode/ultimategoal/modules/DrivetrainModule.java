@@ -9,8 +9,8 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import java.util.ArrayList;
 
 public class DrivetrainModule implements Module, TelemetryProvider {
-    private Robot robot;
-    private boolean isOn;
+    private final Robot robot;
+    private final boolean isOn;
 
     // States
     public double yMovement = 0;

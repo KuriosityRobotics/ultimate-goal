@@ -47,7 +47,8 @@ public class MathFunctions {
     }
 
     /**
-     * Calculate the distance between a given point and a given line segment represented by two points.
+     * Calculate the distance between a given point and a given line segment represented by two
+     * points.
      * <p>
      * This will return the distance from a point to the endpoint of a segment if the point is not
      * within the bounds of the segment.
@@ -55,7 +56,8 @@ public class MathFunctions {
      * @param point      The point.
      * @param linePoint1 A point on the line.
      * @param linePoint2 Another, different, point on the line.
-     * @return The distance between the point and the line segment determined by the two linePoints.
+     * @return The distance between the point and the line segment determined by the two
+     *         linePoints.
      */
     public static double lineSegmentPointDistance(Point point, Point linePoint1, Point linePoint2) {
         if (!pointWithinLineSegment(point, linePoint1, linePoint2)) {
@@ -185,7 +187,8 @@ public class MathFunctions {
      * @param radius       The radius of the circle.
      * @param linePoint1   An end point of the segment.
      * @param linePoint2   The other end point of the segment.
-     * @return An ArrayList of points representing the intersection between the circle and the line segment.
+     * @return An ArrayList of points representing the intersection between the circle and the line
+     *         segment.
      */
     public static ArrayList<Point> lineSegmentCircleIntersection(Point circleCenter, double radius, Point linePoint1, Point linePoint2) {
         ArrayList<Point> solutions = new ArrayList<>();

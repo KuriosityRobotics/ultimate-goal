@@ -23,10 +23,10 @@ public class SamPlebTest extends LinearOpMode {
         leftFlyWheel = (DcMotorEx) hardwareMap.get("flyWheel1");
         rightFlyWheel = (DcMotorEx) hardwareMap.get("flyWheel2");
         leftFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        rightFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //        rightFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFlyWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        rightFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //        rightFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         rightFlyWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -46,8 +46,8 @@ public class SamPlebTest extends LinearOpMode {
             }
 
 
-            telemetry.addLine("left speed: " + Double.toString(leftFlyWheel.getVelocity()));
-            telemetry.addLine("right speed: " + Double.toString(rightFlyWheel.getVelocity()));
+            telemetry.addLine("left speed: " + leftFlyWheel.getVelocity());
+            telemetry.addLine("right speed: " + rightFlyWheel.getVelocity());
             telemetry.addLine("servo angle: " + pos);
             telemetry.addLine("servo indexer: " + pos2);
             telemetry.addLine("set speed: " + flyWheelTargetSpeed);

@@ -122,13 +122,16 @@ public class GoalFinder extends OpenCvPipeline {
     }
 
     /**
-     * This method takes two points, point1 and point2, and then projects these points to form two rays. It then returns the angle between these two rays
-     * in radians.
+     * This method takes two points, point1 and point2, and then projects these points to form two
+     * rays. It then returns the angle between these two rays in radians.
      *
      * @param point1 The first point. This usually will be the centre of the frane
-     * @param point2 The second point. In our case, this will be the calculated location (in pixels) of the goal
-     * @return An angle in radians representing the angle between them. This is calculated through all dimensions. To find the angle of just a single axis,
-     * make one of the coordinate values the same. For example, to find just the yaw (horizontal angle), ensure that the y-value of point1 and point2 are the same.
+     * @param point2 The second point. In our case, this will be the calculated location (in pixels)
+     *               of the goal
+     * @return An angle in radians representing the angle between them. This is calculated through
+     *         all dimensions. To find the angle of just a single axis, make one of the coordinate
+     *         values the same. For example, to find just the yaw (horizontal angle), ensure that
+     *         the y-value of point1 and point2 are the same.
      */
     public static double findAngle(Point point1, Point point2) {
         RealMatrix K = MatrixUtils.createRealMatrix(CAMERA_MATRIX);
@@ -142,7 +145,8 @@ public class GoalFinder extends OpenCvPipeline {
     }
 
     /**
-     * processes the frame, returns goallocationdata which has a bunch of cool stuff about goal location data
+     * processes the frame, returns goallocationdata which has a bunch of cool stuff about goal
+     * location data
      *
      * @param input
      * @return an int which represents the calculated number of rings
@@ -152,11 +156,13 @@ public class GoalFinder extends OpenCvPipeline {
     }
 
     /**
-     * processes the frame, returns goallocationdata which has a bunch of cool stuff about goal location data
+     * processes the frame, returns goallocationdata which has a bunch of cool stuff about goal
+     * location data
      *
      * @param input              frame input
      * @param input              frame input
-     * @param shouldWriteToImage If debug data should be written to the image or not (default/overloaded true)
+     * @param shouldWriteToImage If debug data should be written to the image or not
+     *                           (default/overloaded true)
      * @param isBlue             If true, look for blue goals instead of red
      * @return an int which represents the calculated number of rings
      * @see GoalLocationData
@@ -175,25 +181,25 @@ public class GoalFinder extends OpenCvPipeline {
         Mat mask = new Mat();
         Mat hierarchy = new Mat(); // we don't need to use this, but opencv requires it
 
-//        if (!isBlue) {
-//            Mat mask1 = new Mat(), mask2 = new Mat();
-//            Core.inRange(input, new Scalar(0, 70, 50), new Scalar(10, 255, 255), mask1);
-//            Core.inRange(input, new Scalar(170, 70, 50), new Scalar(180, 255, 255), mask2);
-//            Core.bitwise_or(mask1, mask2, mask);
-//            mask1.release();
-//            mask2.release();
-//        } else {
-//            Core.inRange(input, new Scalar(110, 50, 50), new Scalar(130, 255, 255), mask);
-//        }
+        //        if (!isBlue) {
+        //            Mat mask1 = new Mat(), mask2 = new Mat();
+        //            Core.inRange(input, new Scalar(0, 70, 50), new Scalar(10, 255, 255), mask1);
+        //            Core.inRange(input, new Scalar(170, 70, 50), new Scalar(180, 255, 255), mask2);
+        //            Core.bitwise_or(mask1, mask2, mask);
+        //            mask1.release();
+        //            mask2.release();
+        //        } else {
+        //            Core.inRange(input, new Scalar(110, 50, 50), new Scalar(130, 255, 255), mask);
+        //        }
 
         Core.inRange(input, new Scalar(0, 0, 0), new Scalar(255, 255, 25), mask);
 
-//        Imgproc.morphologyEx(mask, mask, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(5, 5)));
+        //        Imgproc.morphologyEx(mask, mask, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(5, 5)));
         input.copyTo(input, mask);
 
         List<MatOfPoint> contours = new ArrayList<>(); // List for storing contours
         findContours(mask, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE); // Find all the contours (edges) on the mask
-//        int largestContourIndex = closestToPoint(contours, new Point(input.width() / 2f, input.height() / 2f)); // Find the index of contours of the largest contour
+        //        int largestContourIndex = closestToPoint(contours, new Point(input.width() / 2f, input.height() / 2f)); // Find the index of contours of the largest contour
         int largestContourIndex = largestContour(contours); // Find the index of contours of the largest contour
 
         Imgproc.cvtColor(input, input, COLOR_HSV2RGB);
@@ -206,8 +212,8 @@ public class GoalFinder extends OpenCvPipeline {
                 double avgY = moments.m01 / moments.m00;
                 goalLocation = new Point(avgX, avgY);
 
-//                double yaw = findAngle(centre, new Point(goalLocation.x, centre.y)) * (180/Math.PI); // Now isolate the two angles
-//                double pitch = findAngle(centre, new Point(centre.x, goalLocation.y)) * (180/Math.PI);
+                //                double yaw = findAngle(centre, new Point(goalLocation.x, centre.y)) * (180/Math.PI); // Now isolate the two angles
+                //                double pitch = findAngle(centre, new Point(centre.x, goalLocation.y)) * (180/Math.PI);
                 double yaw = (Math.toRadians(70.42) / input.width()) * (goalLocation.x - centre.x); // TODO: this is pepega
                 double pitch = (Math.toRadians(43.30) / input.width()) * (goalLocation.y - centre.y);
 

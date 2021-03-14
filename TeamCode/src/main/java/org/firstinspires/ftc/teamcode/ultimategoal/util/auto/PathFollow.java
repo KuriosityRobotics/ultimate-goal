@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +15,7 @@ import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunction
 
 public class PathFollow implements TelemetryProvider, FileDumpProvider {
     Robot robot;
-    private boolean isFileDump = false;
+    private final boolean isFileDump = false;
 
     Point clippedRobotPosition = new Point(0, 0);
     Point targetPoint = new Point(0, 0);
@@ -28,8 +28,8 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
 
     // states
     private boolean isTargetingLastPoint;
-    private String description;
-    private Waypoint[] path;
+    private final String description;
+    private final Waypoint[] path;
     private int pathIndex;
     private boolean registeredLastAction;
 

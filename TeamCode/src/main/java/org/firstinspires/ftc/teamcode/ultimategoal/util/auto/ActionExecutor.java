@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class ActionExecutor implements TelemetryProvider {
-    private Robot robot;
-    private ArrayList<Action> executingActions;
+    private final Robot robot;
+    private final ArrayList<Action> executingActions;
 
     public ActionExecutor(Robot robot) {
         robot.telemetryDump.registerProvider(this);

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class TelemetryDump {
     Telemetry telemetry;
-    private ArrayList<TelemetryProvider> providers;
+    private final ArrayList<TelemetryProvider> providers;
 
     public TelemetryDump(Telemetry telemetry) {
         this.telemetry = telemetry;

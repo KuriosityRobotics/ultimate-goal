@@ -42,15 +42,15 @@ public class ServoPlebTests extends LinearOpMode {
 
         while (opModeIsActive()) {
             leftLockPosition -= 0.0001 * gamepad1.left_stick_y;
-//            rightLockPosition -= 0.0001 * gamepad1.right_stick_y;
-//            hopperLinkagePosition -= 0.0001 * gamepad1.right_stick_y;
-//            indexerPosition -= 0.0001 * gamepad1.right_stick_y;
+            //            rightLockPosition -= 0.0001 * gamepad1.right_stick_y;
+            //            hopperLinkagePosition -= 0.0001 * gamepad1.right_stick_y;
+            //            indexerPosition -= 0.0001 * gamepad1.right_stick_y;
             wobblePosition -= 0.5 * gamepad1.right_stick_y;
 
-//            leftLock.setPosition(leftLockPosition);
-//            rightLock.setPosition(rightLockPosition);
-//            hopperLinkage.setPosition(hopperLinkagePosition);
-//            indexer.setPosition(indexerPosition);
+            //            leftLock.setPosition(leftLockPosition);
+            //            rightLock.setPosition(rightLockPosition);
+            //            hopperLinkage.setPosition(hopperLinkagePosition);
+            //            indexer.setPosition(indexerPosition);
             wobbleMotor.setTargetPosition((int) wobblePosition);
 
             telemetry.addLine("Left lock position: " + leftLockPosition);
