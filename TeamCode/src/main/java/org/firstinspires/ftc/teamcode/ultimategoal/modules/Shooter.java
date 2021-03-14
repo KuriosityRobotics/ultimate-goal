@@ -12,7 +12,7 @@ import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunction
 
 public class Shooter extends ModuleCollection implements Module, TelemetryProvider {
     private final Robot robot;
-    private boolean isOn;
+    private final boolean isOn;
 
     private final ShooterModule shooterModule;
     private final HopperModule hopperModule;
@@ -396,7 +396,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
      */
     public void queueIndexThreeRings() {
         if (isAimBotActive) {
-//            queuedIndexes++;
+            //            queuedIndexes++;
             queuedIndexes = 3;
         }
     }

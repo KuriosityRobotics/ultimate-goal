@@ -16,8 +16,8 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions;
 import java.util.ArrayList;
 
 public class T265Module implements Module, TelemetryProvider {
-    private Robot robot;
-    private boolean isOn;
+    private final Robot robot;
+    private final boolean isOn;
 
     // Camera
     public static T265Camera t265Camera;
@@ -149,7 +149,8 @@ public class T265Module implements Module, TelemetryProvider {
     }
 
     /**
-     * Sets the calculated position of the T265 by moving the origin. Remembers the last set origin.
+     * Sets the calculated position of the T265 by moving the origin. Remembers the last set
+     * origin.
      *
      * @param x       Desired x position
      * @param y       Desired y position

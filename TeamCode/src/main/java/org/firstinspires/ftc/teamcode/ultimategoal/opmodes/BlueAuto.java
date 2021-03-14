@@ -10,7 +10,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.FlywheelAction;
@@ -18,6 +17,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.IntakeActio
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ShootAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.WobbleArmAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.WobbleClawAction;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 import org.firstinspires.ftc.teamcode.ultimategoal.vision.Vision;
 
 import java.util.ArrayList;
@@ -86,10 +86,10 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         robot.startModules();
 
-//        PathFollow startTofirstDroppOffActions = new PathFollow(new Waypoint[]{
-//                new Waypoint(STARTING, new FlywheelAction(true)),
-//                new Waypoint(POWERSHOT, new BluePowershotsAction())
-//        }, robot, "Start to powershot");
+        //        PathFollow startTofirstDroppOffActions = new PathFollow(new Waypoint[]{
+        //                new Waypoint(STARTING, new FlywheelAction(true)),
+        //                new Waypoint(POWERSHOT, new BluePowershotsAction())
+        //        }, robot, "Start to powershot");
 
         ArrayList<Action> firstDropOffActions = new ArrayList<>();
         firstDropOffActions.add(new FlywheelAction(true));

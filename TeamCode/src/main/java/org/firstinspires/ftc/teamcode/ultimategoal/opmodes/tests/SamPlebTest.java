@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
 import android.os.SystemClock;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -52,23 +51,23 @@ public class SamPlebTest extends LinearOpMode {
 
             //pos2 +=gamepad2.left_stick_y*0.02;
 
-            if (SystemClock.elapsedRealtime()-startTime >= 200 && gamepad1.a) {
+            if (SystemClock.elapsedRealtime() - startTime >= 200 && gamepad1.a) {
                 toggle = !toggle;
-                if(toggle) {
+                if (toggle) {
                     pos2 = 0.68;
-                }else{
+                } else {
                     pos2 = 0.3;
                 }
                 startTime = SystemClock.elapsedRealtime();
-            }else if(!gamepad1.a){
+            } else if (!gamepad1.a) {
                 pos2 = 0.68;
             }
 
             indexer.setPosition(pos2);
 
 
-            telemetry.addLine("left speed: " + Double.toString(leftFlyWheel.getVelocity()));
-            telemetry.addLine("right speed: " + Double.toString(rightFlyWheel.getVelocity()));
+            telemetry.addLine("left speed: " + leftFlyWheel.getVelocity());
+            telemetry.addLine("right speed: " + rightFlyWheel.getVelocity());
             telemetry.addLine("servo angle: " + pos);
             telemetry.addLine("servo indexer: " + pos2);
             telemetry.addLine("set speed: " + flyWheelTargetSpeed);

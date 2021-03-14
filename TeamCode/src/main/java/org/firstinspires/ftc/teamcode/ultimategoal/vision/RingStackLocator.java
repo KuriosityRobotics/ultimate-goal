@@ -63,12 +63,15 @@ public class RingStackLocator {
     }
 
     /**
-     * Find the index of the countour of a list which is closest to the specified point. Contours which are smaller than 0.0008*area will be ignored, so we don't get any super tiny values caused by small imperfections
+     * Find the index of the countour of a list which is closest to the specified point. Contours
+     * which are smaller than 0.0008*area will be ignored, so we don't get any super tiny values
+     * caused by small imperfections
      *
      * @param contours
      * @param point    - The point we want to be close to
      * @param area     - the total area of the plane where the contours are located.
-     * @return an index of the specified List which contains the contour closest to the specified point
+     * @return an index of the specified List which contains the contour closest to the specified
+     *         point
      */
     static int closestContour(final List<MatOfPoint> contours, Point point, double area) {
         double closestDistToPoint = Double.MAX_VALUE;
@@ -86,7 +89,6 @@ public class RingStackLocator {
             }
             currIdx++;
         }
-        ;
 
         return closestIdx;
     }
@@ -99,7 +101,8 @@ public class RingStackLocator {
     }
 
     /**
-     * This function takes an Image in the form of a Mat, and then will calculate how many rings are stacked in it
+     * This function takes an Image in the form of a Mat, and then will calculate how many rings are
+     * stacked in it
      *
      * @param input
      * @return an int which represents the calculated number of rings
@@ -109,8 +112,9 @@ public class RingStackLocator {
     }
 
     /**
-     * This function takes an Image in the form of a Mat, and then will calculate how many rings are stacked in it, and use that to find the target zone
-     * It also mutates the input image if shouldWriteToImage is true, and draws some text, a bounding box, and the border of the rings
+     * This function takes an Image in the form of a Mat, and then will calculate how many rings are
+     * stacked in it, and use that to find the target zone It also mutates the input image if
+     * shouldWriteToImage is true, and draws some text, a bounding box, and the border of the rings
      *
      * @param input
      * @return an enum representing the target zone
