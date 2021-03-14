@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.util.Log;
+
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
@@ -43,11 +45,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double TURN_SCALE = Math.toRadians(30);
 
     // Velocity controllers
-    private final VelocityPIDController towardsBrakeVelocityController = new VelocityPIDController(0.005, 0, 0.255, 1); // TODO tune these three
+    private final VelocityPIDController towardsBrakeVelocityController = new VelocityPIDController(0.0004, 0, 0, 0.006); // TODO tune these three
     private final VelocityPIDController normalToBrakeVelocityController = new VelocityPIDController(0.005, 0, 0, 0);
-    private final VelocityPIDController angularBrakeVelocityController = new VelocityPIDController(0.04, 0, 0, 0);
+    private final VelocityPIDController angularBrakeVelocityController = new VelocityPIDController(0, 0, 0, 0);
 
-    private final TargetVelocityFunction orthTargetVelocityFunction = new TargetVelocityFunction(1.5, 4, 8, 0.4);
+    private final TargetVelocityFunction orthTargetVelocityFunction = new TargetVelocityFunction(1.75, 3, 6, 0.4);
     private final TargetVelocityFunction angularTargetVelocityFunction = new TargetVelocityFunction(Math.toRadians(80), Math.toRadians(1), 0.5, Math.toRadians(0.5));
 
     public Drivetrain(Robot robot, boolean isOn) {
@@ -198,35 +200,6 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         this.brakeHeading = brakeHeading;
     }
 
-    private Movements calculateMovementsTowardsPoint(Point targetPoint, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading, double direction) {
-        double robotHeading = getCurrentHeading();
-
-        double distanceToTarget = distanceToPoint(targetPoint);
-        double absoluteAngleToTarget = absoluteHeadingToPoint(targetPoint);
-
-        double relativeAngleToPoint = absoluteAngleToTarget - robotHeading;
-        double relativeXToPoint = Math.sin(relativeAngleToPoint) * distanceToTarget;
-        double relativeYToPoint = Math.cos(relativeAngleToPoint) * distanceToTarget;
-
-        double relativeTurnAngle;
-        if (willAngleLock) {
-            relativeTurnAngle = angleWrap(angleLockHeading - robotHeading);
-        } else {
-            relativeTurnAngle = angleWrap(relativeAngleToPoint + direction);
-        }
-
-        double totalOffsetToPoint = Math.abs(relativeYToPoint) + Math.abs(relativeXToPoint);
-
-        double xPower = relativeXToPoint / totalOffsetToPoint;
-        double yPower = relativeYToPoint / totalOffsetToPoint;
-
-        double xMovement = xPower * moveSpeed;
-        double yMovement = yPower * moveSpeed;
-        double turnMovement = Range.clip(relativeTurnAngle / TURN_SCALE, -turnSpeed, turnSpeed);
-
-        return new Movements(xMovement, yMovement, turnMovement);
-    }
-
     private void adjustBrakeForWeak() {
         if (distanceToPoint(brakePoint) > 0.7) {
             Point robotPosition = getCurrentPosition();
@@ -243,9 +216,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         brakePoint = getCurrentPosition();
         brakeHeading = getCurrentHeading();
 
-        towardsBrakeVelocityController.reset();
-        normalToBrakeVelocityController.reset();
-        angularBrakeVelocityController.reset();
+        double[] velocitiesTowardsBrake = velocitiesTowardsPoint(brakePoint);
+
+        towardsBrakeVelocityController.reset(velocitiesTowardsBrake[0]);
+        normalToBrakeVelocityController.reset(velocitiesTowardsBrake[1]);
+        angularBrakeVelocityController.reset(getOdometryAngleVel());
     }
 
     /**
@@ -285,12 +260,15 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @return A double[], double[0] is the x movement, double[1] is the y movement.
      */
     private double[] calculateOrthBrakePowers() {
+        Log.d("BRAKING", "new");
+
         // todo: orth scale feedfoward using angular change?
 
         double[] velocitiesTowardsBrake = velocitiesTowardsPoint(brakePoint);
 
         double velocityTowardsBrake = velocitiesTowardsBrake[0];
         double velocityNormalToBrake = velocitiesTowardsBrake[1];
+        Log.d("BRAKING", "Velocity towards brake: " + velocityTowardsBrake + ", Velocity normal: " + velocityNormalToBrake);
 
         double targetVelocityTowardsBrake = orthTargetVelocityFunction.desiredVelocity(distanceToPoint(brakePoint));
         double targetVelocityNormalToBrake = 0;
@@ -313,11 +291,16 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
             normalToTargetPower = normalToBrakeVelocityController.updateScale(error);
         }
 
+        Log.d("BRAKING", "Target towards velo: " + targetVelocityTowardsBrake + ", Normal target velo: " + targetVelocityNormalToBrake);
+        Log.d("BRAKING", "Towards target power: " + towardsTargetPower + ", Normal target power: " + normalToTargetPower);
+
         // Decompose desired towards target and normal to target powers into xMovement & yMovement
         Pose2d toRobotCentric = new Pose2d(new Translation2d(), new Rotation2d(-relativeAngleToPoint(brakePoint)));
         Pose2d desiredMovement = new Pose2d(normalToTargetPower, towardsTargetPower, new Rotation2d()); // TODO check order of params is correct
 
         Pose2d convertedMovement = MathFunctions.transformToCoordinateSystem(toRobotCentric, desiredMovement);
+
+        Log.d("BRAKING", "converted x: " + convertedMovement.getTranslation().getX() + ", converted y: " + convertedMovement.getTranslation().getY());
 
         return new double[]{convertedMovement.getTranslation().getX(), convertedMovement.getTranslation().getY()};
     }
@@ -337,6 +320,36 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         return angularScale;
     }
+
+    private Movements calculateMovementsTowardsPoint(Point targetPoint, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading, double direction) {
+        double robotHeading = getCurrentHeading();
+
+        double distanceToTarget = distanceToPoint(targetPoint);
+        double absoluteAngleToTarget = absoluteHeadingToPoint(targetPoint);
+
+        double relativeAngleToPoint = absoluteAngleToTarget - robotHeading;
+        double relativeXToPoint = Math.sin(relativeAngleToPoint) * distanceToTarget;
+        double relativeYToPoint = Math.cos(relativeAngleToPoint) * distanceToTarget;
+
+        double relativeTurnAngle;
+        if (willAngleLock) {
+            relativeTurnAngle = angleWrap(angleLockHeading - robotHeading);
+        } else {
+            relativeTurnAngle = angleWrap(relativeAngleToPoint + direction);
+        }
+
+        double totalOffsetToPoint = Math.abs(relativeYToPoint) + Math.abs(relativeXToPoint);
+
+        double xPower = relativeXToPoint / totalOffsetToPoint;
+        double yPower = relativeYToPoint / totalOffsetToPoint;
+
+        double xMovement = xPower * moveSpeed;
+        double yMovement = yPower * moveSpeed;
+        double turnMovement = Range.clip(relativeTurnAngle / TURN_SCALE, -turnSpeed, turnSpeed);
+
+        return new Movements(xMovement, yMovement, turnMovement);
+    }
+
 
     public double distanceToPoint(Point targetPoint) {
         Point robotPosition = getCurrentPosition();

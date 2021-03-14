@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.qualcomm.robotcore.util.Range;
 
@@ -18,12 +19,12 @@ public class VelocityPIDController {
     private double errorSum;
     private double lastUpdateTime;
 
-    private final double defaultScale;
+    private final double initialScaleFactor;
     private final double scaleMin;
     private final double scaleMax;
 
     /**
-     * Constructs a VelocityPIDController with a default scale of 1, a minimum scale of -1, and a
+     * Constructs a VelocityPIDController with an initial scale factor of 1, a minimum scale of -1, and a
      * max of +1.
      *
      * @param p
@@ -40,10 +41,11 @@ public class VelocityPIDController {
      * @param p
      * @param i
      * @param d
-     * @param defaultScale The scale to start at and reset to.
+     * @param initialScaleFactor The factor used to multiply by the first error provided after a
+     *                           reset to determine the starting scale.
      */
-    public VelocityPIDController(double p, double i, double d, double defaultScale) {
-        this(p, i, d, defaultScale, -1, 1);
+    public VelocityPIDController(double p, double i, double d, double initialScaleFactor) {
+        this(p, i, d, initialScaleFactor, -1, 1);
     }
 
     /**
@@ -52,21 +54,23 @@ public class VelocityPIDController {
      * @param p
      * @param i
      * @param d
-     * @param defaultScale The scale to start at and reset to.
+     * @param defaultScale The factor used to multiply by the first error provided after a
+     *      *                           reset to determine the starting scale.
      * @param scaleMin     The minimum possible value for the scale.
      * @param scaleMax     The maximum possible value for the scale.
      */
-    public VelocityPIDController(double p, double i, double d, double defaultScale, double scaleMin, double scaleMax) {
+    public VelocityPIDController(double p, double i, double d, double initialScaleFactor, double scaleMin, double scaleMax) {
         this.p = p;
         this.i = i;
         this.d = d;
 
-        this.scale = defaultScale;
-        this.defaultScale = defaultScale;
+        this.initialScaleFactor = initialScaleFactor;
         this.lastUpdateTime = SystemClock.elapsedRealtime();
 
         this.scaleMin = scaleMin;
         this.scaleMax = scaleMax;
+
+        this.reset = true;
     }
 
     /**
@@ -76,21 +80,27 @@ public class VelocityPIDController {
      * @return Updated PID scale
      */
     public double updateScale(double error) {
-        double proport = error * p;
-
-        long currentTime = SystemClock.elapsedRealtime();
+        double proport = 0;
         double deriv = 0;
         double integ = 0;
+
+        long currentTime = SystemClock.elapsedRealtime();
         if (!reset) {
+            proport = error * p;
             deriv = (error - lastError) / (lastUpdateTime - currentTime) * d;
 
             errorSum += error;
             integ = errorSum * i; // TODO integral scaled by time for consistency?
+        } else {
+//            scale = error * initialScaleFactor;
+
+            reset = false;
         }
 
         double increment = proport + deriv + integ;
+//        Log.d("CONTROLLER", "increment: " + increment);
 
-        scale = Range.clip(increment, scaleMin, scaleMax);
+        scale = Range.clip(scale + increment, scaleMin, scaleMax);
 
         lastUpdateTime = currentTime;
         lastError = error;
@@ -101,9 +111,9 @@ public class VelocityPIDController {
     /**
      * Reset the PID controller using given default scale
      */
-    public void reset() {
+    public void reset(double velocity) {
         reset = true;
-        scale = defaultScale;
+        scale = velocity * initialScaleFactor;
         errorSum = 0;
     }
 }

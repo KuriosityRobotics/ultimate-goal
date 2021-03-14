@@ -27,7 +27,7 @@ public class AutoActionsTest extends LinearOpMode {
 
         sleep(1000);
 
-        pf1.followPath(0, 1, 1, true, Math.toRadians(90));
+        pf1.followPath(0, 1, 1, false, Math.toRadians(90));
 
         while (opModeIsActive()) {
 
