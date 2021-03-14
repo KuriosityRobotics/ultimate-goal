@@ -30,9 +30,9 @@ public class WobblePlebTest extends LinearOpMode {
         intakeTop.setDirection(DcMotorSimple.Direction.FORWARD);
         intakeBottom.setDirection(DcMotorSimple.Direction.FORWARD);
 
-//        intakeTop.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        intakeBottom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//
+        //        intakeTop.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //        intakeBottom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //
         leftServo = (Servo) hardwareMap.get("rightIntakeLock");
         rightServo = (Servo) hardwareMap.get("leftIntakeLock");
         waitForStart();
@@ -54,15 +54,15 @@ public class WobblePlebTest extends LinearOpMode {
 
             telemetry.addLine(Double.toString(distance.getDistance(DistanceUnit.MM)));
             telemetry.update();
-//            if(gamepad1.a){
-//                rings = 0;
-//                leftServo.setPosition(0.15);
-//                rightServo.setPosition(0.85);
-//                Log.d("INTAKE", "pressed");
-//            }else if(gamepad1.b){
-//                leftServo.setPosition(0.78);
-//                rightServo.setPosition(0.22);
-//            }
+            //            if(gamepad1.a){
+            //                rings = 0;
+            //                leftServo.setPosition(0.15);
+            //                rightServo.setPosition(0.85);
+            //                Log.d("INTAKE", "pressed");
+            //            }else if(gamepad1.b){
+            //                leftServo.setPosition(0.78);
+            //                rightServo.setPosition(0.22);
+            //            }
         }
     }
 }

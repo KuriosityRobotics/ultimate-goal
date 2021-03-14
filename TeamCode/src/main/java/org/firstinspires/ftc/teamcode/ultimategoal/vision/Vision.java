@@ -38,7 +38,7 @@ public class Vision {
 
     private VuforiaLocalizer vuforia;
 
-    private LinearOpMode linearOpMode;
+    private final LinearOpMode linearOpMode;
 
     public Vision(LinearOpMode linearOpmode) {
         this.linearOpMode = linearOpmode;
@@ -129,13 +129,13 @@ public class Vision {
                                 resultTargetGoal[0] = TargetGoal.A;
                             }
 
-//                            updateBitmapWithBoundingBoxes(bitmap,105, 287, 128, 100);
+                            //                            updateBitmapWithBoundingBoxes(bitmap,105, 287, 128, 100);
                             if (linearOpMode.gamepad1.a) {
                                 updateBitmapWithBoundingBoxes(bitmap, 135, 315, 75, 60);
 
                                 captureFrameToFile(bitmap);
                             }
-//                            captureFrameToFile(bitmap);
+                            //                            captureFrameToFile(bitmap);
                         }
 
 

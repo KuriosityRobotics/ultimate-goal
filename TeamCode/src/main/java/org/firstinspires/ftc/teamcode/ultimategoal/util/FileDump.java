@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class FileDump {
-    private HashSet<FileDumpProvider> providers;
+    private final HashSet<FileDumpProvider> providers;
     HashMap<String, FileData> files;
     long startTime;
 

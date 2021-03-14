@@ -37,7 +37,7 @@ public class ModuleExecutor extends Thread implements TelemetryProvider {
                 lastUpdateTime = SystemClock.elapsedRealtime() - currentIterationStartTime;
             }
 
-            if (robot.WILL_FILE_DUMP) {
+            if (Robot.WILL_FILE_DUMP) {
                 robot.fileDump.doTick();
             }
 
@@ -50,7 +50,7 @@ public class ModuleExecutor extends Thread implements TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("Module Executor thread loop time: " + String.valueOf(lastUpdateTime));
+        data.add("Module Executor thread loop time: " + lastUpdateTime);
         return data;
     }
 }

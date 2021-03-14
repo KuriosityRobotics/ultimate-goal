@@ -1,14 +1,16 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.os.SystemClock;
-
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
+import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain.TargetVelocityFunction;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain.VelocityPIDController;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 import java.util.ArrayList;
@@ -19,9 +21,9 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     Robot robot;
     public boolean isOn;
 
-    private DrivetrainModule drivetrainModule;
-    private OdometryModule odometryModule;
-    private T265Module t265Module;
+    private final DrivetrainModule drivetrainModule;
+    private final OdometryModule odometryModule;
+    private final T265Module t265Module;
 
     // States
     public double xMovement = 0;
@@ -40,21 +42,13 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double SLOW_MODE_FACTOR = 0.35;
     private final static double TURN_SCALE = Math.toRadians(30);
 
-    // Velocity controller
-    private final static double ORTH_VELOCITY_P = 0.005;
-    private final static double ORTH_VELOCITY_D = 0.255;
-    private final static double ANGULAR_VELOCITY_P = 0.04;
+    // Velocity controllers
+    private final VelocityPIDController towardsBrakeVelocityController = new VelocityPIDController(0.005, 0, 0.255, 1); // TODO tune these three
+    private final VelocityPIDController normalToBrakeVelocityController = new VelocityPIDController(0.005, 0, 0, 0);
+    private final VelocityPIDController angularBrakeVelocityController = new VelocityPIDController(0.04, 0, 0, 0);
 
-    // Velocity target constants (line with a floor, to allow for coasting)
-    private final static double ORTH_VELOCITY_SLOWDOWN = 1.5; // The slope of dist vs target velocity
-    private final static double ORTH_COAST_THRESHOLD = 4; // threshold to start coasting, which means hold a speed until power cutoff
-    private final static double ORTH_COAST_VELOCITY = 8; // velocity to coast at
-    private final static double ORTH_STOP_THRESHOLD = 0.4; // threshold at which to stop entirely (after coasting)
-
-    private final static double ANGULAR_VELOCITY_SLOWDOWN = Math.toRadians(80);
-    private final static double ANGULAR_COAST_THRESHOLD = Math.toRadians(1);
-    private final static double ANGULAR_COAST_VELOCITY = 0.5;
-    private final static double ANGULAR_STOP_THRESHOLD = Math.toRadians(0.5);
+    private final TargetVelocityFunction orthTargetVelocityFunction = new TargetVelocityFunction(1.5, 4, 8, 0.4);
+    private final TargetVelocityFunction angularTargetVelocityFunction = new TargetVelocityFunction(Math.toRadians(80), Math.toRadians(1), 0.5, Math.toRadians(0.5));
 
     public Drivetrain(Robot robot, boolean isOn) {
         this(robot, isOn, new Pose2d(0, 0, new Rotation2d(0)));
@@ -71,35 +65,6 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         modules = new Module[]{drivetrainModule, odometryModule, t265Module};
 
         robot.telemetryDump.registerProvider(this);
-    }
-
-    @Override
-    public void update() {
-        odometryModule.update();
-        t265Module.update();
-
-        applyMovements();
-
-        drivetrainModule.update();
-    }
-
-    /**
-     * Set the movements of the drivetrain module according to the target movement states of this
-     * module. These two movements are different when braking must be applied.
-     */
-    private void applyMovements() {
-        if (isBrake) {
-            if (weakBrake) {
-                adjustBrakeForWeak();
-            }
-            applyMovementsToBrakePosition();
-        } else {
-            if (isSlowMode) {
-                drivetrainModule.setMovements(xMovement * SLOW_MODE_FACTOR, yMovement * SLOW_MODE_FACTOR, turnMovement * SLOW_MODE_FACTOR);
-            } else {
-                drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
-            }
-        }
     }
 
     /**
@@ -131,6 +96,35 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
             }
         } else {
             isBrake = false;
+        }
+    }
+
+    @Override
+    public void update() {
+        odometryModule.update();
+        t265Module.update();
+
+        applyMovements();
+
+        drivetrainModule.update();
+    }
+
+    /**
+     * Set the movements of the drivetrain module according to the target movement states of this
+     * module. These two movements are different when braking must be applied.
+     */
+    private void applyMovements() {
+        if (isBrake) {
+            if (weakBrake) {
+                adjustBrakeForWeak();
+            }
+            applyMovementsToBrakePosition();
+        } else {
+            if (isSlowMode) {
+                drivetrainModule.setMovements(xMovement * SLOW_MODE_FACTOR, yMovement * SLOW_MODE_FACTOR, turnMovement * SLOW_MODE_FACTOR);
+            } else {
+                drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
+            }
         }
     }
 
@@ -204,14 +198,6 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         this.brakeHeading = brakeHeading;
     }
 
-    private void resetBrake() {
-        brakePoint = getCurrentPosition();
-        brakeHeading = getCurrentHeading();
-
-        orthScale = 1;
-        angularScale = 0;
-    }
-
     private Movements calculateMovementsTowardsPoint(Point targetPoint, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading, double direction) {
         double robotHeading = getCurrentHeading();
 
@@ -253,68 +239,25 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         }
     }
 
-    double orthScale = 1;
-    double angularScale = 0;
+    private void resetBrake() {
+        brakePoint = getCurrentPosition();
+        brakeHeading = getCurrentHeading();
 
-    double velocityAlongPath;
-    double angularVelocity;
-
-    double orthTargetVelocity;
-    double angularTargetVelocity;
-
-    double lastOrthVelocityError;
-    double angularVelocityError;
-
-    long lastLoopTime = SystemClock.elapsedRealtime();
+        towardsBrakeVelocityController.reset();
+        normalToBrakeVelocityController.reset();
+        angularBrakeVelocityController.reset();
+    }
 
     /**
      * Sets movement of drivetrain to try to stay on the brake point.
      */
     private void applyMovementsToBrakePosition() {
-        // Calculate current velocity along path
-        velocityAlongPath = velocityTowardsPoint(brakePoint);
-        angularVelocity = getOdometryAngleVel();
+        double[] orthPowers = calculateOrthBrakePowers();
+        double angularPower = calculateAngularBrakePower();
 
-        // Calculate the target velocity
-        orthTargetVelocity = orthTargetVelocity(distanceToPoint(brakePoint));
-        angularTargetVelocity = angularTargetVelocity(relativeAngleToPoint(brakePoint));
-
-        // Maybe use last change in velocity caused by movement offset as feed forward
-        // lol maybe later
-
-        // Calculate movements
-        long currentTime = robot.getCurrentTimeMilli();
-
-        if (orthTargetVelocity == 0) {
-            orthScale = 0;
-        } else {
-            double error = orthTargetVelocity - velocityAlongPath;
-
-            double proportional = error * ORTH_VELOCITY_P;
-            double deriv = ((error - lastOrthVelocityError) / (currentTime - lastLoopTime)) * ORTH_VELOCITY_D;
-
-            double increment = proportional + deriv;
-
-            orthScale = Range.clip(orthScale + increment, -1, 1);
-
-            lastOrthVelocityError = error;
-        }
-
-        if (angularTargetVelocity == 0) {
-            angularScale = 0;
-        } else {
-            angularVelocityError = angularTargetVelocity - angularVelocity;
-
-            double increment = angularVelocityError * ANGULAR_VELOCITY_P;
-
-            angularScale = Range.clip(angularScale + increment, -1, 1);
-        }
-
-        lastLoopTime = currentTime;
-
-        xMovement *= orthScale;
-        yMovement *= orthScale;
-        turnMovement = angularScale;
+        double xMovement = orthPowers[0];
+        double yMovement = orthPowers[1];
+        double turnMovement = angularPower;
 
         // nerf braking if weak brake
         if (weakBrake) {
@@ -322,8 +265,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
             yMovement *= 0.2;
             turnMovement *= 0.9;
 
-            xMovement = Math.abs(xMovement) < 0.02 ? 0 : xMovement;
-            yMovement = Math.abs(yMovement) < 0.02 ? 0 : yMovement;
+//            xMovement = Math.abs(xMovement) < 0.02 ? 0 : xMovement;
+//            yMovement = Math.abs(yMovement) < 0.02 ? 0 : yMovement;
         }
 
         if (isSlowMode) {
@@ -334,6 +277,65 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         // apply movements
         drivetrainModule.setMovements(xMovement, yMovement, turnMovement);
+    }
+
+    /**
+     * Calculate the orthogonal (x, y) movements of the drivetrain in order to brake.
+     *
+     * @return A double[], double[0] is the x movement, double[1] is the y movement.
+     */
+    private double[] calculateOrthBrakePowers() {
+        // todo: orth scale feedfoward using angular change?
+
+        double[] velocitiesTowardsBrake = velocitiesTowardsPoint(brakePoint);
+
+        double velocityTowardsBrake = velocitiesTowardsBrake[0];
+        double velocityNormalToBrake = velocitiesTowardsBrake[1];
+
+        double targetVelocityTowardsBrake = orthTargetVelocityFunction.desiredVelocity(distanceToPoint(brakePoint));
+        double targetVelocityNormalToBrake = 0;
+
+        double towardsTargetPower;
+        if (targetVelocityTowardsBrake == 0) {
+            towardsTargetPower = 0;
+        } else {
+            double error = targetVelocityTowardsBrake - velocityTowardsBrake;
+
+            towardsTargetPower = towardsBrakeVelocityController.updateScale(error);
+        }
+
+        double normalToTargetPower;
+        if (targetVelocityNormalToBrake == 0) {
+            normalToTargetPower = 0;
+        } else {
+            double error = targetVelocityNormalToBrake - velocityNormalToBrake;
+
+            normalToTargetPower = normalToBrakeVelocityController.updateScale(error);
+        }
+
+        // Decompose desired towards target and normal to target powers into xMovement & yMovement
+        Pose2d toRobotCentric = new Pose2d(new Translation2d(), new Rotation2d(-relativeAngleToPoint(brakePoint)));
+        Pose2d desiredMovement = new Pose2d(normalToTargetPower, towardsTargetPower, new Rotation2d()); // TODO check order of params is correct
+
+        Pose2d convertedMovement = MathFunctions.transformToCoordinateSystem(toRobotCentric, desiredMovement);
+
+        return new double[]{convertedMovement.getTranslation().getX(), convertedMovement.getTranslation().getY()};
+    }
+
+    private double calculateAngularBrakePower() {
+        double angularVelocity = getOdometryAngleVel();
+        double angularTargetVelocity = angularTargetVelocityFunction.desiredVelocity(relativeAngleToPoint(brakePoint));
+
+        double angularScale;
+        if (angularTargetVelocity == 0) {
+            angularScale = 0;
+        } else {
+            double error = angularTargetVelocity - angularVelocity;
+
+            angularScale = angularBrakeVelocityController.updateScale(error);
+        }
+
+        return angularScale;
     }
 
     public double distanceToPoint(Point targetPoint) {
@@ -372,31 +374,26 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         return totalVel * Math.cos(angleDiff);
     }
 
-    private double orthTargetVelocity(double distanceToTarget) {
-        return targetVelocityFunction(distanceToTarget, ORTH_STOP_THRESHOLD, ORTH_COAST_VELOCITY, ORTH_COAST_THRESHOLD, ORTH_VELOCITY_SLOWDOWN);
-    }
+    /**
+     * Calculate the velocity of the robot towards a target point, by decomposing the robot's
+     * velocity into two directions: towards the target point, and perpendicular to that.
+     *
+     * @param targetPoint
+     * @return double[], double[0] is the velocity towards the point and double[1] is the velocity
+     *         perpendicular to that.
+     */
+    public double[] velocitiesTowardsPoint(Point targetPoint) {
+        double absoluteAngleToTarget = absoluteHeadingToPoint(targetPoint);
 
-    private double angularTargetVelocity(double angleOffsetToTarget) {
-        if (angleOffsetToTarget == 0) {
-            return 0;
-        }
+        double xVel = odometryModule.getXVel();
+        double yVel = odometryModule.getYVel();
 
-        double sign = Math.abs(angleOffsetToTarget) / angleOffsetToTarget;
+        double heading = angleWrap(Math.atan2(xVel, yVel));
 
-        double rawTargetVelocity = targetVelocityFunction(Math.abs(angleOffsetToTarget), ANGULAR_STOP_THRESHOLD, ANGULAR_COAST_VELOCITY, ANGULAR_COAST_THRESHOLD, ANGULAR_VELOCITY_SLOWDOWN);
+        double totalVel = Math.hypot(xVel, yVel);
+        double angleDiff = angleWrap(heading - absoluteAngleToTarget);
 
-        return rawTargetVelocity * sign;
-    }
-
-    private double targetVelocityFunction(double distanceToTarget, double stopThreshold, double coastVelocity, double coastThreshold, double velocitySlowdown) {
-        if (distanceToTarget < stopThreshold) {
-            return 0;
-        } else if (distanceToTarget < coastThreshold) {
-            return coastVelocity;
-        } else {
-            // linear function with transformations
-            return velocitySlowdown * (distanceToTarget - coastThreshold) + coastVelocity;
-        }
+        return new double[]{totalVel * Math.cos(angleDiff), totalVel * Math.sin(angleDiff)};
     }
 
     public double getBrakeHeading() {
@@ -461,11 +458,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         data.add("isSlowMode: " + isSlowMode);
         data.add("-");
         data.add("isBrake: " + isBrake);
-        data.add("Brake Point: " + brakePoint);
-        data.add("Brake heading: " + brakeHeading);
-        data.add("--");
-        data.add("orth scale: " + orthScale);
-        data.add("angular scale: " + angularScale);
+        data.add("Brake Point: " + brakePoint + ", Brake heading: " + brakeHeading);
         return data;
     }
 
@@ -474,7 +467,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         return "Drivetrain";
     }
 
-    class Movements {
+    static class Movements {
         public double xMovement;
         public double yMovement;
         public double turnMovement;
