@@ -65,7 +65,6 @@ public class SamPlebTest extends LinearOpMode {
 
             indexer.setPosition(pos2);
 
-
             telemetry.addLine("left speed: " + leftFlyWheel.getVelocity());
             telemetry.addLine("right speed: " + rightFlyWheel.getVelocity());
             telemetry.addLine("servo angle: " + pos);

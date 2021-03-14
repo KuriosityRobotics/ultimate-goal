@@ -1,17 +1,10 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.Servo;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.HopperModule;
 
 @TeleOp
 public class WobblePlebTest extends LinearOpMode {
@@ -52,7 +45,6 @@ public class WobblePlebTest extends LinearOpMode {
         while (opModeIsActive()) {
 
 
-
             intakeTop.setPower(gamepad2.left_stick_y);
             intakeBottom.setPower(gamepad2.left_stick_y);
 
@@ -69,8 +61,8 @@ public class WobblePlebTest extends LinearOpMode {
             telemetry.addLine("dist sensor voltage: " + Double.toString(distance.getVoltage()));
             telemetry.addLine("total passes of ring: " + passes);
 
-            if (Math.abs(2.2 - voltage) < Math.abs(1.1 - voltage)){
-                if(!seenRing) {
+            if (Math.abs(2.2 - voltage) < Math.abs(1.1 - voltage)) {
+                if (!seenRing) {
                     seenRing = true;
                 }
 
@@ -82,10 +74,10 @@ public class WobblePlebTest extends LinearOpMode {
                         "            (__)\\       )\\/\\\n" +
                         "                ||----w |\n" +
                         "                ||     ||\n");
-            } else{
+            } else {
 
                 if (seenRing) {
-                    if(gamepad2.left_stick_y > 0)
+                    if (gamepad2.left_stick_y > 0)
                         passes = passes + 1;
                     else
                         passes = passes - 1;
@@ -102,7 +94,7 @@ public class WobblePlebTest extends LinearOpMode {
             }
 
 
-            if(time - timeLastPass > 0.2 && (passes & 1) == 1 && seenRing) {
+            if (time - timeLastPass > 0.2 && (passes & 1) == 1 && seenRing) {
                 passes++;
             }
             timeLastPass = time;
