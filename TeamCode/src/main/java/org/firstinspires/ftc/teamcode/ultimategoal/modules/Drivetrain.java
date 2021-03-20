@@ -8,10 +8,12 @@ import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.Target;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain.BrakeController;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain.TargetVelocityFunction;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain.VelocityPIDController;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain.VelocityPidController;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
@@ -44,13 +46,22 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double SLOW_MODE_FACTOR = 0.35;
     private final static double TURN_SCALE = Math.toRadians(30);
 
-    // Velocity controllers
-    private final VelocityPIDController towardsBrakeVelocityController = new VelocityPIDController(0.0004, 0, 0, 0.006); // TODO tune these three
-    private final VelocityPIDController normalToBrakeVelocityController = new VelocityPIDController(0.005, 0, 0, 0);
-    private final VelocityPIDController angularBrakeVelocityController = new VelocityPIDController(0, 0, 0, 0);
-
-    private final TargetVelocityFunction orthTargetVelocityFunction = new TargetVelocityFunction(1.75, 3, 6, 0.4);
-    private final TargetVelocityFunction angularTargetVelocityFunction = new TargetVelocityFunction(Math.toRadians(80), Math.toRadians(1), 0.5, Math.toRadians(0.5));
+    // Braking Controllers
+    private final BrakeController towardsBrakeController = new BrakeController(
+            new VelocityPidController(0.0004, 0, 0),
+            new TargetVelocityFunction(1.75, 3, 6, 0.4),
+            0.0065, 10
+    );
+    private final BrakeController normalToBrakeController = new BrakeController(
+            new VelocityPidController(0.0005, 0, 0),
+            new TargetVelocityFunction(0, 0, 0, Double.MAX_VALUE),
+            0.0065, 1, false
+    );
+    private final BrakeController angularBrakeController = new BrakeController(
+            new VelocityPidController(0, 0, 0),
+            new TargetVelocityFunction(Math.toRadians(80), Math.toRadians(1), 0.5, Math.toRadians(0.5)),
+            0, Math.toRadians(15)
+    );
 
     public Drivetrain(Robot robot, boolean isOn) {
         this(robot, isOn, new Pose2d(0, 0, new Rotation2d(0)));
@@ -218,9 +229,9 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         double[] velocitiesTowardsBrake = velocitiesTowardsPoint(brakePoint);
 
-        towardsBrakeVelocityController.reset(velocitiesTowardsBrake[0]);
-        normalToBrakeVelocityController.reset(velocitiesTowardsBrake[1]);
-        angularBrakeVelocityController.reset(getOdometryAngleVel());
+        towardsBrakeController.reset();
+        normalToBrakeController.reset();
+        angularBrakeController.reset();
     }
 
     /**
@@ -270,33 +281,15 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         double velocityNormalToBrake = velocitiesTowardsBrake[1];
         Log.d("BRAKING", "Velocity towards brake: " + velocityTowardsBrake + ", Velocity normal: " + velocityNormalToBrake);
 
-        double targetVelocityTowardsBrake = orthTargetVelocityFunction.desiredVelocity(distanceToPoint(brakePoint));
-        double targetVelocityNormalToBrake = 0;
+        double towardsScale = towardsBrakeController.calculatePower(distanceToPoint(brakePoint), velocityTowardsBrake);
+        double normalScale = normalToBrakeController.calculatePower(0, velocityNormalToBrake);
 
-        double towardsTargetPower;
-        if (targetVelocityTowardsBrake == 0) {
-            towardsTargetPower = 0;
-        } else {
-            double error = targetVelocityTowardsBrake - velocityTowardsBrake;
-
-            towardsTargetPower = towardsBrakeVelocityController.updateScale(error);
-        }
-
-        double normalToTargetPower;
-        if (targetVelocityNormalToBrake == 0) {
-            normalToTargetPower = 0;
-        } else {
-            double error = targetVelocityNormalToBrake - velocityNormalToBrake;
-
-            normalToTargetPower = normalToBrakeVelocityController.updateScale(error);
-        }
-
-        Log.d("BRAKING", "Target towards velo: " + targetVelocityTowardsBrake + ", Normal target velo: " + targetVelocityNormalToBrake);
-        Log.d("BRAKING", "Towards target power: " + towardsTargetPower + ", Normal target power: " + normalToTargetPower);
+        Log.d("BRAKING", "Target towards velo: " + towardsBrakeController.targetVelocity(distanceToPoint(brakePoint)) + ", Normal target velo: " + normalToBrakeController.targetVelocity(0));
+        Log.d("BRAKING", "Towards target power: " + towardsScale + ", Normal target power: " + normalScale);
 
         // Decompose desired towards target and normal to target powers into xMovement & yMovement
         Pose2d toRobotCentric = new Pose2d(new Translation2d(), new Rotation2d(-relativeAngleToPoint(brakePoint)));
-        Pose2d desiredMovement = new Pose2d(normalToTargetPower, towardsTargetPower, new Rotation2d()); // TODO check order of params is correct
+        Pose2d desiredMovement = new Pose2d(normalScale, towardsScale, new Rotation2d());
 
         Pose2d convertedMovement = MathFunctions.transformToCoordinateSystem(toRobotCentric, desiredMovement);
 
@@ -307,18 +300,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     private double calculateAngularBrakePower() {
         double angularVelocity = getOdometryAngleVel();
-        double angularTargetVelocity = angularTargetVelocityFunction.desiredVelocity(relativeAngleToPoint(brakePoint));
 
-        double angularScale;
-        if (angularTargetVelocity == 0) {
-            angularScale = 0;
-        } else {
-            double error = angularTargetVelocity - angularVelocity;
+        double angleToTarget = getCurrentHeading() - brakeHeading;
 
-            angularScale = angularBrakeVelocityController.updateScale(error);
-        }
-
-        return angularScale;
+        return angularBrakeController.calculatePower(angleToTarget, angularVelocity);
     }
 
     private Movements calculateMovementsTowardsPoint(Point targetPoint, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading, double direction) {
