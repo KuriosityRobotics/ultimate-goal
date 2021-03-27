@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain;
 
-import android.util.Log;
-
 /**
  * Calculates the desired power to brake using a VelocityPIDController
  */
