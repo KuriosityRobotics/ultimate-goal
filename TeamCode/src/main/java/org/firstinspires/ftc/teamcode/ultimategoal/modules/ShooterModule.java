@@ -52,16 +52,19 @@ public class ShooterModule implements Module, TelemetryProvider {
         shooterFlap = robot.getServo("shooterFlap");
     }
 
+    private boolean wasUpToSpeed = true;
+
     @Override
     public void update() {
         // Ensure flywheel is up to speed, index and shoot if commanded to shoot.
         setFlywheelMotors();
 
-        if (isUpToSpeed() && flyWheelTargetSpeed > 0) {
+        if (isUpToSpeed() && flyWheelTargetSpeed > 0 && !wasUpToSpeed) {
             robot.setLedColor(0, 200, 200);
-        } else {
+        } else if (!isUpToSpeed() && wasUpToSpeed) {
             robot.setLedColor(25, 25, 25);
         }
+        wasUpToSpeed = isUpToSpeed();
 
         shooterFlap.setPosition(Range.clip(shooterFlapPosition, 0.598, 0.73));
     }
