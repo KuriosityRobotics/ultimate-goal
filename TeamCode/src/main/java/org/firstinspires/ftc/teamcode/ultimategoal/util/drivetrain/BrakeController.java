@@ -55,14 +55,19 @@ public class BrakeController {
 
         if (reset) {
             velocityMax = Math.max(minVelocityCap, currentVelocity);
-            velocityPIDController.reset(targetVelocity * initialScaleFactor);
+
+            targetVelocity = Math.min(targetVelocity, velocityMax);
+
+            double newScale = targetVelocity * initialScaleFactor;
+            velocityPIDController.reset(newScale);
 
             reset = false;
+        } else {
+            targetVelocity = Math.min(targetVelocity, velocityMax);
         }
 
-        targetVelocity = Math.min(targetVelocity, velocityMax);
-
         if (targetVelocity == 0 && cutOffAfterCoast) {
+            velocityPIDController.reset(0);
             return 0; // The TargetVelocityFunction has a 'coast' period, designed so that the robot simply cuts power after reaching its target.
         } else {
             double error = targetVelocity - currentVelocity;
@@ -72,7 +77,8 @@ public class BrakeController {
     }
 
     public double targetVelocity(double distanceToTarget) {
-        return targetVelocityFunction.desiredVelocity(distanceToTarget);
+        double targetVelocity = targetVelocityFunction.desiredVelocity(distanceToTarget);
+        return Math.min(targetVelocity, velocityMax);
     }
 
     /**
