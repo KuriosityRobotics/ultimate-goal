@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.qualcomm.robotcore.util.Range;
 
@@ -84,13 +85,15 @@ public class VelocityPidController {
 
         long currentTime = SystemClock.elapsedRealtime();
         if (!reset) {
-            deriv = (error - lastError) / (lastUpdateTime - currentTime) * d;
+            deriv = ((error - lastError) / (currentTime - lastUpdateTime)) * d;
 
             errorSum += error;
             integ = errorSum * i; // TODO integral scaled by time for consistency?
         } else {
             reset = false;
         }
+
+        Log.v("BRAKING", "P: " + proport + ", D: " + deriv);
 
         double increment = proport + deriv + integ;
 

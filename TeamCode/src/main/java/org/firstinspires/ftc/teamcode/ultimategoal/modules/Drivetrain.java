@@ -48,19 +48,19 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     // Braking Controllers
     private final BrakeController towardsBrakeController = new BrakeController(
-            new VelocityPidController(0.0004, 0, 0),
-            new TargetVelocityFunction(1.75, 3, 6, 0.4),
-            0.0065, 10
+            new VelocityPidController(0.007, 0, 0.269),
+            new TargetVelocityFunction(1.77, 3, 6, 0.4),
+            0.007, 10
     );
     private final BrakeController normalToBrakeController = new BrakeController(
-            new VelocityPidController(0.0005, 0, 0),
+            new VelocityPidController(0.006, 0, 0),
             new TargetVelocityFunction(0, 0, 0, Double.MAX_VALUE),
-            0.0065, 1, false
+            0, 1, false
     );
     private final BrakeController angularBrakeController = new BrakeController(
-            new VelocityPidController(0, 0, 0),
-            new TargetVelocityFunction(Math.toRadians(80), Math.toRadians(1), 0.5, Math.toRadians(0.5)),
-            0, Math.toRadians(15)
+            new VelocityPidController(0.1, 0, 2.9),
+            new TargetVelocityFunction(Math.toRadians(190), Math.toRadians(4), Math.toRadians(90), Math.toRadians(0.5)),
+            0, Math.toRadians(130)
     );
 
     public Drivetrain(Robot robot, boolean isOn) {
@@ -128,6 +128,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      */
     private void applyMovements() {
         if (isBrake) {
+            robot.setLedColor(255, 0, 0);
             if (weakBrake) {
                 adjustBrakeForWeak();
             }
@@ -271,7 +272,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @return A double[], double[0] is the x movement, double[1] is the y movement.
      */
     private double[] calculateOrthBrakePowers() {
-        Log.d("BRAKING", "new");
+        Log.v("BRAKING", "-----------------------------------");
 
         // todo: orth scale feedfoward using angular change?
 
@@ -279,13 +280,13 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         double velocityTowardsBrake = velocitiesTowardsBrake[0];
         double velocityNormalToBrake = velocitiesTowardsBrake[1];
-        Log.d("BRAKING", "Velocity towards brake: " + velocityTowardsBrake + ", Velocity normal: " + velocityNormalToBrake);
+        Log.v("BRAKING", "Velocity towards brake: " + velocityTowardsBrake + ", Velocity normal: " + velocityNormalToBrake);
 
         double towardsScale = towardsBrakeController.calculatePower(distanceToPoint(brakePoint), velocityTowardsBrake);
         double normalScale = normalToBrakeController.calculatePower(0, velocityNormalToBrake);
 
-        Log.d("BRAKING", "Target towards velo: " + towardsBrakeController.targetVelocity(distanceToPoint(brakePoint)) + ", Normal target velo: " + normalToBrakeController.targetVelocity(0));
-        Log.d("BRAKING", "Towards target power: " + towardsScale + ", Normal target power: " + normalScale);
+        Log.v("BRAKING", "Target towards velo: " + towardsBrakeController.targetVelocity(distanceToPoint(brakePoint)) + ", Normal target velo: " + normalToBrakeController.targetVelocity(0));
+        Log.v("BRAKING", "Towards target power: " + towardsScale + ", Normal target power: " + normalScale);
 
         // Decompose desired towards target and normal to target powers into xMovement & yMovement
         Pose2d toRobotCentric = new Pose2d(new Translation2d(), new Rotation2d(-relativeAngleToPoint(brakePoint)));
@@ -293,7 +294,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         Pose2d convertedMovement = MathFunctions.transformToCoordinateSystem(toRobotCentric, desiredMovement);
 
-        Log.d("BRAKING", "converted x: " + convertedMovement.getTranslation().getX() + ", converted y: " + convertedMovement.getTranslation().getY());
+        Log.v("BRAKING", "converted x: " + convertedMovement.getTranslation().getX() + ", converted y: " + convertedMovement.getTranslation().getY());
 
         return new double[]{convertedMovement.getTranslation().getX(), convertedMovement.getTranslation().getY()};
     }
@@ -301,9 +302,15 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private double calculateAngularBrakePower() {
         double angularVelocity = getOdometryAngleVel();
 
-        double angleToTarget = getCurrentHeading() - brakeHeading;
+        double angleToTarget = angleWrap(brakeHeading - getCurrentHeading());
 
-        return angularBrakeController.calculatePower(angleToTarget, angularVelocity);
+        Log.v("BRAKING", "ang velo: " + angularVelocity + ", target: " + angularBrakeController.targetVelocity(angleToTarget));
+
+        double angularPower = angularBrakeController.calculatePower(angleToTarget, angularVelocity);
+
+        Log.v("BRAKING", "ang power: " + angularPower);
+
+        return angularPower;
     }
 
     private Movements calculateMovementsTowardsPoint(Point targetPoint, double moveSpeed, double turnSpeed, boolean willAngleLock, double angleLockHeading, double direction) {

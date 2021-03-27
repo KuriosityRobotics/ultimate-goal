@@ -209,6 +209,8 @@ public class Robot extends ModuleCollection {
     }
 
     private void cleanUp() {
+        Log.d("Robot", "Cleaning up");
+
         this.fileDump.writeFilesToDevice();
 
         onClose();

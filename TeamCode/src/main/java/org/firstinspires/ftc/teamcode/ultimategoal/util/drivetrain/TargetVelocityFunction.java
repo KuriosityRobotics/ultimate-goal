@@ -11,13 +11,24 @@ public class TargetVelocityFunction {
     }
 
     public double desiredVelocity(double distanceToTarget) {
-        if (distanceToTarget < stopThreshold) {
+        if (distanceToTarget == 0) {
             return 0;
-        } else if (distanceToTarget < coastThreshold) {
-            return coastVelocity;
+        }
+
+        double trueDistance = Math.abs(distanceToTarget);
+        double sign = Math.abs(distanceToTarget) / distanceToTarget;
+
+        double targetTrueVelocity;
+
+        if (trueDistance < stopThreshold) {
+            targetTrueVelocity = 0;
+        } else if (trueDistance < coastThreshold) {
+            targetTrueVelocity = coastVelocity;
         } else {
             // linear function with transformations
-            return slowRate * (distanceToTarget - coastThreshold) + coastVelocity;
+            targetTrueVelocity = slowRate * (trueDistance - coastThreshold) + coastVelocity;
         }
+
+        return targetTrueVelocity * sign;
     }
 }
