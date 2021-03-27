@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.qualcomm.robotcore.util.Range;
 
@@ -8,7 +9,7 @@ import com.qualcomm.robotcore.util.Range;
  * A PID controller that increments a scale using PID. This is different from a traditional PID
  * because the scale is incremented by a value determined using PID every cycle.
  */
-public class VelocityPIDController {
+public class VelocityPidController {
     private final double p, i, d;
 
     double scale;
@@ -30,7 +31,7 @@ public class VelocityPIDController {
      * @param i
      * @param d
      */
-    public VelocityPIDController(double p, double i, double d) {
+    public VelocityPidController(double p, double i, double d) {
         this(p, i, d, 1);
     }
 
@@ -42,7 +43,7 @@ public class VelocityPIDController {
      * @param d
      * @param defaultScale The scale to start at and reset to.
      */
-    public VelocityPIDController(double p, double i, double d, double defaultScale) {
+    public VelocityPidController(double p, double i, double d, double defaultScale) {
         this(p, i, d, defaultScale, -1, 1);
     }
 
@@ -56,7 +57,7 @@ public class VelocityPIDController {
      * @param scaleMin     The minimum possible value for the scale.
      * @param scaleMax     The maximum possible value for the scale.
      */
-    public VelocityPIDController(double p, double i, double d, double defaultScale, double scaleMin, double scaleMax) {
+    public VelocityPidController(double p, double i, double d, double defaultScale, double scaleMin, double scaleMax) {
         this.p = p;
         this.i = i;
         this.d = d;
@@ -82,11 +83,13 @@ public class VelocityPIDController {
         double deriv = 0;
         double integ = 0;
         if (!reset) {
-            deriv = (error - lastError) / (lastUpdateTime - currentTime) * d;
+            deriv = ((error - lastError) / (currentTime - lastUpdateTime)) * d;
 
             errorSum += error;
             integ = errorSum * i; // TODO integral scaled by time for consistency?
         }
+
+        Log.v("BRAKING", "P: " + proport + ", D: " + deriv);
 
         double increment = proport + deriv + integ;
 
