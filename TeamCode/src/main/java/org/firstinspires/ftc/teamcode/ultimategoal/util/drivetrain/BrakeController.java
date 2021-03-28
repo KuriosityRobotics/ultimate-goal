@@ -11,8 +11,10 @@ public class BrakeController {
 
     private final double initialScaleFactor;
     private final double minVelocityCap;
-    private boolean reset = true;
     private final boolean cutOffAfterCoast;
+
+    private boolean reset = true;
+    private boolean atBrake = false;
 
     /**
      * Constructs a BrakeController.
@@ -51,25 +53,31 @@ public class BrakeController {
     }
 
     public double calculatePower(double distanceToTarget, double currentVelocity) {
-        double targetVelocity = targetVelocityFunction.desiredVelocity(distanceToTarget);
-
         if (reset) {
             velocityMax = Math.max(minVelocityCap, currentVelocity);
 
-            targetVelocity = Math.min(targetVelocity, velocityMax);
-
-            double newScale = targetVelocity * initialScaleFactor;
+            double newScale = targetVelocityFunction.desiredVelocity(distanceToTarget) * initialScaleFactor;
             velocityPIDController.reset(newScale);
 
             reset = false;
-        } else {
-            targetVelocity = Math.min(targetVelocity, velocityMax);
         }
 
-        if (targetVelocity == 0 && cutOffAfterCoast) {
+        // Got to brake point?
+        if (distanceToTarget < targetVelocityFunction.stopThreshold && currentVelocity < targetVelocityFunction.coastVelocity / 3) { // TODO tune?
+            atBrake = true;
+        }
+
+        if (!atBrake && distanceToTarget < targetVelocityFunction.stopThreshold) { // coast time
+            // cut off power for coast
             velocityPIDController.reset(0);
-            return 0; // The TargetVelocityFunction has a 'coast' period, designed so that the robot simply cuts power after reaching its target.
+            return 0;
         } else {
+            // at brake or on the way to brake point
+            double targetVelocity = Math.min(
+                    atBrake ? targetVelocityFunction.noCoastDesiredVelocity(distanceToTarget)
+                            : targetVelocityFunction.desiredVelocity(distanceToTarget),
+                    velocityMax);
+
             double error = targetVelocity - currentVelocity;
 
             return velocityPIDController.calculateScale(error);
@@ -87,5 +95,6 @@ public class BrakeController {
      */
     public void reset() {
         reset = true;
+        atBrake = false;
     }
 }
