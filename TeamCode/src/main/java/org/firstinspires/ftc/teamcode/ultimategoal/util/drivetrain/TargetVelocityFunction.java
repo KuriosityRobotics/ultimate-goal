@@ -32,7 +32,22 @@ public class TargetVelocityFunction {
         return targetTrueVelocity * sign;
     }
 
-    public double noCoastDesiredVelocity(double distanceToTarget) {
-        return distanceToTarget * slowRate;
+    public double atBrakeDesiredVelocity(double distanceToTarget) {
+        if (distanceToTarget == 0) {
+            return 0;
+        }
+
+        double trueDistance = Math.abs(distanceToTarget);
+        double sign = Math.abs(distanceToTarget) / distanceToTarget;
+
+        double targetTrueVelocity;
+
+        if (trueDistance < stopThreshold) {
+            targetTrueVelocity = 0;
+        } else {
+            targetTrueVelocity = slowRate * trueDistance * 0.5;
+        }
+
+        return targetTrueVelocity * sign;
     }
 }

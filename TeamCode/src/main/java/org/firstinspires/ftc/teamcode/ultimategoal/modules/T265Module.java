@@ -69,6 +69,8 @@ public class T265Module implements Module, TelemetryProvider {
         if (t265Camera == null) {
             t265Camera = new T265Camera(new Transform2d(new Translation2d(-0.2032, 0.0762), new Rotation2d(Math.toRadians(180))), 0.006, robot.hardwareMap.appContext);
             t265Camera.setPose(new Pose2d(0, 0, new Rotation2d(Math.toRadians(180))));
+        } else {
+            calculateTruePosition();
         }
 
         setPosition(startingPosition.getTranslation().getX(), startingPosition.getTranslation().getY(), resetOrigin.getHeading());
@@ -81,13 +83,18 @@ public class T265Module implements Module, TelemetryProvider {
     }
 
     public void onStart() {
-        t265Camera.start();
+        try {
+            t265Camera.start();
 
-        Log.d("CAMERA", "STARTING");
+            Log.d("CAMERA", "STARTING");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void update() {
+        sendOdometryData();
         calculateTruePosition();
         calculateRobotPosition();
         calculateRobotVelocity();
@@ -95,15 +102,10 @@ public class T265Module implements Module, TelemetryProvider {
 
     @Override
     public void onClose() {
-        t265Camera.stop();
+//        t265Camera.stop();
     }
 
-    /**
-     * side effects: sends odometry data to t265
-     */
     public void calculateTruePosition() {
-        sendOdometryData();
-
         T265Camera.CameraUpdate update = t265Camera.getLastReceivedCameraUpdate();
 
         if (update == null) return;
