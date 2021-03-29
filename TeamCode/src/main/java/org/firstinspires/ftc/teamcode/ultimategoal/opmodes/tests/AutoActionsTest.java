@@ -17,8 +17,8 @@ public class AutoActionsTest extends LinearOpMode {
 
         PathFollow pf1 = new PathFollow(new Waypoint[]{
                 new Waypoint(0, 0),
-                new Waypoint(0, 24),
-                new Waypoint(0, 60)
+                new Waypoint(0, -24),
+                new Waypoint(0, -60)
         }, robot, "test");
 
         waitForStart();
@@ -27,7 +27,7 @@ public class AutoActionsTest extends LinearOpMode {
 
         sleep(1000);
 
-        pf1.followPath(0, 1, 1, false, Math.toRadians(90));
+        pf1.followPath(Math.toRadians(180), 1, 1, false, Math.toRadians(90));
 
         while (opModeIsActive()) {
 
