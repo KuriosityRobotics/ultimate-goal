@@ -48,19 +48,19 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     // Braking Controllers
     private final BrakeController towardsBrakeController = new BrakeController(
-            new VelocityPidController(0.007, 0, 0.269),
-            new TargetVelocityFunction(1.77, 3, 6, 0.4),
-            0.007, 10
+            new VelocityPidController(0.0017, 0, 0.41),
+            new TargetVelocityFunction(1.77, 3, 10, 0.4),
+            0.0096, 10
     );
     private final BrakeController normalToBrakeController = new BrakeController(
-            new VelocityPidController(0.006, 0, 0),
-            new TargetVelocityFunction(0, 0, 0, Double.MAX_VALUE),
+            new VelocityPidController(0.0064, 0, 0.2),
+            new TargetVelocityFunction(0, 0, 0, 0),
             0, 1, false
     );
     private final BrakeController angularBrakeController = new BrakeController(
-            new VelocityPidController(0.1, 0, 2.9),
-            new TargetVelocityFunction(Math.toRadians(190), Math.toRadians(4), Math.toRadians(90), Math.toRadians(0.5)),
-            0, Math.toRadians(130)
+            new VelocityPidController(0.1, 0, 6.0),
+            new TargetVelocityFunction(Math.toRadians(190), Math.toRadians(10), Math.toRadians(45), Math.toRadians(0.6)),
+            0.2, Math.toRadians(110)
     );
 
     public Drivetrain(Robot robot, boolean isOn) {
@@ -280,13 +280,15 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         double velocityTowardsBrake = velocitiesTowardsBrake[0];
         double velocityNormalToBrake = velocitiesTowardsBrake[1];
+
+        Log.v("BRAKINg", "Distance to brake: " + distanceToPoint(brakePoint));
         Log.v("BRAKING", "Velocity towards brake: " + velocityTowardsBrake + ", Velocity normal: " + velocityNormalToBrake);
 
         double towardsScale = towardsBrakeController.calculatePower(distanceToPoint(brakePoint), velocityTowardsBrake);
         double normalScale = normalToBrakeController.calculatePower(0, velocityNormalToBrake);
 
         Log.v("BRAKING", "Target towards velo: " + towardsBrakeController.targetVelocity(distanceToPoint(brakePoint)) + ", Normal target velo: " + normalToBrakeController.targetVelocity(0));
-        Log.v("BRAKING", "Towards target power: " + towardsScale + ", Normal target power: " + normalScale);
+        Log.v("BRAKING", "Towards power: " + towardsScale + ", Normal power: " + normalScale);
 
         // Decompose desired towards target and normal to target powers into xMovement & yMovement
         Pose2d toRobotCentric = new Pose2d(new Translation2d(), new Rotation2d(-relativeAngleToPoint(brakePoint)));
@@ -304,11 +306,12 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         double angleToTarget = angleWrap(brakeHeading - getCurrentHeading());
 
-        Log.v("BRAKING", "ang velo: " + angularVelocity + ", target: " + angularBrakeController.targetVelocity(angleToTarget));
-
         double angularPower = angularBrakeController.calculatePower(angleToTarget, angularVelocity);
 
+        Log.v("BRAKING", "angleToTarget: " + angleToTarget);
+        Log.v("BRAKING", "ang velo: " + angularVelocity + ", target: " + angularBrakeController.targetVelocity(angleToTarget));
         Log.v("BRAKING", "ang power: " + angularPower);
+        Log.v("BRAKING", "ang atbrake: " + angularBrakeController.getAtBrake());
 
         return angularPower;
     }

@@ -18,6 +18,7 @@ public class PlebBrake extends LinearOpMode {
 
         robot.startModules();
 
+        robot.drivetrain.weakBrake = false;
         robot.drivetrain.setMovements(0, 0, 0);
 
 //        robot.drivetrain.brakePoint = new Point(0, 60);

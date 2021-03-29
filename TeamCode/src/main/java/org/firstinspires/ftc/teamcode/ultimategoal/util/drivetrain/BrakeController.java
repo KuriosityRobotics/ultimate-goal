@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain;
 
+import android.util.Log;
+
 /**
  * Calculates the desired power to brake using a VelocityPIDController
  */
@@ -15,6 +17,7 @@ public class BrakeController {
 
     private boolean reset = true;
     private boolean atBrake = false;
+    private boolean stopCoast = false;
 
     /**
      * Constructs a BrakeController.
@@ -53,30 +56,37 @@ public class BrakeController {
     }
 
     public double calculatePower(double distanceToTarget, double currentVelocity) {
+        double absoluteDistanceToTarget = Math.abs(distanceToTarget);
+
         if (reset) {
             velocityMax = Math.max(minVelocityCap, currentVelocity);
 
-            double newScale = targetVelocityFunction.desiredVelocity(distanceToTarget) * initialScaleFactor;
+            double newScale = Math.min(targetVelocityFunction.desiredVelocity(distanceToTarget), velocityMax) * initialScaleFactor;
+            // TODO doesn't work for neg ^^
             velocityPIDController.reset(newScale);
-
             reset = false;
         }
 
         // Got to brake point?
-        if (distanceToTarget < targetVelocityFunction.stopThreshold && currentVelocity < targetVelocityFunction.coastVelocity / 3) { // TODO tune?
+        boolean stoppedNearBrakePoint = absoluteDistanceToTarget < targetVelocityFunction.stopThreshold
+                && Math.abs(currentVelocity) < 0.08;
+        if (!atBrake && stoppedNearBrakePoint) {
             atBrake = true;
+            velocityPIDController.reset(0);
+        } else if (absoluteDistanceToTarget > targetVelocityFunction.coastThreshold) { // Too far from brake point to be considered @ it?
+            atBrake = false;
+            stopCoast = false;
         }
 
-        if (!atBrake && distanceToTarget < targetVelocityFunction.stopThreshold) { // coast time
-            // cut off power for coast
-            velocityPIDController.reset(0);
+        if (absoluteDistanceToTarget < targetVelocityFunction.stopThreshold || (stopCoast && !atBrake)) { // close enough
+            stopCoast = true;
             return 0;
         } else {
-            // at brake or on the way to brake point
+            // on the way to brake point
             double targetVelocity = Math.min(
-                    atBrake ? targetVelocityFunction.noCoastDesiredVelocity(distanceToTarget)
+                    atBrake ? targetVelocityFunction.atBrakeDesiredVelocity(distanceToTarget)
                             : targetVelocityFunction.desiredVelocity(distanceToTarget),
-                    velocityMax);
+                    velocityMax); // TODO doesn't work for negative velocities
 
             double error = targetVelocity - currentVelocity;
 
@@ -85,8 +95,10 @@ public class BrakeController {
     }
 
     public double targetVelocity(double distanceToTarget) {
-        double targetVelocity = targetVelocityFunction.desiredVelocity(distanceToTarget);
-        return Math.min(targetVelocity, velocityMax);
+        return Math.min(
+                atBrake ? targetVelocityFunction.atBrakeDesiredVelocity(distanceToTarget)
+                        : targetVelocityFunction.desiredVelocity(distanceToTarget),
+                velocityMax);
     }
 
     /**
@@ -96,5 +108,10 @@ public class BrakeController {
     public void reset() {
         reset = true;
         atBrake = false;
+        stopCoast = false;
+    }
+
+    public boolean getAtBrake() {
+        return atBrake;
     }
 }
