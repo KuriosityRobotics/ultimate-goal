@@ -17,7 +17,8 @@ public class ShootAction extends Action {
         if (beginExecutionTime == 0) {
             robot.shooter.target = target;
 
-            robot.shooter.isAimBotActive = true;
+            robot.shooter.lockTarget = true;
+            robot.shooter.flywheelOn = true;
 
             robot.shooter.queueIndexThreeRings();
 
@@ -26,7 +27,7 @@ public class ShootAction extends Action {
             return false;
         } else {
             if (robot.shooter.isFinishedIndexing()) {
-                robot.shooter.isAimBotActive = false;
+                robot.shooter.flywheelOn = false;
                 return true;
             } else {
                 return false;
