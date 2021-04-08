@@ -12,7 +12,7 @@ public class FlywheelAction extends Action {
 
     @Override
     public boolean executeAction(Robot robot) {
-        robot.shooter.isFlyWheelOn = isFlywheelOn;
+        robot.shooter.flywheelOn = isFlywheelOn;
 
         return true;
     }

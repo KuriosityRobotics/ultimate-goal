@@ -28,9 +28,11 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     Toggle g1x = new Toggle();
     Toggle g1y = new Toggle();
     Toggle g1RT = new Toggle();
+    Toggle g1LB = new Toggle();
+
     Toggle g2x = new Toggle();
     Toggle g2a = new Toggle();
-    Toggle g1LB = new Toggle();
+    Toggle g2b = new Toggle();
     Toggle g2DR = new Toggle();
     Toggle g2DL = new Toggle();
     Toggle g2DU = new Toggle();
@@ -39,8 +41,6 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
     BluePowershotsAction bluePowershotsAction = new BluePowershotsAction();
     private boolean doPowershotsAction = false;
-
-    private static final double SLOW_MODE_SCALE_FACTOR = 0.3;
 
     private boolean lastArrowMoveState = false;
     private double arrowMoveAngle = 0;
@@ -60,12 +60,8 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
                 if (doPowershotsAction) {
                     bluePowershotsAction = new BluePowershotsAction();
-
-                    //                    robot.drivetrain.weakBrake = false;
                 } else {
-                    robot.shooter.isAimBotActive = false;
-
-                    //                    robot.drivetrain.weakBrake = true;
+                    robot.shooter.flywheelOn = false;
                 }
             }
 
@@ -77,9 +73,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             } else {
                 updateShooterStates();
 
-                if (!robot.shooter.isAimBotActive) {
-                    updateDrivetrainStates();
-                }
+                updateDrivetrainStates();
 
                 updateWobbleStates();
 
@@ -98,34 +92,37 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         }
 
         if (g1a.isToggled(gamepad1.a)) {
-            robot.shooter.isAimBotActive = !robot.shooter.isAimBotActive;
+            robot.shooter.flywheelOn = !robot.shooter.flywheelOn;
 
-            if (robot.shooter.isAimBotActive) {
+            if (robot.shooter.flywheelOn) {
                 robot.shooter.target = BLUE_HIGH;
             }
         }
 
-        if (robot.shooter.isAimBotActive) {
+        if (g2a.isToggled(gamepad2.a)) {
+            robot.shooter.deliverRings();
+        }
+
+        if (robot.shooter.flywheelOn) {
             if (g1RT.isToggled(gamepad1.right_trigger)) {
                 robot.shooter.queueIndexThreeRings();
             }
-        } else {
-            if (g1x.isToggled(gamepad1.x)) {
-                robot.shooter.isFlyWheelOn = !robot.shooter.isFlyWheelOn;
-            }
+        }
+
+        if (g1x.isToggled(gamepad1.x)) {
+            robot.shooter.lockTarget = !robot.shooter.lockTarget;
         }
 
         if (g1LB.isToggled(gamepad1.left_bumper)) {
-            robot.shooter.forceAim();
+            robot.shooter.forceIndex();
             robot.shooter.queueIndex();
         }
+
         if (g2DR.isToggled(gamepad2.dpad_right)) {
             robot.shooter.manualAngleCorrection += Math.toRadians(2);
-            robot.shooter.resetAiming();
         }
         if (g2DL.isToggled(gamepad2.dpad_left)) {
             robot.shooter.manualAngleCorrection -= Math.toRadians(2);
-            robot.shooter.resetAiming();
         }
         if (g2DU.isToggled(gamepad2.dpad_up)) {
             robot.shooter.manualAngleFlapCorrection += 0.003;
@@ -144,7 +141,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             robot.wobbleModule.isClawClamped = !robot.wobbleModule.isClawClamped;
         }
 
-        if (g2a.isToggled(gamepad2.a)) {
+        if (g2b.isToggled(gamepad2.b)) {
             robot.wobbleModule.nextArmPosition();
         }
     }
@@ -157,6 +154,8 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         robot = new Robot(hardwareMap, telemetry, this, BlueAuto.PARK);
 
         robot.drivetrain.weakBrake = true;
+
+        robot.shooter.lockTarget = true;
     }
 
     private void updateDrivetrainStates() {
