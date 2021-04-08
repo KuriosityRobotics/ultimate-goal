@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
@@ -13,38 +12,36 @@ public class HopperModule implements Module, TelemetryProvider {
     boolean isOn;
 
     // States
-    public HopperPosition hopperPosition = HopperPosition.LOWERED;
-    public boolean indexRing = false;
+    public boolean deliverRings;
 
     // Data
     private int ringsInHopper;
 
     // Servos
-    private Servo indexerServo;
     private Servo hopperLinkage;
 
-    private AnalogInput ringCounterSensor;
+    // Sensors
+//    private AnalogInput ringCounterSensor;
+
+    // Helpers
+    private long deliveryStartTime = 0;
 
     // Constants
-    private static final int SECOND_RING_SENSOR_THRESHOLD = 75;
-    private static final int THIRD_RING_SENSOR_THRESHOLD = 55;
+    private static final double LINKAGE_LOWERED_POSITION = 0;
+    private static final double LINKAGE_RAISED_POSITION = 0.36;
 
-    private static final int SENSOR_BUFFER_CYCLES = 15;
+    private static final int RAISE_TIME_MS = 0; // from lowered to apex
+    private static final int RAISE_TRANSITIONING_TIME_MS = 0; // from lowered to interfering with shooter
+    private static final int LOWER_TIME_MS = 0; // from apex to lowered
+    private static final int LOWER_CLEAR_SHOOTER_TIME_MS = 0; // from apex to no longer interfering with shooter
 
-    private static final double INDEX_OPEN_POSITION = 0.405;
-    private static final double INDEX_PUSH_POSITION = 0.145;
-
-    private static final int INDEXER_PUSHED_TIME_MS = 150;
-    private static final int INDEXER_RETURNED_TIME_MS = 300;
-
-    private static final double HOPPER_RAISED_POSITION = 0.965;
-    private static final double HOPPER_LOWERED_POSITION = 0.63; // TODO find pos
-
-    private static final int HOPPER_RAISE_TIME_MS = 500;
-    private static final int HOPPER_LOWER_TIME_MS = 250;
+//    private static final int SECOND_RING_SENSOR_THRESHOLD = 75;
+//    private static final int THIRD_RING_SENSOR_THRESHOLD = 55;
+//
+//    private static final int SENSOR_BUFFER_CYCLES = 15;
 
     // Hopper position enum
-    public enum HopperPosition {RAISED, LOWERED}
+    public enum HopperPosition {LOWERED, TRANSITIONING, AT_TURRET}
 
     public HopperModule(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -52,150 +49,105 @@ public class HopperModule implements Module, TelemetryProvider {
 
         robot.telemetryDump.registerProvider(this);
 
+        deliverRings = false;
+        deliveryStartTime = 0;
         ringsInHopper = 0;
     }
 
     @Override
     public void initModules() {
-        ringCounterSensor = robot.hardwareMap.get(AnalogInput.class, "distance");
+//        ringCounterSensor = robot.hardwareMap.get(AnalogInput.class, "distance");
 
-        indexerServo = robot.getServo("indexerServo");
         hopperLinkage = robot.getServo("hopperLinkage");
 
-        hopperLinkage.setPosition(HOPPER_LOWERED_POSITION);
-        indexerServo.setPosition(INDEX_OPEN_POSITION);
+        hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
     }
-
-    private long indexTime = 0;
-    private long hopperTransitionTime = 0;
-
-    private HopperPosition oldHopperPosition = HopperPosition.LOWERED;
 
     @Override
     public void update() {
         long currentTime = robot.getCurrentTimeMilli();
 
-        if (hopperPosition != oldHopperPosition) {
-            if (hopperPosition == HopperPosition.RAISED) {
-                hopperLinkage.setPosition(HOPPER_RAISED_POSITION);
-            } else {
-                hopperLinkage.setPosition(HOPPER_LOWERED_POSITION);
-            }
+        HopperPosition currentHopperPosition = calculateHopperPosition(this.deliveryStartTime, currentTime);
 
-            oldHopperPosition = hopperPosition;
-            hopperTransitionTime = currentTime;
-        }
+        // Determine target hopper position
+        boolean raiseHopper;
+        if (currentHopperPosition == HopperPosition.LOWERED && this.deliverRings) {
+            raiseHopper = true;
 
-        // Index logic if the hopper is up
-        if (hopperPosition == HopperPosition.RAISED && isHopperAtPosition()) {
-            boolean indexerReturned = currentTime > indexTime + INDEXER_RETURNED_TIME_MS;
-            if (indexRing && indexerReturned) {
-                indexerServo.setPosition(INDEX_PUSH_POSITION);
-                indexTime = currentTime;
-                indexRing = false;
-            }
-        }
-
-        boolean isDoneIndexing = currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
-        if (isDoneIndexing) {
-            indexerServo.setPosition(INDEX_OPEN_POSITION);
-        }
-
-        countRingsInHopper();
-    }
-
-    private int thirdRingCounter = 0;
-    private int secondRingCounter = 0;
-
-    private void countRingsInHopper() {
-        double sensorReading = getRingCounterSensorReading();
-
-        if (sensorReading <= THIRD_RING_SENSOR_THRESHOLD) {
-            if (thirdRingCounter != Integer.MAX_VALUE) {
-                thirdRingCounter++;
-            }
+            this.deliveryStartTime = currentTime;
+            deliverRings = false;
         } else {
-            thirdRingCounter = 0;
+            raiseHopper = currentTime < this.deliveryStartTime + RAISE_TIME_MS;
         }
 
-        if (sensorReading <= SECOND_RING_SENSOR_THRESHOLD) {
-            if (secondRingCounter != Integer.MAX_VALUE) {
-                secondRingCounter++;
-            }
+        // Move hopper
+        if (raiseHopper) {
+            hopperLinkage.setPosition(LINKAGE_RAISED_POSITION);
         } else {
-            secondRingCounter = 0;
+            hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
         }
 
-        if (thirdRingCounter >= SENSOR_BUFFER_CYCLES) {
-            ringsInHopper = 3;
-        } else if (secondRingCounter >= SENSOR_BUFFER_CYCLES) {
-            ringsInHopper = 2;
+//        countRingsInHopper();
+    }
+
+    private HopperPosition calculateHopperPosition(long deliveryStartTime, long currentTime) {
+        if (currentTime < deliveryStartTime + RAISE_TRANSITIONING_TIME_MS) {
+            return HopperPosition.TRANSITIONING;
+        } else if (currentTime < deliveryStartTime + RAISE_TIME_MS + LOWER_CLEAR_SHOOTER_TIME_MS) {
+            return HopperPosition.AT_TURRET;
+        } else if (currentTime < deliveryStartTime + RAISE_TIME_MS + LOWER_TIME_MS) {
+            return HopperPosition.TRANSITIONING;
         } else {
-            ringsInHopper = 0;
+            return HopperPosition.LOWERED;
         }
     }
 
-    private double getRingCounterSensorReading() {
-        double voltage_temp_average = 0;
+//    private int thirdRingCounter = 0;
+//    private int secondRingCounter = 0;
 
-        for (int i = 0; i < 2; i++) {
-            voltage_temp_average += ringCounterSensor.getVoltage();
-        }
-        voltage_temp_average /= 2;
+//    private void countRingsInHopper() {
+//        double sensorReading = getRingCounterSensorReading();
+//
+//        if (sensorReading <= THIRD_RING_SENSOR_THRESHOLD) {
+//            if (thirdRingCounter != Integer.MAX_VALUE) {
+//                thirdRingCounter++;
+//            }
+//        } else {
+//            thirdRingCounter = 0;
+//        }
+//
+//        if (sensorReading <= SECOND_RING_SENSOR_THRESHOLD) {
+//            if (secondRingCounter != Integer.MAX_VALUE) {
+//                secondRingCounter++;
+//            }
+//        } else {
+//            secondRingCounter = 0;
+//        }
+//
+//        if (thirdRingCounter >= SENSOR_BUFFER_CYCLES) {
+//            ringsInHopper = 3;
+//        } else if (secondRingCounter >= SENSOR_BUFFER_CYCLES) {
+//            ringsInHopper = 2;
+//        } else {
+//            ringsInHopper = 0;
+//        }
+//    }
+//
+//    private double getRingCounterSensorReading() {
+//        double voltage_temp_average = 0;
+//
+//        for (int i = 0; i < 2; i++) {
+//            voltage_temp_average += ringCounterSensor.getVoltage();
+//        }
+//        voltage_temp_average /= 2;
+//
+//        //33.9 + -69.5x + 62.3x^2 + -25.4x^3 + 3.83x^4
+//        return (33.9 + -69.5 * (voltage_temp_average) + 62.3 * Math.pow(voltage_temp_average, 2) + -25.4 * Math.pow(voltage_temp_average, 3) + 3.83 * Math.pow(voltage_temp_average, 4)) * 10;
+//    }
 
-        //33.9 + -69.5x + 62.3x^2 + -25.4x^3 + 3.83x^4
-        return (33.9 + -69.5 * (voltage_temp_average) + 62.3 * Math.pow(voltage_temp_average, 2) + -25.4 * Math.pow(voltage_temp_average, 3) + 3.83 * Math.pow(voltage_temp_average, 4)) * 10;
-    }
 
-    public void switchHopperPosition() {
-        if (hopperPosition == HopperPosition.LOWERED) {
-            hopperPosition = HopperPosition.RAISED;
-        } else {
-            hopperPosition = HopperPosition.LOWERED;
-        }
-    }
-
-    /**
-     * Returns whether or not the hopper is at the position specified.
-     *
-     * @return whether or not the hopper is at the position specified.
-     */
-    public boolean isHopperAtPosition() {
-        long currentTime = robot.getCurrentTimeMilli();
-        if (hopperPosition == HopperPosition.RAISED) {
-            return currentTime > (hopperTransitionTime + HOPPER_RAISE_TIME_MS);
-        } else {
-            return currentTime > (hopperTransitionTime + HOPPER_LOWER_TIME_MS);
-        }
-    }
-
-    public boolean isIndexerReturned() {
-        long currentTime = robot.getCurrentTimeMilli();
-        return currentTime > indexTime + INDEXER_RETURNED_TIME_MS;
-    }
-
-    public boolean isIndexerFinishedPushing() {
-        long currentTime = robot.getCurrentTimeMilli();
-        return currentTime > indexTime + INDEXER_PUSHED_TIME_MS;
-    }
-
-    public boolean isDoneIndexing() {
-        return isIndexerFinishedPushing() && !indexRing;
-    }
-
-    /**
-     * Attempt to index a ring. If the indexer is currently indexing, nothing will happen. Whether
-     * or not the command was successfully executed is returned.
-     *
-     * @return Whether or not the index command will be processed.
-     */
-    public boolean requestRingIndex() {
-        if (!indexRing) {
-            indexRing = true;
-            return true;
-        } else {
-            return false;
-        }
+    public HopperPosition getCurrentHopperPosition() {
+        return calculateHopperPosition(deliveryStartTime, robot.getCurrentTimeMilli());
     }
 
     public int getRingsInHopper() {
@@ -210,13 +162,7 @@ public class HopperModule implements Module, TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("Hopper position: " + hopperPosition.toString());
-        data.add("Will index: " + indexRing);
-        data.add("--");
-        data.add("is indexer finished pushing: " + isIndexerFinishedPushing());
-        data.add("is indexer returned: " + isIndexerReturned());
-        data.add("is hopper at position: " + isHopperAtPosition());
-        data.add("DISTANCE: " + getRingCounterSensorReading());
+        data.add("Hopper position: " + getCurrentHopperPosition());
         return data;
     }
 

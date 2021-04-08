@@ -22,13 +22,15 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
             this.robot = robot;
             //            robot.telemetryDump.registerProvider(this);
             beginExecutionTime = robot.getCurrentTimeMilli();
+
+            robot.shooter.lockTarget = true;
         }
 
         if (robot.shooter.isFinishedIndexing()) {
             powershotNum++;
 
             if (powershotNum > 2 && robot.shooter.isIndexerReturned()) {
-                robot.shooter.isAimBotActive = false;
+                robot.shooter.flywheelOn = false;
                 return true;
             }
         } else {
@@ -51,7 +53,7 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
                 return false;
         }
 
-        robot.shooter.isAimBotActive = true;
+        robot.shooter.flywheelOn = true;
 
         robot.shooter.queueIndex();
 

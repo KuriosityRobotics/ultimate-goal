@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.HopperModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
@@ -21,7 +20,7 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
     Toggle x = new Toggle();
 
     // States
-    //    final double FLAP_MAX = 0.71;
+//    final double FLAP_MAX = 0.71;
     double flapPosition = 0.65; // In degrees
     double flyWheelSpeed = 1300; // In ticks per second
 
@@ -47,10 +46,8 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
                 flyWheelSpeed = 1550;
             }
 
-            robot.shooter.setHopperPosition(HopperModule.HopperPosition.RAISED);
-
             flapPosition -= gamepad1.right_stick_y * 0.0000001;
-            //            flyWheelSpeed -= gamepad1.left_stick_y * 0.001;
+//            flyWheelSpeed -= gamepad1.left_stick_y * 0.001;
 
             if (flapPosition > 1) {
                 flapPosition = 1;
@@ -60,17 +57,17 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
 
             robot.shooter.setFlapPosition(flapPosition);
 
-            //            robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
-            robot.shooter.isFlyWheelOn = true;
+//            robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
+            robot.shooter.flywheelOn = true;
 
-            //            if (x.isToggled(gamepad1.y))
-            //                flapPosition /= 2;
+//            if (x.isToggled(gamepad1.y))
+//                flapPosition /= 2;
 
             if (a.isToggled(gamepad1.a)) {
                 robot.shooter.requestRingIndex();
             }
-            //            if (b.isToggled(gamepad1.b))
-            //                robot.shooter.nextTarget();
+//            if (b.isToggled(gamepad1.b))
+//                robot.shooter.nextTarget();
 
         }
     }
