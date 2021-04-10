@@ -70,7 +70,7 @@ public class BrakeController {
         // Got to brake point?
         boolean stoppedNearBrakePoint = absoluteDistanceToTarget < targetVelocityFunction.stopThreshold
                 && Math.abs(currentVelocity) < 0.08;
-        if (!atBrake && stoppedNearBrakePoint) {
+        if (!atBrake && stopCoast && Math.abs(currentVelocity) < 0.1) {
             atBrake = true;
             velocityPIDController.reset(0);
         } else if (absoluteDistanceToTarget > targetVelocityFunction.coastThreshold) { // Too far from brake point to be considered @ it?
@@ -111,7 +111,15 @@ public class BrakeController {
         stopCoast = false;
     }
 
+    public void setScale(double scale) {
+        velocityPIDController.reset(scale);
+    }
+
     public boolean getAtBrake() {
         return atBrake;
+    }
+
+    public boolean getStopCoast() {
+        return stopCoast;
     }
 }

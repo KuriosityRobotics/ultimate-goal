@@ -10,7 +10,9 @@ public abstract class ModuleCollection implements Module {
     @Override
     public void initModules() {
         for (Module module : modules) {
-            module.initModules();
+            if (module.isOn()) {
+                module.initModules();
+            }
         }
     }
 
@@ -24,7 +26,10 @@ public abstract class ModuleCollection implements Module {
 
         Iterator<Module> itr = toInitModules.iterator();
         while (itr.hasNext()) {
-            if (itr.next().initAsync()) {
+            Module module = itr.next();
+            if (!module.isOn()) {
+                itr.remove();
+            } else if (module.initAsync()) {
                 itr.remove();
             }
         }
@@ -35,14 +40,20 @@ public abstract class ModuleCollection implements Module {
     @Override
     public void onStart() {
         for (Module module : modules) {
-            module.onStart();
+            if (module.isOn()) {
+                module.onStart();
+            }
         }
     }
 
     @Override
     public void onClose() {
         for (Module module : modules) {
-            module.onClose();
+            try {
+                module.onClose();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
