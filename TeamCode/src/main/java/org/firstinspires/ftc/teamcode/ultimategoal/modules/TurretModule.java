@@ -140,7 +140,7 @@ public class TurretModule implements Module, TelemetryProvider {
     boolean froze = false;
 
     private void turretLogic() {
-        Log.v("turret", "--------");
+//        Log.v("turret", "--------");
 
         this.currentTurretAngle = turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
 
@@ -164,23 +164,23 @@ public class TurretModule implements Module, TelemetryProvider {
         } else if (froze) { // If we are freezing the controller (due to the system having a large delay)
             controller.reset();
             pow = controller.calculatePower(error, velo);
-            Log.v("turret", "freezing power");
+//            Log.v("turret", "freezing power");
         } else {
             pow = controller.calculatePower(error, velo);
         }
 
         // freeze the controller (due to large delay) if conditions are right
         if (velo == 0 && Math.abs(pow) > 0.1 && !froze) {
-            Log.v("turret", "SETTING FREEZE");
+//            Log.v("turret", "SETTING FREEZE");
             froze = true;
             freezeTime = currentTime;
         }
 
-        Log.v("turret", "" + controller.targetVelocity(angleWrap(targetTurretAngle - currentTurretAngle)));
-        Log.v("turret", "" + velo);
-        Log.v("turret", "" + pow);
-        Log.v("turret", "error: " + error);
-        Log.v("turret", "atbrake: " + controller.getAtBrake() + " stopcoast: " + controller.getStopCoast());
+//        Log.v("turret", "" + controller.targetVelocity(angleWrap(targetTurretAngle - currentTurretAngle)));
+//        Log.v("turret", "" + velo);
+//        Log.v("turret", "" + pow);
+//        Log.v("turret", "error: " + error);
+//        Log.v("turret", "atbrake: " + controller.getAtBrake() + " stopcoast: " + controller.getStopCoast());
 
         lastTurretAngle = currentTurretAngle;
         lastLoopTime = currentTime;

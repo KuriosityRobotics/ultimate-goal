@@ -22,9 +22,6 @@ public class HopperModule implements Module, TelemetryProvider {
     // Servos
     private Servo hopperLinkage;
 
-    // Sensors
-//    private AnalogInput ringCounterSensor;
-
     // Helpers
     private long deliveryStartTime = 0;
 
@@ -32,15 +29,10 @@ public class HopperModule implements Module, TelemetryProvider {
     private static final double LINKAGE_LOWERED_POSITION = 0;
     private static final double LINKAGE_RAISED_POSITION = 0.36;
 
-    private static final int RAISE_TIME_MS = 1000; // from lowered to apex
+    private static final int RAISE_TIME_MS = 900; // from lowered to apex
     private static final int RAISE_TRANSITIONING_TIME_MS = RAISE_TIME_MS / 2; // from lowered to interfering with shooter
     private static final int LOWER_TIME_MS = 500; // from apex to lowered
     private static final int LOWER_CLEAR_SHOOTER_TIME_MS = LOWER_TIME_MS / 2; // from apex to no longer interfering with shooter
-
-//    private static final int SECOND_RING_SENSOR_THRESHOLD = 75;
-//    private static final int THIRD_RING_SENSOR_THRESHOLD = 55;
-//
-//    private static final int SENSOR_BUFFER_CYCLES = 15;
 
     // Hopper position enum
     public enum HopperPosition {LOWERED, TRANSITIONING, AT_TURRET}
@@ -58,8 +50,6 @@ public class HopperModule implements Module, TelemetryProvider {
 
     @Override
     public void initModules() {
-//        ringCounterSensor = robot.hardwareMap.get(AnalogInput.class, "distance");
-
         hopperLinkage = robot.getServo("hopper");
 
         hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
@@ -88,8 +78,6 @@ public class HopperModule implements Module, TelemetryProvider {
         } else {
             hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
         }
-
-//        countRingsInHopper();
     }
 
     private HopperPosition calculateHopperPosition(long deliveryStartTime, long currentTime) {
@@ -103,49 +91,6 @@ public class HopperModule implements Module, TelemetryProvider {
             return HopperPosition.LOWERED;
         }
     }
-
-//    private int thirdRingCounter = 0;
-//    private int secondRingCounter = 0;
-
-//    private void countRingsInHopper() {
-//        double sensorReading = getRingCounterSensorReading();
-//
-//        if (sensorReading <= THIRD_RING_SENSOR_THRESHOLD) {
-//            if (thirdRingCounter != Integer.MAX_VALUE) {
-//                thirdRingCounter++;
-//            }
-//        } else {
-//            thirdRingCounter = 0;
-//        }
-//
-//        if (sensorReading <= SECOND_RING_SENSOR_THRESHOLD) {
-//            if (secondRingCounter != Integer.MAX_VALUE) {
-//                secondRingCounter++;
-//            }
-//        } else {
-//            secondRingCounter = 0;
-//        }
-//
-//        if (thirdRingCounter >= SENSOR_BUFFER_CYCLES) {
-//            ringsInHopper = 3;
-//        } else if (secondRingCounter >= SENSOR_BUFFER_CYCLES) {
-//            ringsInHopper = 2;
-//        } else {
-//            ringsInHopper = 0;
-//        }
-//    }
-//
-//    private double getRingCounterSensorReading() {
-//        double voltage_temp_average = 0;
-//
-//        for (int i = 0; i < 2; i++) {
-//            voltage_temp_average += ringCounterSensor.getVoltage();
-//        }
-//        voltage_temp_average /= 2;
-//
-//        //33.9 + -69.5x + 62.3x^2 + -25.4x^3 + 3.83x^4
-//        return (33.9 + -69.5 * (voltage_temp_average) + 62.3 * Math.pow(voltage_temp_average, 2) + -25.4 * Math.pow(voltage_temp_average, 3) + 3.83 * Math.pow(voltage_temp_average, 4)) * 10;
-//    }
 
     public long msUntilHopperRaised() {
         long currentTime = robot.getCurrentTimeMilli();

@@ -1,11 +1,15 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.util.Log;
+
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.wrappers.AnalogDistance;
 
 import java.util.ArrayList;
 
@@ -23,6 +27,12 @@ public class IntakeModule implements Module, TelemetryProvider {
     Servo leftIntakeLock;
     Servo rightIntakeLock;
 
+    // Sensors
+    AnalogDistance intakeDistance;
+
+    // Helpers
+    boolean holdRing = false;
+
     // Constants
     private static final double LOCKS_LOCKED_POSITION = 0.289; // position for left, right is 1 - left
     private static final double LOCKS_UNLOCKED_POSITION = 0.402;
@@ -35,6 +45,8 @@ public class IntakeModule implements Module, TelemetryProvider {
     }
 
     public void initModules() {
+        intakeDistance = new AnalogDistance(robot.hardwareMap.get(AnalogInput.class, "intakeDistance"));
+
         intakeTop = robot.getDcMotor("intakeTop");
         intakeBottom = robot.getDcMotor("intakeBottom");
 
@@ -59,7 +71,16 @@ public class IntakeModule implements Module, TelemetryProvider {
                 doneUnlocking = true;
             }
         } else {
-            double power = robot.shooter.getHopperPosition() == HopperModule.HopperPosition.LOWERED ? intakePower : 0;
+
+            if (robot.shooter.getHopperPosition() != HopperModule.HopperPosition.LOWERED) {
+                if (intakeDistance.getSensorReading() < 25) {
+                    holdRing = true;
+                }
+            } else {
+                holdRing = false;
+            }
+
+            double power = holdRing ? 0 : intakePower;
 
             intakeTop.setPower(power);
             intakeBottom.setPower(power);
