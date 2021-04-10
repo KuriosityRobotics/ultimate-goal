@@ -93,7 +93,7 @@ public class VelocityPidController {
             reset = false;
         }
 
-        Log.v("BRAKING", "P: " + proport + ", D: " + deriv);
+//        Log.v("BRAKING", "P: " + proport + ", D: " + deriv);
 
         double increment = proport + deriv + integ;
 
