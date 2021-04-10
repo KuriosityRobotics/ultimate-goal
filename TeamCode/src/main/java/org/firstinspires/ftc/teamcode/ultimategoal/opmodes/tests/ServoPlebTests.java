@@ -8,69 +8,29 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.ArrayList;
 
-@Disabled
+//@Disabled
 @TeleOp
 public class ServoPlebTests extends LinearOpMode {
-    Servo leftLock;
-    Servo rightLock;
     Servo hopperLinkage;
-    Servo indexer;
+    Servo flap;
 
-    DcMotor wobbleMotor;
-
-    double leftLockPosition = 1;
-    double rightLockPosition = 0;
-    double hopperLinkagePosition = 1;
-    double indexerPosition = 1;
-    double wobblePosition = 0;
+    double flappos = 0.2;
 
     @Override
-    public void runOpMode() throws InterruptedException {
-        leftLock = hardwareMap.servo.get("leftIntakeLock");
-        rightLock = hardwareMap.servo.get("rightIntakeLock");
-        hopperLinkage = hardwareMap.servo.get("hopperLinkage");
-        indexer = hardwareMap.servo.get("indexerServo");
-
-        wobbleMotor = hardwareMap.dcMotor.get("wobbleMotor");
-
-        wobbleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        wobbleMotor.setTargetPosition(0);
-        wobbleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        wobbleMotor.setPower(0.1);
+    public void runOpMode() {
+        hopperLinkage = hardwareMap.servo.get("hopper");
+        flap = hardwareMap.servo.get("shooterFlap");
 
         waitForStart();
 
+        flap.setPosition(flappos);
+
         while (opModeIsActive()) {
-            leftLockPosition -= 0.0001 * gamepad1.left_stick_y;
-            //            rightLockPosition -= 0.0001 * gamepad1.right_stick_y;
-            //            hopperLinkagePosition -= 0.0001 * gamepad1.right_stick_y;
-            //            indexerPosition -= 0.0001 * gamepad1.right_stick_y;
-            wobblePosition -= 0.5 * gamepad1.right_stick_y;
+            flappos += gamepad1.left_stick_y * 0.0001;
+            flap.setPosition(flappos);
 
-            //            leftLock.setPosition(leftLockPosition);
-            //            rightLock.setPosition(rightLockPosition);
-            //            hopperLinkage.setPosition(hopperLinkagePosition);
-            //            indexer.setPosition(indexerPosition);
-            wobbleMotor.setTargetPosition((int) wobblePosition);
-
-            telemetry.addLine("Left lock position: " + leftLockPosition);
-            telemetry.addLine("Right lock position: " + rightLockPosition);
-            telemetry.addLine("hopper position: " + hopperLinkagePosition);
-            telemetry.addLine("indexer position: " + indexerPosition);
-            telemetry.addLine("wobble target position: " + wobblePosition);
-            telemetry.addLine("wobble position: " + wobbleMotor.getCurrentPosition());
+            telemetry.addData("flap pos: ", flappos);
             telemetry.update();
         }
-    }
-
-    public ArrayList<String> getTelemetryData() {
-        ArrayList<String> data = new ArrayList<>();
-        data.add("Left lock position: " + leftLockPosition);
-        data.add("Right lock position: " + rightLockPosition);
-        return data;
-    }
-
-    public String getName() {
-        return "IntakeTest";
     }
 }

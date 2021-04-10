@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.renderscript.RSIllegalArgumentException;
+
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
@@ -30,10 +32,10 @@ public class HopperModule implements Module, TelemetryProvider {
     private static final double LINKAGE_LOWERED_POSITION = 0;
     private static final double LINKAGE_RAISED_POSITION = 0.36;
 
-    private static final int RAISE_TIME_MS = 0; // from lowered to apex
-    private static final int RAISE_TRANSITIONING_TIME_MS = 0; // from lowered to interfering with shooter
-    private static final int LOWER_TIME_MS = 0; // from apex to lowered
-    private static final int LOWER_CLEAR_SHOOTER_TIME_MS = 0; // from apex to no longer interfering with shooter
+    private static final int RAISE_TIME_MS = 1000; // from lowered to apex
+    private static final int RAISE_TRANSITIONING_TIME_MS = RAISE_TIME_MS / 2; // from lowered to interfering with shooter
+    private static final int LOWER_TIME_MS = 500; // from apex to lowered
+    private static final int LOWER_CLEAR_SHOOTER_TIME_MS = LOWER_TIME_MS / 2; // from apex to no longer interfering with shooter
 
 //    private static final int SECOND_RING_SENSOR_THRESHOLD = 75;
 //    private static final int THIRD_RING_SENSOR_THRESHOLD = 55;
@@ -58,7 +60,7 @@ public class HopperModule implements Module, TelemetryProvider {
     public void initModules() {
 //        ringCounterSensor = robot.hardwareMap.get(AnalogInput.class, "distance");
 
-        hopperLinkage = robot.getServo("hopperLinkage");
+        hopperLinkage = robot.getServo("hopper");
 
         hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
     }
@@ -145,6 +147,17 @@ public class HopperModule implements Module, TelemetryProvider {
 //        return (33.9 + -69.5 * (voltage_temp_average) + 62.3 * Math.pow(voltage_temp_average, 2) + -25.4 * Math.pow(voltage_temp_average, 3) + 3.83 * Math.pow(voltage_temp_average, 4)) * 10;
 //    }
 
+    public long msUntilHopperRaised() {
+        long currentTime = robot.getCurrentTimeMilli();
+
+        if (currentTime < deliveryStartTime + RAISE_TRANSITIONING_TIME_MS) {
+            return (deliveryStartTime + RAISE_TRANSITIONING_TIME_MS) - currentTime;
+        } else if (currentTime < deliveryStartTime + RAISE_TIME_MS + LOWER_CLEAR_SHOOTER_TIME_MS) {
+            return (deliveryStartTime + RAISE_TIME_MS + LOWER_CLEAR_SHOOTER_TIME_MS) - currentTime;
+        } else {
+            return Long.MAX_VALUE;
+        }
+    }
 
     public HopperPosition getCurrentHopperPosition() {
         return calculateHopperPosition(deliveryStartTime, robot.getCurrentTimeMilli());

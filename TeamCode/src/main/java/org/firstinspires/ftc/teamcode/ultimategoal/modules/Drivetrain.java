@@ -1,14 +1,11 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.util.Log;
-
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.Target;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain.BrakeController;
@@ -38,7 +35,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public boolean weakBrake = false;
 
     // Brake states
-    public boolean isBrake;
+    public boolean brake;
     public Point brakePoint;
     public double brakeHeading;
 
@@ -80,6 +77,18 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         robot.telemetryDump.registerProvider(this);
     }
 
+    @Override
+    public void update() {
+        if (odometryModule.isOn()) odometryModule.update();
+        if (t265Module.isOn()) t265Module.update();
+
+        if (drivetrainModule.isOn()) {
+            applyMovements();
+
+            drivetrainModule.update();
+        }
+    }
+
     /**
      * Sets the target movements of the drivetrain.
      *
@@ -102,24 +111,14 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         this.turnMovement = turnMovement;
 
         if (xMovement == 0 && yMovement == 0 && turnMovement == 0 && zeroPowerBrake) {
-            if (!isBrake) {
-                isBrake = true;
+            if (!brake) {
+                brake = true;
 
                 resetBrake();
             }
         } else {
-            isBrake = false;
+            brake = false;
         }
-    }
-
-    @Override
-    public void update() {
-        odometryModule.update();
-        t265Module.update();
-
-        applyMovements();
-
-        drivetrainModule.update();
     }
 
     /**
@@ -127,8 +126,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * module. These two movements are different when braking must be applied.
      */
     private void applyMovements() {
-        if (isBrake) {
-            robot.setLedColor(255, 0, 0);
+        if (brake) {
             if (weakBrake) {
                 adjustBrakeForWeak();
             }
@@ -272,8 +270,6 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @return A double[], double[0] is the x movement, double[1] is the y movement.
      */
     private double[] calculateOrthBrakePowers() {
-        Log.v("BRAKING", "-----------------------------------");
-
         // todo: orth scale feedfoward using angular change?
 
         double[] velocitiesTowardsBrake = velocitiesTowardsPoint(brakePoint);
@@ -281,14 +277,9 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         double velocityTowardsBrake = velocitiesTowardsBrake[0];
         double velocityNormalToBrake = velocitiesTowardsBrake[1];
 
-        Log.v("BRAKINg", "Distance to brake: " + distanceToPoint(brakePoint));
-        Log.v("BRAKING", "Velocity towards brake: " + velocityTowardsBrake + ", Velocity normal: " + velocityNormalToBrake);
-
         double towardsScale = towardsBrakeController.calculatePower(distanceToPoint(brakePoint), velocityTowardsBrake);
         double normalScale = normalToBrakeController.calculatePower(0, velocityNormalToBrake);
 
-        Log.v("BRAKING", "Target towards velo: " + towardsBrakeController.targetVelocity(distanceToPoint(brakePoint)) + ", Normal target velo: " + normalToBrakeController.targetVelocity(0));
-        Log.v("BRAKING", "Towards power: " + towardsScale + ", Normal power: " + normalScale);
 
         // Decompose desired towards target and normal to target powers into xMovement & yMovement
         Pose2d toRobotCentric = new Pose2d(new Translation2d(), new Rotation2d(-relativeAngleToPoint(brakePoint)));
@@ -296,7 +287,12 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         Pose2d convertedMovement = MathFunctions.transformToCoordinateSystem(toRobotCentric, desiredMovement);
 
-        Log.v("BRAKING", "converted x: " + convertedMovement.getTranslation().getX() + ", converted y: " + convertedMovement.getTranslation().getY());
+//        Log.v("BRAKING", "-----------------------------------");
+//        Log.v("BRAKINg", "Distance to brake: " + distanceToPoint(brakePoint));
+//        Log.v("BRAKING", "Velocity towards brake: " + velocityTowardsBrake + ", Velocity normal: " + velocityNormalToBrake);
+//        Log.v("BRAKING", "Target towards velo: " + towardsBrakeController.targetVelocity(distanceToPoint(brakePoint)) + ", Normal target velo: " + normalToBrakeController.targetVelocity(0));
+//        Log.v("BRAKING", "Towards power: " + towardsScale + ", Normal power: " + normalScale);
+//        Log.v("BRAKING", "converted x: " + convertedMovement.getTranslation().getX() + ", converted y: " + convertedMovement.getTranslation().getY());
 
         return new double[]{convertedMovement.getTranslation().getX(), convertedMovement.getTranslation().getY()};
     }
@@ -308,10 +304,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         double angularPower = angularBrakeController.calculatePower(angleToTarget, angularVelocity);
 
-        Log.v("BRAKING", "angleToTarget: " + angleToTarget);
-        Log.v("BRAKING", "ang velo: " + angularVelocity + ", target: " + angularBrakeController.targetVelocity(angleToTarget));
-        Log.v("BRAKING", "ang power: " + angularPower);
-        Log.v("BRAKING", "ang atbrake: " + angularBrakeController.getAtBrake());
+//        Log.v("BRAKING", "angleToTarget: " + angleToTarget);
+//        Log.v("BRAKING", "ang velo: " + angularVelocity + ", target: " + angularBrakeController.targetVelocity(angleToTarget));
+//        Log.v("BRAKING", "ang power: " + angularPower);
+//        Log.v("BRAKING", "ang atbrake: " + angularBrakeController.getAtBrake());
 
         return angularPower;
     }
@@ -465,7 +461,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         data.add("turnMovement: " + turnMovement);
         data.add("isSlowMode: " + isSlowMode);
         data.add("-");
-        data.add("isBrake: " + isBrake);
+        data.add("isBrake: " + brake);
         data.add("Brake Point: " + brakePoint + ", Brake heading: " + brakeHeading);
         return data;
     }
