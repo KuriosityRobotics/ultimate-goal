@@ -117,7 +117,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         double turretHeading = headingToTarget(target) + angleOffset; // TODO offset based on robot angle velo?
 
-        turretModule.targetTurretAngle = turretHeading - robot.drivetrain.getCurrentHeading();
+        turretModule.setTargetTurretAngle(turretHeading - robot.drivetrain.getCurrentHeading());
 
         turretModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
@@ -223,7 +223,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     public void setTurretTargetangle(double angle) {
         if (!lockTarget) {
-            turretModule.targetTurretAngle = angle;
+            turretModule.setTargetTurretAngle(angle);
         }
     }
 

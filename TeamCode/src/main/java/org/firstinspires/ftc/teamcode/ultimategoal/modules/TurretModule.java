@@ -24,12 +24,9 @@ public class TurretModule implements Module, TelemetryProvider {
     boolean isOn;
 
     // States
-    public double targetTurretAngle;
-
+    private double targetTurretAngle;
     public double flyWheelTargetSpeed;
-
     public boolean indexRing;
-
     public double shooterFlapPosition = FLAP_LOWER_LIMIT;
 
     // Data
@@ -52,10 +49,11 @@ public class TurretModule implements Module, TelemetryProvider {
     long indexTime;
 
     // Constants
+    private static final double TURRET_MINIMUM_ANGLE = Math.toRadians(-180);
+    private static final double TURRET_MAXIMUM_ANGLE = Math.toRadians(180);
+
     private static final double TURRET_ENCODER_TO_ANGLE = 4842.60745;
     private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
-
-    private static final double TURRET_ANGLE_THRESHOLD = Math.toRadians(0.5);
 
     private static final double FLAP_STORE_POSITION = 0.0873856;
     private static final double FLAP_LOWER_LIMIT = 0.2;
@@ -133,49 +131,49 @@ public class TurretModule implements Module, TelemetryProvider {
             new VelocityPidController(0.029, 0, 5.52),
             new TargetVelocityFunction(Math.toRadians(110), Math.toRadians(2), Math.toRadians(11), Math.toRadians(0.4)),
             0.3, Math.toRadians(165));
-    double lastang = 0;
-    long lastTime = 0;
-    double lasttarget = 180;
-    long resetTime = 0;
-    double freezepow = 0;
 
+    private double lastTurretAngle = 0;
+    private long lastLoopTime = 0;
+    private double lastTargetAngle = 180;
+
+    private long freezeTime = 0;
     boolean froze = false;
 
     private void turretLogic() {
         Log.v("turret", "--------");
 
-        this.currentTurretAngle = angleWrap(turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE);
+        this.currentTurretAngle = turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
 
         long currentTime = robot.getCurrentTimeMilli();
 
-        double error = angleWrap(targetTurretAngle - currentTurretAngle);
-        double velo = 1000 * ((currentTurretAngle - lastang) / (currentTime - lastTime)); // rad/s
+        double error = targetTurretAngle - currentTurretAngle;
+        double velo = 1000 * ((currentTurretAngle - lastTurretAngle) / (currentTime - lastLoopTime)); // rad/s
 
-        if (Math.abs(velo) > 0 || currentTime > resetTime + 1000) {
+        if (Math.abs(velo) > 0 || currentTime > freezeTime + 1000) {
             froze = false;
         }
 
         double pow;
-        if (Math.abs(targetTurretAngle - lasttarget) > 0.01) {
-            controller.reset();
-            pow = controller.calculatePower(error, velo);
-        } else if (froze) {
-            controller.reset();
-            pow = controller.calculatePower(error, velo);
-            Log.v("turret", "freezing power");
-        } else if (Math.abs(error) > 0.3) {
+        if (Math.abs(error) > 0.3) { // If there is very large error
             controller.reset();
             controller.setScale(Math.signum(error));
             pow = Math.signum(error);
+        } else if (Math.abs(targetTurretAngle - lastTargetAngle) > 0.01) { // If we have a new target
+            controller.reset();
+            pow = controller.calculatePower(error, velo);
+        } else if (froze) { // If we are freezing the controller (due to the system having a large delay)
+            controller.reset();
+            pow = controller.calculatePower(error, velo);
+            Log.v("turret", "freezing power");
         } else {
             pow = controller.calculatePower(error, velo);
         }
 
+        // freeze the controller (due to large delay) if conditions are right
         if (velo == 0 && Math.abs(pow) > 0.1 && !froze) {
             Log.v("turret", "SETTING FREEZE");
-            freezepow = pow;
             froze = true;
-            resetTime = currentTime;
+            freezeTime = currentTime;
         }
 
         Log.v("turret", "" + controller.targetVelocity(angleWrap(targetTurretAngle - currentTurretAngle)));
@@ -184,9 +182,9 @@ public class TurretModule implements Module, TelemetryProvider {
         Log.v("turret", "error: " + error);
         Log.v("turret", "atbrake: " + controller.getAtBrake() + " stopcoast: " + controller.getStopCoast());
 
-        lastang = currentTurretAngle;
-        lastTime = currentTime;
-        lasttarget = targetTurretAngle;
+        lastTurretAngle = currentTurretAngle;
+        lastLoopTime = currentTime;
+        lastTargetAngle = targetTurretAngle;
 
         turnTurret(pow);
     }
@@ -241,6 +239,27 @@ public class TurretModule implements Module, TelemetryProvider {
     public boolean flywheelsUpToSpeed() {
         return flyWheel1.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
                 && flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD;
+    }
+
+    /**
+     * Request for the turret to turn to face a given angle, relative to the robot.
+     *
+     * @param angle
+     */
+    public void setTargetTurretAngle(double angle) {
+        double wrapped = angleWrap(angle);
+
+        double target = currentTurretAngle + angleWrap(wrapped - currentTurretAngle);
+
+        while (target > TURRET_MAXIMUM_ANGLE) {
+            target -= 2 * Math.PI;
+        }
+
+        while (target < TURRET_MINIMUM_ANGLE) {
+            target += 2 * Math.PI;
+        }
+
+        targetTurretAngle = target;
     }
 
     public double getCurrentTurretAngle() {
