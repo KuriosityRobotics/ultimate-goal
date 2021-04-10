@@ -10,7 +10,7 @@ import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.ITarget;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
 
-public class Shooter extends ModuleCollection implements Module, TelemetryProvider {
+public class Shooter extends ModuleCollection implements TelemetryProvider {
     private final Robot robot;
     private final boolean isOn;
 
@@ -28,7 +28,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     public double manualAngleFlapCorrection;
 
     // Constants
-    public final static int HIGHGOAL_FLYWHEEL_SPEED = 1550;
+    public final static int HIGHGOAL_FLYWHEEL_SPEED = 1750;
     public final static int POWERSHOT_FLYWHEEL_SPEED = 1200; // todo
 
     // 2.5E-03*x + 0.607
@@ -84,6 +84,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         if (flywheelOn) {
             turretModule.flyWheelTargetSpeed = target.isPowershot() ? POWERSHOT_FLYWHEEL_SPEED : HIGHGOAL_FLYWHEEL_SPEED;
+        } else {
+            turretModule.flyWheelTargetSpeed = 0;
         }
 
         if (turretModule.flywheelsUpToSpeed()) {
@@ -91,7 +93,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         }
 
         if (queuedIndexes > 0) {
-            boolean safeToIndex = hopperModule.getCurrentHopperPosition() != HopperModule.HopperPosition.AT_TURRET;
+            boolean safeToIndex = hopperModule.msUntilHopperRaised() > turretModule.INDEXER_RETURNED_TIME_MS;
             boolean shooterReady = burstNum > 0 || turretModule.flywheelsUpToSpeed();
 
             if (safeToIndex && shooterReady && !turretModule.indexRing) {
@@ -113,7 +115,9 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
 
         angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalAngleOffset(distanceToTarget);
 
-        turretModule.targetTurretAngle = headingToTarget(target) + angleOffset; // TODO offset based on robot angle velo?
+        double turretHeading = headingToTarget(target) + angleOffset; // TODO offset based on robot angle velo?
+
+        turretModule.targetTurretAngle = turretHeading - robot.drivetrain.getCurrentHeading();
 
         turretModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
     }
@@ -217,6 +221,12 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         turretModule.flyWheelTargetSpeed = targetSpeed;
     }
 
+    public void setTurretTargetangle(double angle) {
+        if (!lockTarget) {
+            turretModule.targetTurretAngle = angle;
+        }
+    }
+
     /**
      * Queue three ring indexes.
      */
@@ -278,6 +288,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         data.add("Distance: " + distanceToGoal);
         data.add("angleOffset: " + angleOffset);
         data.add("--");
+        data.add("lockTarget: " + lockTarget);
         data.add("burstNumber: " + burstNum);
         return data;
     }

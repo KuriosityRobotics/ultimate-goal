@@ -33,7 +33,7 @@ public class Robot extends ModuleCollection {
 
     public IntakeModule intakeModule;
     public WobbleModule wobbleModule;
-    //    public VisionModule visionModule;
+//    public VisionModule visionModule;
 
     private long currentTimeMilli;
 
@@ -121,8 +121,8 @@ public class Robot extends ModuleCollection {
         this.shooter = new Shooter(this, true);
 
         this.intakeModule = new IntakeModule(this, true);
-        this.wobbleModule = new WobbleModule(this, true);
-        //        this.visionModule = new VisionModule(this, true);
+        this.wobbleModule = new WobbleModule(this, false);
+//        this.visionModule = new VisionModule(this, true);
 
         this.modules = new Module[]{
                 this.drivetrain, this.intakeModule, this.wobbleModule, this.shooter
