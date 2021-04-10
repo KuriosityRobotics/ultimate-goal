@@ -2,13 +2,13 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.ITarget;
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
 
 public class Shooter extends ModuleCollection implements Module, TelemetryProvider {
     private final Robot robot;
@@ -56,8 +56,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -2.73e-03;
     private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.763; // 0.766
 
-    public double distanceToGoal;
-    public double angleOffset;
+    private double distanceToGoal;
+    private double angleOffset;
 
     private int burstNum = 0;
     private boolean forceIndex = false;
@@ -78,6 +78,8 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
     boolean weakBrakeOldState;
 
     public void update() {
+        autoHopperLogic();
+
         // Check if aimbot was toggled
         if (isAimBotActive && !activeToggle) {
             activeToggle = true;
@@ -154,6 +156,21 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         // Update both modules
         hopperModule.update();
         shooterModule.update();
+    }
+
+    private int oldRingsInHopper = 0;
+
+    private void autoHopperLogic() {
+        int ringsInHopper = hopperModule.getRingsInHopper();
+        if (ringsInHopper != oldRingsInHopper) {
+            if (ringsInHopper == 3) {
+                hopperModule.hopperPosition = HopperModule.HopperPosition.RAISED;
+                robot.intakeModule.intakePower = -1;
+            } else if (ringsInHopper == 2) {
+                robot.shooter.isFlyWheelOn = true;
+            }
+        }
+        oldRingsInHopper = ringsInHopper;
     }
 
     public void resetAiming() {
@@ -272,7 +289,7 @@ public class Shooter extends ModuleCollection implements Module, TelemetryProvid
         if (isDoneAiming) {
             robot.drivetrain.setMovements(0, 0, 0);
 
-            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(0.5) && robot.drivetrain.getAngleVel() < 0.01;
+            isCloseEnough = Math.abs(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading()) < Math.toRadians(0.5) && robot.drivetrain.getOdometryAngleVel() < 0.01;
 
             if (robot.getCurrentTimeMilli() > doneAimingTime + 2500) {
                 isCloseEnough = true;

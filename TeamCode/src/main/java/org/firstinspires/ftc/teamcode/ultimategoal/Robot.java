@@ -3,10 +3,13 @@ package org.firstinspires.ftc.teamcode.ultimategoal;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.LynxNackException;
 import com.qualcomm.hardware.lynx.commands.standard.LynxSetModuleLEDColorCommand;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -22,7 +25,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.ActionExecutor;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
 
 public class Robot extends ModuleCollection {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
@@ -37,7 +39,7 @@ public class Robot extends ModuleCollection {
 
     public HardwareMap hardwareMap;
     public Telemetry telemetry;
-    private final LinearOpMode linearOpMode;
+    private LinearOpMode linearOpMode;
 
     public TelemetryDump telemetryDump;
     public FileDump fileDump;
@@ -56,13 +58,31 @@ public class Robot extends ModuleCollection {
     public final static boolean WILL_FILE_DUMP = false;
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode) {
-        this(hardwareMap, telemetry, linearOpMode, new Point(0, 0));
+        this(hardwareMap, telemetry, linearOpMode, new Pose2d(0, 0, new Rotation2d(0)));
     }
 
-    public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode, Point startingPosition) {
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode, Pose2d startingPosition) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
         this.linearOpMode = linearOpMode;
+
+        this.telemetryDump = new TelemetryDump(telemetry);
+        fileDump = new FileDump();
+
+        initHubs();
+        initialize(startingPosition);
+
+        actionExecutor = new ActionExecutor(this);
+    }
+
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, OpMode linearOpMode) {
+        this(hardwareMap, telemetry, linearOpMode, new Pose2d(0, 0, new Rotation2d(0)));
+        linearOpMode.internalPostLoop();
+    }
+
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, OpMode linearOpMode, Pose2d startingPosition) {
+        this.hardwareMap = hardwareMap;
+        this.telemetry = telemetry;
 
         this.telemetryDump = new TelemetryDump(telemetry);
         fileDump = new FileDump();
@@ -95,16 +115,7 @@ public class Robot extends ModuleCollection {
         }
     }
 
-    private void cleanUp() {
-        this.fileDump.writeFilesToDevice();
-        try {
-            this.moduleExecutor.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void initialize(Point startingPosition) {
+    private void initialize(Pose2d startingPosition) {
         // Add individual modules into the array here
         this.drivetrain = new Drivetrain(this, true, startingPosition);
         this.shooter = new Shooter(this, true);
@@ -133,6 +144,7 @@ public class Robot extends ModuleCollection {
      * Starts running the loop that updates modules
      */
     public void startModules() {
+        onStart();
         moduleExecutor.start();
     }
 
@@ -196,20 +208,16 @@ public class Robot extends ModuleCollection {
         }
     }
 
-    public boolean isOpModeActive() {
-        return linearOpMode.opModeIsActive();
-    }
+    private void cleanUp() {
+        this.fileDump. writeFilesToDevice();
 
-    public boolean isStopRequested() {
-        return linearOpMode.isStopRequested();
-    }
+        onClose();
 
-    public long getCurrentTimeMilli() {
-        return currentTimeMilli;
-    }
-
-    public void opModeSleep(long milliseconds) {
-        linearOpMode.sleep(milliseconds);
+        try {
+            this.moduleExecutor.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void ಢ_ಢ() {
@@ -224,6 +232,22 @@ public class Robot extends ModuleCollection {
     @Override
     public boolean isOn() {
         return true;
+    }
+
+    public boolean isOpModeActive() {
+        return linearOpMode.opModeIsActive();
+    }
+
+    public boolean isStopRequested() {
+        return linearOpMode.isStopRequested();
+    }
+
+    public long getCurrentTimeMilli() {
+        return currentTimeMilli;
+    }
+
+    public void opModeSleep(long milliseconds) {
+        linearOpMode.sleep(milliseconds);
     }
 
     @Override

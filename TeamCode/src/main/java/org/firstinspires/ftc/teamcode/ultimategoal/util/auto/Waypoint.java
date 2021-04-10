@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
 
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
+
 import java.util.ArrayList;
 
 public class Waypoint extends Point {

@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util;
 
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 /**
  * Powershot goals are numbered where the first is the closest to the centre of its colour <br/>

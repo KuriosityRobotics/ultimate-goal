@@ -2,15 +2,16 @@ package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.angleWrap;
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.closestPointOnLineToPoint;
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.lineSegmentCircleIntersection;
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.auto.MathFunctions.lineSegmentPointDistance;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.closestPointOnLineToPoint;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.lineSegmentCircleIntersection;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.lineSegmentPointDistance;
 
 public class PathFollow implements TelemetryProvider, FileDumpProvider {
     Robot robot;
@@ -189,8 +190,8 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     private Point adjustTargetPoint(Point targetPoint) {
         double robotHeading = robot.drivetrain.getCurrentHeading();
 
-        double robotSlipX = SLIP_FACTOR * robot.drivetrain.velocityModule.getxVel();
-        double robotSlipY = SLIP_FACTOR * robot.drivetrain.velocityModule.getyVel();
+        double robotSlipX = SLIP_FACTOR * robot.drivetrain.getOdometryXVel();
+        double robotSlipY = SLIP_FACTOR * robot.drivetrain.getOdometryYVel();
 
         double slipX = robotSlipX * Math.cos(robotHeading) + robotSlipY * Math.sin(robotHeading);
         double slipY = robotSlipY * Math.cos(robotHeading) - robotSlipX * Math.sin(robotHeading);

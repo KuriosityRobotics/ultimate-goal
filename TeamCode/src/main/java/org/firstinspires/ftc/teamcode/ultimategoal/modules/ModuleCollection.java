@@ -33,6 +33,20 @@ public abstract class ModuleCollection implements Module {
     }
 
     @Override
+    public void onStart() {
+        for (Module module : modules) {
+            module.onStart();
+        }
+    }
+
+    @Override
+    public void onClose() {
+        for (Module module : modules) {
+            module.onClose();
+        }
+    }
+
+    @Override
     public void update() {
         for (Module module : modules) {
             if (module.isOn()) {

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
 
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -8,7 +10,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.FlywheelAction;
@@ -27,9 +29,9 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
     Robot robot;
     Vision vision;
 
-    static final Point STARTING = new Point(48 - 9, 0);
+    static final Pose2d STARTING = new Pose2d(48 - 9, 0, new Rotation2d(0));
 
-    public static final Point POWERSHOT = new Point(STARTING.x + 5, 23.5 * 2.5);
+    public static final Point POWERSHOT = new Point(STARTING.getTranslation().getX() + 5, 23.5 * 2.5);
 
     Vision.TargetGoal measuredZone;
 
@@ -52,7 +54,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     Point secondWobbleDropoff;
 
-    public static final Point PARK = new Point(23 + 12 - 9, 82 - (16.5 / 2));
+    public static final Pose2d PARK = new Pose2d(23 + 12 - 9, 82 - (16.5 / 2), new Rotation2d(0));
     final Point BEFOREPARK = new Point(23.5 * 2, 23.5 * 3);
 
     @Override
@@ -98,7 +100,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         startActions.add(new WobbleClawAction(true));
         startActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.WALL_DROP));
         PathFollow startToFirstWobbleDropOff = new PathFollow(new Waypoint[]{
-                new Waypoint(STARTING, startActions),
+                new Waypoint(new Point(STARTING.getTranslation().getX(), STARTING.getTranslation().getY()), startActions),
                 new Waypoint(STACK.x + 15, STACK.y),
                 new Waypoint(firstWobbleDropOff, firstDropOffActions)
         }, robot, "startinng to first wobble dropoff");
@@ -184,7 +186,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         PathFollow shootToPark = new PathFollow(new Waypoint[]{
                 new Waypoint(SHOOT_RING_X, SHOOT_RING_Y),
-                new Waypoint(PARK)
+                new Waypoint(new Point(PARK.getTranslation().getX(), PARK.getTranslation().getY()))
         }, robot, "Second wobble drop off to park");
 
         startToFirstWobbleDropOff.followPath(0, 1, 1, true, Math.toRadians(-45));

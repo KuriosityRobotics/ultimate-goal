@@ -5,8 +5,10 @@ import android.os.SystemClock;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 //@Disabled
@@ -16,10 +18,11 @@ public class SamPlebTest extends LinearOpMode {
     private DcMotorEx rightFlyWheel;
     private Servo indexer;
 
+
     public double pos = 0.75;
-    double pos2 = 0.68;
+    double pos2 = 0.72;
     boolean toggle = false;
-    public double flyWheelTargetSpeed = 1700;
+    public double flyWheelTargetSpeed = 1750;
 
     @Override
     public void runOpMode() {
@@ -28,6 +31,7 @@ public class SamPlebTest extends LinearOpMode {
         rightFlyWheel = (DcMotorEx) hardwareMap.get("flyWheel2");
         leftFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         indexer = (Servo) hardwareMap.get("indexer");
+
 //        rightFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFlyWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -52,20 +56,19 @@ public class SamPlebTest extends LinearOpMode {
 
             //pos2 +=gamepad2.left_stick_y*0.02;
 
-            if (SystemClock.elapsedRealtime()-startTime >= 200 && gamepad1.a) {
+            if (SystemClock.elapsedRealtime()-startTime >= 160 && gamepad1.a) {
                 toggle = !toggle;
                 if(toggle) {
-                    pos2 = 0.68;
+                    pos2 = 0.72;
                 }else{
-                    pos2 = 0.3;
+                    pos2 = 0.45;
                 }
                 startTime = SystemClock.elapsedRealtime();
             }else if(!gamepad1.a){
-                pos2 = 0.68;
+                pos2 = 0.72;
             }
 
             indexer.setPosition(pos2);
-
 
             telemetry.addLine("left speed: " + Double.toString(leftFlyWheel.getVelocity()));
             telemetry.addLine("right speed: " + Double.toString(rightFlyWheel.getVelocity()));

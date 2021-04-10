@@ -14,6 +14,8 @@ import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
 
+//import static org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule.slamra;
+
 @TeleOp
 public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     Robot robot;
@@ -171,6 +173,9 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         }
         if (gamepad1.dpad_down) {
             robot.drivetrain.setPosition(robot.drivetrain.getCurrentPosition().x, 0, 0);
+        }
+        if (gamepad1.dpad_up){
+            robot.drivetrain.setPosition(0,0,0);
         }
 
         if (gamepad1.left_bumper) {
