@@ -18,7 +18,7 @@ public class WobbleModule implements Module, TelemetryProvider {
     private double wobbleRightTargetPosition;
     private double wobbleLeftTargetPosition;
 
-    public enum WobbleArmPosition {RAISED, WALL_DROP, LOWERED} // , AUTO_DROP
+    public enum WobbleArmPosition {RAISED, WALL_DROP, LOWERED, AUTO_DROP}
 
     // Actuators
     Servo wobbleLeft;
@@ -39,8 +39,8 @@ public class WobbleModule implements Module, TelemetryProvider {
     public static final double WOBBLE_WALLDROP_LEFT_POSITON = 0.2488;
     public static final double WOBBLE_WALLDROP_RIGHT_POSITON = 0.2488;
 
-//    public static final double WOBBLE_AUTODROP_LEFT_POSITON = WOBBLE_WALLDROP_LEFT_POSITON;
-//    public static final double WOBBLE_AUTODROP_RIGHT_POSITON = WOBBLE_WALLDROP_RIGHT_POSITON;
+    public static final double WOBBLE_AUTODROP_LEFT_POSITON = 0.1;
+    public static final double WOBBLE_AUTODROP_RIGHT_POSITON = 0.1;
 
     public static final int CLAW_CLOSE_MS = 750;
     public static final int CLAW_OPEN_MS = 750;
@@ -91,10 +91,10 @@ public class WobbleModule implements Module, TelemetryProvider {
                 wobbleLeftTargetPosition = WOBBLE_WALLDROP_LEFT_POSITON;
                 wobbleRightTargetPosition = WOBBLE_WALLDROP_RIGHT_POSITON;
                 break;
-//            case AUTO_DROP:
-//                wobbleLeftTargetPosition = WOBBLE_AUTODROP_LEFT_POSITON;
-//                wobbleRightTargetPosition = WOBBLE_AUTODROP_RIGHT_POSITON;
-//                break;
+            case AUTO_DROP:
+                wobbleLeftTargetPosition = WOBBLE_AUTODROP_LEFT_POSITON;
+                wobbleRightTargetPosition = WOBBLE_AUTODROP_RIGHT_POSITON;
+                break;
         }
 
         wobbleLeft.setPosition(wobbleLeftTargetPosition);
@@ -103,7 +103,7 @@ public class WobbleModule implements Module, TelemetryProvider {
 
     public void nextArmPosition() {
         switch (wobbleArmPosition) {
-//            case AUTO_DROP:
+            case AUTO_DROP:
             case WALL_DROP:
                 wobbleArmPosition = WobbleArmPosition.RAISED;
                 break;
