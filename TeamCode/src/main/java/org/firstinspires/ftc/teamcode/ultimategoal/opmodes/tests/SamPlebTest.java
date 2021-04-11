@@ -14,67 +14,60 @@ import com.qualcomm.robotcore.hardware.Servo;
 //@Disabled
 @TeleOp
 public class SamPlebTest extends LinearOpMode {
-    private DcMotorEx leftFlyWheel;
-    private DcMotorEx rightFlyWheel;
-    private Servo indexer;
+    private Servo wobbleArm1;
+    private Servo wobbleArm2;
+    private Servo claw;
+    private Servo blockerLeft;
+    private Servo blockerRight;
 
 
-    public double pos = 0.75;
-    double pos2 = 0.72;
+    public double armPos = 0.1;
+    double blockerLeftPos = 0.85727;
+    double blockerRightPos = 0;
+    double clawPos = 0.5;
     boolean toggle = false;
     public double flyWheelTargetSpeed = 1750;
 
     @Override
     public void runOpMode() {
 
-        leftFlyWheel = (DcMotorEx) hardwareMap.get("flyWheel1");
-        rightFlyWheel = (DcMotorEx) hardwareMap.get("flyWheel2");
-        leftFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        indexer = (Servo) hardwareMap.get("indexer");
+        wobbleArm1 = (Servo) hardwareMap.get("wobbleArm1");
+        wobbleArm2 = (Servo) hardwareMap.get("wobbleArm2");
 
-//        rightFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftFlyWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        rightFlyWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        blockerLeft = (Servo) hardwareMap.get("blockerLeft");
+        blockerRight = (Servo) hardwareMap.get("blockerRight");
+        claw = (Servo) hardwareMap.get("wobbleClaw");
 
-        leftFlyWheel.setVelocityPIDFCoefficients(9, 0.4, 0, 11.7);
-        rightFlyWheel.setVelocityPIDFCoefficients(9, 0.4, 0, 11.7);
-
-        rightFlyWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        indexer.setPosition(pos2);
         waitForStart();
 
         long startTime = 0;
         long startTime2 = 0;
 
         while (opModeIsActive()) {
+            armPos +=gamepad1.left_stick_y*0.001;
+            wobbleArm1.setPosition(armPos);
+            wobbleArm2.setPosition(armPos);
 
-            flyWheelTargetSpeed += gamepad1.left_stick_y * 10;
+            clawPos +=gamepad1.right_stick_y*0.001;
+            claw.setPosition(clawPos);
 
-            leftFlyWheel.setVelocity(flyWheelTargetSpeed);
-            rightFlyWheel.setVelocity(flyWheelTargetSpeed);
 
-            //pos2 +=gamepad2.left_stick_y*0.02;
+            //left 0 0.85727
+            //right 0 0.0
 
-            if (SystemClock.elapsedRealtime()-startTime >= 160 && gamepad1.a) {
-                toggle = !toggle;
-                if(toggle) {
-                    pos2 = 0.72;
-                }else{
-                    pos2 = 0.45;
-                }
-                startTime = SystemClock.elapsedRealtime();
-            }else if(!gamepad1.a){
-                pos2 = 0.72;
-            }
+            //left 90 0.492
+            //right 90 0.347
 
-            indexer.setPosition(pos2);
+            //arm up 0.0059
+            //arm mid 0.2488
+            //arm down 0.47466
 
-            telemetry.addLine("left speed: " + Double.toString(leftFlyWheel.getVelocity()));
-            telemetry.addLine("right speed: " + Double.toString(rightFlyWheel.getVelocity()));
-            telemetry.addLine("servo angle: " + pos);
-            telemetry.addLine("servo indexer: " + pos2);
-            telemetry.addLine("set speed: " + flyWheelTargetSpeed);
+            //claw open 0
+            //claw close 0.3
+            telemetry.addLine("arm pos: " + armPos);
+            telemetry.addLine("left pos: " + blockerLeftPos);
+            telemetry.addLine("right pos: " + blockerRightPos);
+            telemetry.addLine("claw pos: " + clawPos);
             telemetry.update();
         }
     }
