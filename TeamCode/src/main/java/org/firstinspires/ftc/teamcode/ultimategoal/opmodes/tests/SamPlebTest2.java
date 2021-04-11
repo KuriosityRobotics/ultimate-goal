@@ -27,9 +27,10 @@ public class SamPlebTest2 extends LinearOpMode {
     private DcMotorEx leftFlyWheel;
     private DcMotorEx rightFlyWheel;
     private Servo indexer;
+    private Servo flap;
 
 
-    public double pos = 0.75;
+    public double pos = 0.27;
     double pos2 = 0.72;
     boolean toggle = false;
     public double flyWheelTargetSpeed = 1750;
@@ -50,6 +51,7 @@ public class SamPlebTest2 extends LinearOpMode {
         leftTurret = (CRServo) hardwareMap.get("leftTurret");
         rightTurret = (CRServo) hardwareMap.get("rightTurret");
         hopper = (Servo) hardwareMap.get("hopper");
+        flap = (Servo) hardwareMap.get("shooterFlap");
 
         fLeft = (DcMotor) hardwareMap.get("fLeft");
         fRight = (DcMotor) hardwareMap.get("fRight");
@@ -110,6 +112,14 @@ public class SamPlebTest2 extends LinearOpMode {
                 leftTurret.setPower(0);
                 rightTurret.setPower(0);
             }
+
+            if(gamepad1.dpad_up){
+                pos += 0.0001;
+            }else if(gamepad1.dpad_down){
+                pos -= 0.0001;
+            }
+            flap.setPosition(pos);
+
             double yMovement = 0;
             double xMovement = 0;
             double turnMovement = 0;
