@@ -22,6 +22,8 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.ActionExecutor;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 
 public class Robot extends ModuleCollection {
     // All modules in the robot (remember to update initModules() and updateModules() when adding)
@@ -53,6 +55,10 @@ public class Robot extends ModuleCollection {
 
     // Constants
     public final static boolean WILL_FILE_DUMP = false;
+
+    static {
+        OpenCVLoader.initDebug();
+    }
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode) {
         this(hardwareMap, telemetry, linearOpMode, new Point(0, 0));

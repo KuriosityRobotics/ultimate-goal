@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules.vision;
 
+import android.hardware.camera2.CameraManager;
+
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -18,6 +20,7 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,8 +28,8 @@ import java.util.stream.Collectors;
 public class BlueHighGoalDetector implements VisionModule {
     public boolean isOn;
 
-    private CameraPosition cameraPosition;
-    private org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point robotPosition;
+    private CameraPosition cameraPosition = new CameraPosition();
+    private org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point robotPosition = new org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Point();
 
     // constants
     double fx = 965, fy = 964, cx = 627, cy = 356;
@@ -40,13 +43,25 @@ public class BlueHighGoalDetector implements VisionModule {
     private Mat cameraMatrix; // Camera matrix
     private MatOfDouble distortCoeffs; // Distortion coefficients
 
-    class CameraPosition {
+    public class CameraPosition {
         public double[] rotation;
         public double[] position;
 
         public CameraPosition(double[] rotation, double[] position) {
             this.rotation = rotation;
             this.position = position;
+        }
+
+        public CameraPosition() {
+            this.rotation = new double[]{};
+            this.position = new double[]{};
+        }
+
+        public String toString() {
+            return "CameraPosition{" +
+                    "rotation=" + Arrays.toString(rotation) +
+                    ", position=" + Arrays.toString(position) +
+                    '}';
         }
     }
 
@@ -76,8 +91,8 @@ public class BlueHighGoalDetector implements VisionModule {
     private CameraPosition calculateCameraPosition(Mat inputMat) {
         Mat matInv = inputMat.clone();
         Core.bitwise_not(matInv, matInv);
-        Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_BGR2HSV);
-        Imgproc.cvtColor(matInv, matInv, Imgproc.COLOR_BGR2HSV);
+        Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_RGB2HSV);
+        Imgproc.cvtColor(matInv, matInv, Imgproc.COLOR_RGB2HSV);
 
         Mat mat1 = new Mat(), mat2 = new Mat();
         Core.inRange(inputMat, new Scalar(97, 108, 60), new Scalar(140, 255, 255), mat1); // blue
@@ -160,8 +175,8 @@ public class BlueHighGoalDetector implements VisionModule {
         largestRotatedRectBlue.points(pointsBlue);
 
 //    Imgproc.fillConvexPoly(step3, new MatOfPoint(pointsBlue), new Scalar(200, 200, 200));
-        Imgproc.cvtColor(step3, step3, Imgproc.COLOR_HSV2BGR);
-        Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_HSV2BGR);
+        Imgproc.cvtColor(step3, step3, Imgproc.COLOR_HSV2RGB);
+        Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_HSV2RGB);
 
         MatOfPoint2f points2 = new MatOfPoint2f(pointsBlue);
 

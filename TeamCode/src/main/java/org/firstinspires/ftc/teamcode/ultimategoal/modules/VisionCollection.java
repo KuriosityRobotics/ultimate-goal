@@ -1,13 +1,24 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.hardware.Camera;
+import android.hardware.camera2.CameraCaptureSession;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraManager;
+import org.firstinspires.ftc.robotcore.external.stream.CameraStreamClient;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.vision.BlueHighGoalDetector;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.vision.VisionModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class VisionCollection implements Module, TelemetryProvider {
     VideoCapture videoCapture;
@@ -35,7 +46,11 @@ public class VisionCollection implements Module, TelemetryProvider {
         };
 
         videoCapture = new VideoCapture();
-        videoCapture.open(0); // TODO find right cam index
+        videoCapture.open(0);
+        System.out.println(videoCapture.isOpened());
+
+        Camera
+
     }
 
     @Override
@@ -58,7 +73,10 @@ public class VisionCollection implements Module, TelemetryProvider {
 
     @Override
     public ArrayList<String> getTelemetryData() {
-        return null;
+        ArrayList<String> data = new ArrayList<>();
+        data.add(highGoalDetector.getCameraPosition().toString());
+        data.add(highGoalDetector.getRobotPosition().toString());
+        return data;
     }
 
     @Override
