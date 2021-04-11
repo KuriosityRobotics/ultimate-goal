@@ -18,7 +18,7 @@ public class WobbleModule implements Module, TelemetryProvider {
     private double wobbleRightTargetPosition;
     private double wobbleLeftTargetPosition;
 
-    public enum WobbleArmPosition {RAISED, WALL_DROP, LOWERED, AUTO_DROP}
+    public enum WobbleArmPosition {RAISED, WALL_DROP, LOWERED} // , AUTO_DROP
 
     // Actuators
     Servo wobbleLeft;
@@ -27,20 +27,20 @@ public class WobbleModule implements Module, TelemetryProvider {
     Servo wobbleClaw;
 
     // Constants
-    private static final double CLAW_CLAMP_POSITION = 0.68;
-    private static final double CLAW_OPEN_POSITION = 0.2;
+    private static final double CLAW_CLAMP_POSITION = 0.3;
+    private static final double CLAW_OPEN_POSITION = 0;
 
-    public static final double WOBBLE_RAISED_LEFT_POSITON = 0.225;
-    public static final double WOBBLE_RAISED_RIGHT_POSITON = 0.775;
+    public static final double WOBBLE_RAISED_LEFT_POSITON = 0.0059;
+    public static final double WOBBLE_RAISED_RIGHT_POSITON = 0.0059;
 
-    public static final double WOBBLE_LOWERED_LEFT_POSITON = 0.86;
-    public static final double WOBBLE_LOWERED_RIGHT_POSITON = 0.14;
+    public static final double WOBBLE_LOWERED_LEFT_POSITON = 0.47466;
+    public static final double WOBBLE_LOWERED_RIGHT_POSITON = 0.47466;
 
-    public static final double WOBBLE_WALLDROP_LEFT_POSITON = 0.55;
-    public static final double WOBBLE_WALLDROP_RIGHT_POSITON = 0.45;
+    public static final double WOBBLE_WALLDROP_LEFT_POSITON = 0.2488;
+    public static final double WOBBLE_WALLDROP_RIGHT_POSITON = 0.2488;
 
-    public static final double WOBBLE_AUTODROP_LEFT_POSITON = 0.7;
-    public static final double WOBBLE_AUTODROP_RIGHT_POSITON = 0.3;
+//    public static final double WOBBLE_AUTODROP_LEFT_POSITON = WOBBLE_WALLDROP_LEFT_POSITON;
+//    public static final double WOBBLE_AUTODROP_RIGHT_POSITON = WOBBLE_WALLDROP_RIGHT_POSITON;
 
     public static final int CLAW_CLOSE_MS = 750;
     public static final int CLAW_OPEN_MS = 750;
@@ -61,7 +61,7 @@ public class WobbleModule implements Module, TelemetryProvider {
         wobbleClaw.setPosition(CLAW_CLAMP_POSITION);
     }
 
-    boolean oldIsClawClamped = !isClawClamped;
+    boolean oldIsClawClamped = false;
     long clawTransitionTime = 0;
 
     public void update() {
@@ -91,10 +91,10 @@ public class WobbleModule implements Module, TelemetryProvider {
                 wobbleLeftTargetPosition = WOBBLE_WALLDROP_LEFT_POSITON;
                 wobbleRightTargetPosition = WOBBLE_WALLDROP_RIGHT_POSITON;
                 break;
-            case AUTO_DROP:
-                wobbleLeftTargetPosition = WOBBLE_AUTODROP_LEFT_POSITON;
-                wobbleRightTargetPosition = WOBBLE_AUTODROP_RIGHT_POSITON;
-                break;
+//            case AUTO_DROP:
+//                wobbleLeftTargetPosition = WOBBLE_AUTODROP_LEFT_POSITON;
+//                wobbleRightTargetPosition = WOBBLE_AUTODROP_RIGHT_POSITON;
+//                break;
         }
 
         wobbleLeft.setPosition(wobbleLeftTargetPosition);
@@ -103,7 +103,7 @@ public class WobbleModule implements Module, TelemetryProvider {
 
     public void nextArmPosition() {
         switch (wobbleArmPosition) {
-            case AUTO_DROP:
+//            case AUTO_DROP:
             case WALL_DROP:
                 wobbleArmPosition = WobbleArmPosition.RAISED;
                 break;
