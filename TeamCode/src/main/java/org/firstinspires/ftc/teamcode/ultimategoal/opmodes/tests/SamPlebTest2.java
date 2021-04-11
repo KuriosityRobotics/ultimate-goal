@@ -30,7 +30,7 @@ public class SamPlebTest2 extends LinearOpMode {
     private Servo flap;
 
 
-    public double pos = 0.27;
+    public double pos = 0.22;
     double pos2 = 0.72;
     boolean toggle = false;
     public double flyWheelTargetSpeed = 1750;
