@@ -36,9 +36,12 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private static final double FLAP_ANGLE_TO_POSITION_CONSTANT_TERM = 0.607;
 
     // -0.0372 + 2.79E-03x + -1.31E-05x^2
-    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -1.31E-05; // TODO RETUNE
-    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
-    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0222
+//    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -1.31E-05; // TODO RETUNE
+//    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
+//    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0222
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 0; // TODO RETUNE
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 0;
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.2; // -0.0222
 
     // 0.865 + -0.0184x + 1.22E-04x^2
     private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 1.22e-04; // TODO RETUNE
@@ -117,7 +120,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalAngleOffset(distanceToTarget);
 
-        double turretHeading = headingToTarget(target) + angleOffset; // TODO offset based on robot angle velo?
+        double turretHeading = headingToTarget(target); //+ angleOffset; // TODO offset based on robot angle velo?
 
         turretModule.setTargetTurretAngle(turretHeading - robot.drivetrain.getCurrentHeading());
 
@@ -137,17 +140,18 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     }
 
     private double getHighGoalFlapPosition(double distanceToTarget) { // TODO RETUNE
-        if (burstNum == 1) {
-            return 0.656 + (41.1 - 0.783 * distanceToTarget + 0.00437 * Math.pow(distanceToTarget, 2)) / 1000;
-        } else if (burstNum == 2) {
-            return 0.662 + (41.1 - 0.783 * distanceToTarget + 0.00437 * Math.pow(distanceToTarget, 2)) / 1000;
-        } else {
-            return 0.7178854 - 8500 * 1 * 0.000001
-                    + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
-                    + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
-                    + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
-                    + manualAngleFlapCorrection;
-        }
+//        if (burstNum == 1) {
+//            return 0.656 + (41.1 - 0.783 * distanceToTarget + 0.00437 * Math.pow(distanceToTarget, 2)) / 1000;
+//        } else if (burstNum == 2) {
+//            return 0.662 + (41.1 - 0.783 * distanceToTarget + 0.00437 * Math.pow(distanceToTarget, 2)) / 1000;
+//        } else {
+//            return 0.7178854 - 8500 * 1 * 0.000001
+//                    + (-2 * 108.466 * (0.00000567 - 1 * 0.000001)) * distanceToTarget
+//                    + (0.00000567 - 1 * 0.000001) * Math.pow(distanceToTarget, 2)
+//                    + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
+//                    + manualAngleFlapCorrection;
+//        }
+        return .25;
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
