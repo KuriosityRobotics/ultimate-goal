@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.renderscript.RSIllegalArgumentException;
-
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
@@ -25,6 +24,8 @@ public class HopperModule implements Module, TelemetryProvider {
     // Helpers
     private long deliveryStartTime = 0;
 
+    AnalogInput ringCounterSensor;
+
     // Constants
     private static final double LINKAGE_LOWERED_POSITION = 0;
     private static final double LINKAGE_RAISED_POSITION = 0.36;
@@ -46,6 +47,9 @@ public class HopperModule implements Module, TelemetryProvider {
         deliverRings = false;
         deliveryStartTime = 0;
         ringsInHopper = 0;
+
+
+
     }
 
     @Override
@@ -55,11 +59,18 @@ public class HopperModule implements Module, TelemetryProvider {
         hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
     }
 
+
+
+
     @Override
     public void update() {
         long currentTime = robot.getCurrentTimeMilli();
+        this.ringsInHopper = robot.intakeModule.getDistanceSensorPasses() / 2;
+
 
         HopperPosition currentHopperPosition = calculateHopperPosition(this.deliveryStartTime, currentTime);
+// do the thing
+
 
         // Determine target hopper position
         boolean raiseHopper;
@@ -75,6 +86,7 @@ public class HopperModule implements Module, TelemetryProvider {
         // Move hopper
         if (raiseHopper) {
             hopperLinkage.setPosition(LINKAGE_RAISED_POSITION);
+            robot.intakeModule.removeQueued();
         } else {
             hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
         }
@@ -121,6 +133,8 @@ public class HopperModule implements Module, TelemetryProvider {
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("Hopper position: " + getCurrentHopperPosition());
+        data.add("Rings in hopper: " + this.ringsInHopper);
+        //data.add("DISTANCE: " + getRingCounterSensorReading());
         return data;
     }
 
