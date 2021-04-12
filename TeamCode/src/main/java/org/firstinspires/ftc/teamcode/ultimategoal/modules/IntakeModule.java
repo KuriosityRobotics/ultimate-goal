@@ -56,6 +56,19 @@ public class IntakeModule implements Module, TelemetryProvider {
 
     }
 
+
+    public void tryToSetIntakePower(double desired) {
+        if(desired > 0) { // Intake iff total amount of rings on robot is less than three.
+            if(robot.shooter.turretModule.currentRingsInTurret + robot.shooter.hopperModule.getRingsInHopper() < 3)
+                this.intakePower = desired;
+            else
+                this.intakePower = 0;
+        } else if (desired <= 0){ // Allow outtake always
+            this.intakePower = desired;
+        }
+    }
+
+
     long startTime = 0;
     boolean doneUnlocking = false;
 
