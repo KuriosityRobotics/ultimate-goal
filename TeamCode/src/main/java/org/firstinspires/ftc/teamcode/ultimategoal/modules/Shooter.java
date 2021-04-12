@@ -14,8 +14,8 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private final Robot robot;
     private final boolean isOn;
 
-    private final TurretModule turretModule;
-    private final HopperModule hopperModule;
+    public final TurretModule turretModule;
+    public final HopperModule hopperModule;
 
     // States
     public ITarget target = BLUE_HIGH;
@@ -98,9 +98,11 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
             if (safeToIndex && shooterReady && !turretModule.indexRing) {
                 turretModule.indexRing = true;
+                turretModule.currentRingsInTurret = turretModule.currentRingsInTurret - 1;
                 queuedIndexes--;
                 burstNum++;
             } else if (forceIndex) {
+                turretModule.currentRingsInTurret = turretModule.currentRingsInTurret - 1;
                 turretModule.indexRing = true;
             }
         }
@@ -236,6 +238,10 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     public void queueIndex() {
         queuedIndexes += 1;
+    }
+
+public void queueIndex( int numQueue) {
+    queuedIndexes += numQueue;
     }
 
     /**

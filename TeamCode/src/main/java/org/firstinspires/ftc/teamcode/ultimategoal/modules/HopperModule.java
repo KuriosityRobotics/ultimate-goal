@@ -14,6 +14,7 @@ public class HopperModule implements Module, TelemetryProvider {
 
     // States
     public boolean deliverRings;
+    boolean wasAtTurret = false;
 
     // Data
     private int ringsInHopper;
@@ -49,7 +50,6 @@ public class HopperModule implements Module, TelemetryProvider {
         ringsInHopper = 0;
 
 
-
     }
 
     @Override
@@ -58,8 +58,6 @@ public class HopperModule implements Module, TelemetryProvider {
 
         hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
     }
-
-
 
 
     @Override
@@ -86,6 +84,7 @@ public class HopperModule implements Module, TelemetryProvider {
         // Move hopper
         if (raiseHopper) {
             hopperLinkage.setPosition(LINKAGE_RAISED_POSITION);
+            robot.shooter.turretModule.currentRingsInTurret += this.ringsInHopper;
             robot.intakeModule.removeQueued();
         } else {
             hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
@@ -96,10 +95,16 @@ public class HopperModule implements Module, TelemetryProvider {
         if (currentTime < deliveryStartTime + RAISE_TRANSITIONING_TIME_MS) {
             return HopperPosition.TRANSITIONING;
         } else if (currentTime < deliveryStartTime + RAISE_TIME_MS + LOWER_CLEAR_SHOOTER_TIME_MS) {
+            wasAtTurret = true;
             return HopperPosition.AT_TURRET;
         } else if (currentTime < deliveryStartTime + RAISE_TIME_MS + LOWER_TIME_MS) {
             return HopperPosition.TRANSITIONING;
         } else {
+            if (wasAtTurret) {
+                robot.shooter.queueIndex(robot.shooter.turretModule.currentRingsInTurret); // auto queue when we've lowered hopper down again (after being up)
+            }
+            wasAtTurret = false;
+
             return HopperPosition.LOWERED;
         }
     }
