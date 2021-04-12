@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.transformToCoordinateSystem;
 
 public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     Robot robot;
@@ -341,7 +342,6 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         return new Movements(xMovement, yMovement, turnMovement);
     }
 
-
     public double distanceToPoint(Point targetPoint) {
         Point robotPosition = getCurrentPosition();
 
@@ -356,6 +356,25 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         Point robotPosition = getCurrentPosition();
 
         return Math.atan2(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y);
+    }
+
+    /**
+     * Returns the global position of a given part on the robot.
+     *
+     * @param relativePartPosition The position of the part relative to the robot's center.
+     * @return The position of that part, calculated using the robot's current position and
+     *         heading.
+     */
+    public Point positionOfRobotPart(Point relativePartPosition) {
+        Pose2d robotAngle = new Pose2d(new Translation2d(0, 0), new Rotation2d(getCurrentHeading()));
+        Pose2d relativePartPose = new Pose2d(new Translation2d(relativePartPosition.x, relativePartPosition.y), new Rotation2d(0));
+
+        Pose2d rotatedPart = transformToCoordinateSystem(robotAngle, relativePartPose);
+
+        Point robotPosition = getCurrentPosition();
+
+        return new Point(rotatedPart.getTranslation().getX() + robotPosition.x,
+                rotatedPart.getTranslation().getY() + robotPosition.y);
     }
 
     /**

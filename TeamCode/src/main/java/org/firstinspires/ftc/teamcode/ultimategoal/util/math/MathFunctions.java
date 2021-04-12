@@ -187,7 +187,7 @@ public class MathFunctions {
      * @param radius       The radius of the circle.
      * @param linePoint1   An end point of the segment.
      * @param linePoint2   The other end point of the segment.
-     * @return An ArrayList of points representing the intersection between the circle and the line
+     * @return An ArrayList of points that are an intersection between the circle and the line
      *         segment.
      */
     public static ArrayList<Point> lineSegmentCircleIntersection(Point circleCenter, double radius, Point linePoint1, Point linePoint2) {
@@ -215,7 +215,9 @@ public class MathFunctions {
 
         try {
             // solve roots
-            double xRoot1 = (-quadraticB + Math.sqrt(pow(quadraticB, 2) - (4.0 * quadraticA * quadraticC))) / (2.0 * quadraticA);
+            double discrim = Math.sqrt(pow(quadraticB, 2) - (4.0 * quadraticA * quadraticC));
+
+            double xRoot1 = (-quadraticB + discrim) / (2.0 * quadraticA);
             double yRoot1 = lineSlope * (xRoot1 - x1) + y1;
 
             //add back in translations
@@ -223,15 +225,15 @@ public class MathFunctions {
             yRoot1 += circleCenter.y;
 
             //within range
-            double minX = linePoint1.x < linePoint2.x ? linePoint1.x : linePoint2.x;
-            double maxX = linePoint1.x > linePoint2.x ? linePoint1.x : linePoint2.x;
+            double minX = Math.min(linePoint1.x, linePoint2.x);
+            double maxX = Math.max(linePoint1.x, linePoint2.x);
 
             if (xRoot1 > minX && xRoot1 < maxX) {
                 solutions.add(new Point(xRoot1, yRoot1));
             }
 
             //do the same for the other root
-            double xRoot2 = (-quadraticB - Math.sqrt(pow(quadraticB, 2) - (4.0 * quadraticA * quadraticC))) / (2.0 * quadraticA);
+            double xRoot2 = (-quadraticB - discrim) / (2.0 * quadraticA);
             double yRoot2 = lineSlope * (xRoot2 - x1) + y1;
 
             xRoot2 += circleCenter.x;

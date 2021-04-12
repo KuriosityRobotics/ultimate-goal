@@ -34,6 +34,8 @@ public class Target {
          */
         ITarget switchColour();
 
+        ITarget getAllianceHigh();
+
         /**
          * Returns the position of <code>this</code>, relative to (0,0) being the bottom left (blue
          * and audience side) of the field.
@@ -101,6 +103,10 @@ public class Target {
             return target;
         }
 
+        public ITarget getAllianceHigh() {
+            return RED_HIGH;
+        }
+
         public ITarget switchColour() {
             return Blue.values()[ordinal()];
         }
@@ -153,6 +159,10 @@ public class Target {
                     break;
             }
             return target;
+        }
+
+        public ITarget getAllianceHigh() {
+            return BLUE_HIGH;
         }
 
         public ITarget switchColour() {

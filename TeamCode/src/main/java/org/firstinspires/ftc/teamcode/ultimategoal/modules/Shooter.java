@@ -2,13 +2,11 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.ITarget;
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
 
 public class Shooter extends ModuleCollection implements TelemetryProvider {
     private final Robot robot;
@@ -120,7 +118,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalAngleOffset(distanceToTarget);
 
-        double turretHeading = headingToTarget(target); //+ angleOffset; // TODO offset based on robot angle velo?
+        double turretHeading = absoluteHeadingToTarget(target); //+ angleOffset; // TODO offset based on robot angle velo?
 
         turretModule.setTargetTurretAngle(turretHeading - robot.drivetrain.getCurrentHeading());
 
@@ -175,42 +173,28 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     }
 
     /**
-     * Calculate what heading we have to turn the robot to hit the target, incorporating vision.
+     * The global heading from the robot to the target.
      *
      * @param targetGoal The target to aim at.
+     * @return The global heading from the robot towards the target.
      */
-    public double headingToTarget(ITarget targetGoal) {
-        return headingToTarget(targetGoal.getLocation());
+    public double absoluteHeadingToTarget(ITarget targetGoal) {
+        return robot.drivetrain.absoluteHeadingToPoint(targetGoal.getLocation());
     }
 
-    /**
-     * Calculate what heading we have to turn the robot to hit the target, incorporating vision.
-     *
-     * @param targetPoint The point to aim at.
-     */
-    public double headingToTarget(Point targetPoint) {
-        Point robotPosition = robot.drivetrain.getCurrentPosition();
-
-        return angleWrap(Math.atan2(targetPoint.x - robotPosition.x, targetPoint.y - robotPosition.y));
+    public double relativeHeadingToTarget(ITarget targetGoal) {
+        return robot.drivetrain.relativeAngleToPoint(targetGoal.getLocation());
     }
 
     public double distanceToTarget(ITarget targetGoal) {
-        return distanceToTarget(targetGoal.getLocation());
-    }
-
-    public double distanceToTarget(Point targetPoint) {
-        Point currentPosition = robot.drivetrain.getCurrentPosition();
-
-        double distanceToTarget = Math.hypot(currentPosition.x - targetPoint.x, currentPosition.y - targetPoint.y);
-
-        return distanceToTarget;
+        return robot.drivetrain.distanceToPoint(targetGoal.getLocation());
     }
 
     /**
      * Set the flap position of the shooter. Only has an effect if the turret isn't currently locked
      * on to a target.
      *
-     * @param flapPosition
+     * @param flapPosition The target flap position
      * @see #lockTarget
      */
     public void setFlapPosition(double flapPosition) {
