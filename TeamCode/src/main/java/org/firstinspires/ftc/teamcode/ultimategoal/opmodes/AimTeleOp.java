@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
@@ -13,8 +14,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowersh
 import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
-
-//import static org.firstinspires.ftc.teamcode.ultimategoal.modules.OdometryModule.slamra;
 
 @TeleOp
 public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
@@ -33,6 +32,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     Toggle g2x = new Toggle();
     Toggle g2a = new Toggle();
     Toggle g2b = new Toggle();
+    Toggle g2LT = new Toggle();
     Toggle g2DR = new Toggle();
     Toggle g2DL = new Toggle();
     Toggle g2DU = new Toggle();
@@ -53,6 +53,8 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         waitForStart();
 
         robot.startModules();
+
+        robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.OPEN;
 
         while (opModeIsActive()) {
             if (g1b.isToggled(gamepad1.b)) {
@@ -148,6 +150,10 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
     private void updateIntakeStates() {
         robot.intakeModule.tryToSetIntakePower(gamepad2.left_stick_y * 2);
+
+        if (g2LT.isToggled(gamepad2.left_trigger)) {
+            robot.intakeModule.blockerPosition.next();
+        }
     }
 
     private void initRobot() {
@@ -159,9 +165,9 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     private void updateDrivetrainStates() {
-        double yMovement = 0;
-        double xMovement = 0;
-        double turnMovement = 0;
+        double yMovement;
+        double xMovement;
+        double turnMovement;
 
         yMovement = -gamepad1.left_stick_y;
         xMovement = gamepad1.left_stick_x;
