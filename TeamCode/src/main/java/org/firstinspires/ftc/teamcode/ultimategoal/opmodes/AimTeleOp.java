@@ -105,7 +105,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
         if (robot.shooter.flywheelOn) {
             if (g1RT.isToggled(gamepad1.right_trigger)) {
-                robot.shooter.queueIndexThreeRings();
+                robot.shooter.queueIndex(robot.shooter.turretModule.currentRingsInTurret);
             }
         }
 
@@ -147,7 +147,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     private void updateIntakeStates() {
-        robot.intakeModule.intakePower = gamepad2.left_stick_y * 2;
+        robot.intakeModule.tryToSetIntakePower(gamepad2.left_stick_y * 2);
     }
 
     private void initRobot() {

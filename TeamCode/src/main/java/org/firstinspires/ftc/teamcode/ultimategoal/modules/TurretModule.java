@@ -31,6 +31,7 @@ public class TurretModule implements Module, TelemetryProvider {
 
     // Data
     private double currentTurretAngle;
+    public int currentRingsInTurret;
 
     // Motors
     private DcMotorEx flyWheel1;
@@ -53,7 +54,7 @@ public class TurretModule implements Module, TelemetryProvider {
     private static final double TURRET_MAXIMUM_ANGLE = Math.toRadians(180);
 
     private static final double TURRET_ENCODER_TO_ANGLE = 4842.60745;
-    private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
+    private static final int FLYWHEEL_SPEED_THRESHOLD = 200;
 
     private static final double FLAP_STORE_POSITION = 0.0873856;
     private static final double FLAP_LOWER_LIMIT = 0.2;
@@ -78,6 +79,7 @@ public class TurretModule implements Module, TelemetryProvider {
         indexTime = 0;
 
         currentTurretAngle = 0;
+        currentRingsInTurret = 0;
     }
 
     @Override
