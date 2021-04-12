@@ -42,9 +42,6 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     BluePowershotsAction bluePowershotsAction = new BluePowershotsAction();
     private boolean doPowershotsAction = false;
 
-    private boolean lastArrowMoveState = false;
-    private double arrowMoveAngle = 0;
-
     public void runOpMode() {
         initRobot();
 
