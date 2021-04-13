@@ -19,7 +19,7 @@ public class TurretTest extends LinearOpMode {
 
         robot.shooter.lockTarget = false;
 
-        robot.shooter.setTurretTargetangle(Math.toRadians(180));
+        //robot.shooter.setTurretTargetangle(Math.toRadians(180));
 
         robot.startModules();
 

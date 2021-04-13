@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.Drivetrain;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ModuleCollection;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.RingManager;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
@@ -33,6 +34,7 @@ public class Robot extends ModuleCollection {
 
     public IntakeModule intakeModule;
     public WobbleModule wobbleModule;
+    public RingManager ringManager;
 //    public VisionModule visionModule;
 
     private long currentTimeMilli;
@@ -122,10 +124,11 @@ public class Robot extends ModuleCollection {
 
         this.intakeModule = new IntakeModule(this, true);
         this.wobbleModule = new WobbleModule(this, false);
+        this.ringManager = new RingManager(this, true);
 //        this.visionModule = new VisionModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.intakeModule, this.wobbleModule, this.shooter
+                this.drivetrain, this.intakeModule, this.wobbleModule, this.shooter, this.ringManager
         };
 
         // Initialize modules

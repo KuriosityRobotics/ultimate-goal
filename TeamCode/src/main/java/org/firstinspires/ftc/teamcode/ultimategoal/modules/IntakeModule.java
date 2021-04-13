@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.wrappers.AnalogDistance;
 
 import java.util.ArrayList;
 
@@ -23,6 +22,7 @@ public class IntakeModule implements Module, TelemetryProvider {
     public boolean doneUnlocking;
     public double intakePower = 0;
     public IntakeBlockerPosition blockerPosition;
+    public double intakeDistanceVoltage;
 
     // Actuators
     DcMotor intakeTop;
@@ -35,7 +35,7 @@ public class IntakeModule implements Module, TelemetryProvider {
     AnalogInput intakeDistance;
 
     // Constants
-    private static final int UNLOCK_TIME = 1000;
+    private static final int UNLOCK_TIME = 1200;
     private static final double BLOCKER_FUNNEL_ANGLE = Math.toRadians(45);
 
     private static final Point LEFT_BLOCKER_POSITION = new Point(-7.627, 11.86);
@@ -84,10 +84,9 @@ public class IntakeModule implements Module, TelemetryProvider {
 
         robot.telemetryDump.registerProvider(this);
 
-        this.timeLastPass = robot.getCurrentTimeMilli();
-
         doneUnlocking = false;
         blockerPosition = IntakeBlockerPosition.BLOCKING;
+        intakeDistanceVoltage = 0; // make sure that this value is safe
 
         holdRing = false;
         startTime = 0;
@@ -106,12 +105,9 @@ public class IntakeModule implements Module, TelemetryProvider {
         rightBlocker = robot.getServo("blockerRight");
     }
 
-
-
-
     public void tryToSetIntakePower(double desired) {
         if(desired > 0) { // Intake iff total amount of rings on robot is less than three.
-            if(robot.shooter.turretModule.currentRingsInTurret + robot.shooter.hopperModule.getRingsInHopper() < 3)
+            if(robot.ringManager.canIntake())
                 this.intakePower = desired;
             else
                 this.intakePower = 0;
@@ -120,34 +116,8 @@ public class IntakeModule implements Module, TelemetryProvider {
         }
     }
 
-
-    private double timeLastPass;
-
-
-    boolean seenRing = false;
-    int distanceSensorPasses = 0;
-
     public void update() {
-        long currentTime = robot.getCurrentTimeMilli();
-
-        double voltage = intakeDistance.getVoltage();
-        if (Math.abs(2.2 - voltage) < Math.abs(1.1 - voltage)) {
-            if (!seenRing)
-                seenRing = true; // we need to track when the sensor starts seeing it, and when it finishes
-
-        } else if (seenRing) {
-            if (robot.intakeModule.intakeBottom.getPower() > 0) // outtaking or intaking ?
-                distanceSensorPasses = distanceSensorPasses + 1;
-            else
-                distanceSensorPasses = distanceSensorPasses - 1;
-            seenRing = false;
-
-        }
-        if (currentTime - timeLastPass > 200 && (distanceSensorPasses & 1) == 1 && seenRing) { // emergency in case it somehow gets out of sync:  timeout after two seconds & round up
-            distanceSensorPasses++;
-        }
-        timeLastPass = currentTime;
-
+        intakeDistanceVoltage = intakeDistance.getVoltage();
         intakeLogic();
         intakeBlockerLogic();
     }
@@ -272,19 +242,10 @@ public class IntakeModule implements Module, TelemetryProvider {
         data.add("Intake power: " + intakePower);
         data.add("Blocker position: " + blockerPosition.toString());
         data.add("Done unlocking: " + doneUnlocking);
-        data.add("Passes of ring: " + distanceSensorPasses);
         return data;
     }
 
     public String getName() {
         return "IntakeModule";
-    }
-
-    public void removeQueued() {
-        this.distanceSensorPasses = 0;
-    }
-
-    public int getDistanceSensorPasses() {
-        return this.distanceSensorPasses;
     }
 }
