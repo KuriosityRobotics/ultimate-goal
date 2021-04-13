@@ -107,7 +107,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
         if (robot.shooter.flywheelOn) {
             if (g1RT.isToggled(gamepad1.right_trigger)) {
-                robot.shooter.queueIndex(robot.shooter.turretModule.currentRingsInTurret);
+                robot.shooter.queueIndex(3);
             }
         }
 
@@ -149,7 +149,8 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     private void updateIntakeStates() {
-        robot.intakeModule.tryToSetIntakePower(gamepad2.left_stick_y * 2);
+//        robot.intakeModule.tryToSetIntakePower(gamepad2.left_stick_y * 2);
+        robot.intakeModule.tryToSetIntakePower(1); // temporary so it is easier to test w one person
 
         if (g2LT.isToggled(gamepad2.left_trigger)) {
             robot.intakeModule.blockerPosition.next();
@@ -184,22 +185,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         }
 
         if (gamepad1.left_bumper) {
-            if (!lastArrowMoveState) {
-                arrowMoveAngle = robot.drivetrain.getCurrentHeading();
-                lastArrowMoveState = true;
-            }
-
-            double r = Math.hypot(yMovement, xMovement);
-            double aT = Math.atan2(yMovement, xMovement);
-            double t = aT + robot.drivetrain.getCurrentHeading() - arrowMoveAngle;
-
-            double nXMovement = r * Math.cos(t);
-            double nYMovement = r * Math.sin(t);
-
-            xMovement = nXMovement;
-            yMovement = nYMovement;
-        } else {
-            lastArrowMoveState = false;
+            robot.ringManager.setDistanceSensorPasses(6);
         }
 
         robot.drivetrain.isSlowMode = gamepad1.right_bumper;

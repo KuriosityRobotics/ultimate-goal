@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.util.Log;
-
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -19,7 +17,7 @@ import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
 
-public class TurretModule implements Module, TelemetryProvider {
+public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
@@ -27,11 +25,11 @@ public class TurretModule implements Module, TelemetryProvider {
     private double targetTurretAngle;
     public double flyWheelTargetSpeed;
     public boolean indexRing;
+    public IndexerPosition indexerPosition;
     public double shooterFlapPosition = FLAP_LOWER_LIMIT;
 
     // Data
     private double currentTurretAngle;
-    public int currentRingsInTurret;
 
     // Motors
     private DcMotorEx flyWheel1;
@@ -57,16 +55,16 @@ public class TurretModule implements Module, TelemetryProvider {
     private static final int FLYWHEEL_SPEED_THRESHOLD = 200;
 
     private static final double FLAP_STORE_POSITION = 0.0873856;
-    private static final double FLAP_LOWER_LIMIT = 0.2;
+    private static final double FLAP_LOWER_LIMIT = 0;
     private static final double FLAP_UPPER_LIMIT = 0.29255;
 
     private static final double INDEXER_PUSHED_POSITION = 0.45;
     private static final double INDEXER_RETRACTED_POSITION = 0.72;
 
-    private static final int INDEXER_PUSHED_TIME_MS = 150; // since start of index
-    public static final int INDEXER_RETURNED_TIME_MS = 300; // since start of index
+    private static final int INDEXER_PUSHED_TIME_MS = 250; // since start of index
+    public static final int INDEXER_RETURNED_TIME_MS = 400; // since start of index
 
-    public TurretModule(Robot robot, boolean isOn) {
+    public ShooterModule(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
         this.robot = robot;
         this.isOn = isOn;
@@ -76,10 +74,10 @@ public class TurretModule implements Module, TelemetryProvider {
         flyWheelTargetSpeed = 0;
 
         indexRing = false;
+        indexerPosition = IndexerPosition.RETRACTED;
         indexTime = 0;
 
         currentTurretAngle = 0;
-        currentRingsInTurret = 0;
     }
 
     @Override
@@ -223,18 +221,24 @@ public class TurretModule implements Module, TelemetryProvider {
         }
     }
 
+    public enum IndexerPosition {RETRACTED, PUSHED}
+
     private void indexerLogic(long currentTime) {
         if (currentTime < indexTime + INDEXER_PUSHED_TIME_MS) {
             indexerServo.setPosition(INDEXER_PUSHED_POSITION);
+            indexerPosition = IndexerPosition.PUSHED;
         } else if (currentTime < indexTime + INDEXER_RETURNED_TIME_MS) {
             indexerServo.setPosition(INDEXER_RETRACTED_POSITION);
+            indexerPosition = IndexerPosition.RETRACTED;
         } else if (indexRing) {
             indexerServo.setPosition(INDEXER_PUSHED_POSITION);
+            indexerPosition = IndexerPosition.PUSHED;
 
             indexRing = false;
             indexTime = currentTime;
         } else {
             indexerServo.setPosition(INDEXER_RETRACTED_POSITION);
+            indexerPosition = IndexerPosition.RETRACTED;
         }
     }
 
@@ -295,6 +299,6 @@ public class TurretModule implements Module, TelemetryProvider {
     }
 
     public String getName() {
-        return "TurretModule";
+        return "ShooterModule";
     }
 }

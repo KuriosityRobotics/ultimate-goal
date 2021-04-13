@@ -15,17 +15,13 @@ public class HopperModule implements Module, TelemetryProvider {
     // States
     public boolean deliverRings;
     boolean wasAtTurret = false;
-
-    // Data
-    private int ringsInHopper;
+    public HopperPosition currentHopperPosition;
 
     // Servos
     private Servo hopperLinkage;
 
     // Helpers
     private long deliveryStartTime = 0;
-
-    AnalogInput ringCounterSensor;
 
     // Constants
     private static final double LINKAGE_LOWERED_POSITION = 0;
@@ -47,9 +43,7 @@ public class HopperModule implements Module, TelemetryProvider {
 
         deliverRings = false;
         deliveryStartTime = 0;
-        ringsInHopper = 0;
-
-
+        currentHopperPosition = HopperPosition.LOWERED;
     }
 
     @Override
@@ -63,12 +57,9 @@ public class HopperModule implements Module, TelemetryProvider {
     @Override
     public void update() {
         long currentTime = robot.getCurrentTimeMilli();
-        this.ringsInHopper = robot.intakeModule.getDistanceSensorPasses() / 2;
 
 
-        HopperPosition currentHopperPosition = calculateHopperPosition(this.deliveryStartTime, currentTime);
-// do the thing
-
+        currentHopperPosition = calculateHopperPosition(this.deliveryStartTime, currentTime); // do the thing
 
         // Determine target hopper position
         boolean raiseHopper;
@@ -84,8 +75,6 @@ public class HopperModule implements Module, TelemetryProvider {
         // Move hopper
         if (raiseHopper) {
             hopperLinkage.setPosition(LINKAGE_RAISED_POSITION);
-            robot.shooter.turretModule.currentRingsInTurret += this.ringsInHopper;
-            robot.intakeModule.removeQueued();
         } else {
             hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
         }
@@ -95,16 +84,10 @@ public class HopperModule implements Module, TelemetryProvider {
         if (currentTime < deliveryStartTime + RAISE_TRANSITIONING_TIME_MS) {
             return HopperPosition.TRANSITIONING;
         } else if (currentTime < deliveryStartTime + RAISE_TIME_MS + LOWER_CLEAR_SHOOTER_TIME_MS) {
-            wasAtTurret = true;
             return HopperPosition.AT_TURRET;
         } else if (currentTime < deliveryStartTime + RAISE_TIME_MS + LOWER_TIME_MS) {
             return HopperPosition.TRANSITIONING;
         } else {
-            if (wasAtTurret) {
-                robot.shooter.queueIndex(robot.shooter.turretModule.currentRingsInTurret); // auto queue when we've lowered hopper down again (after being up)
-            }
-            wasAtTurret = false;
-
             return HopperPosition.LOWERED;
         }
     }
@@ -125,10 +108,6 @@ public class HopperModule implements Module, TelemetryProvider {
         return calculateHopperPosition(deliveryStartTime, robot.getCurrentTimeMilli());
     }
 
-    public int getRingsInHopper() {
-        return ringsInHopper;
-    }
-
     @Override
     public boolean isOn() {
         return isOn;
@@ -138,8 +117,6 @@ public class HopperModule implements Module, TelemetryProvider {
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("Hopper position: " + getCurrentHopperPosition());
-        data.add("Rings in hopper: " + this.ringsInHopper);
-        //data.add("DISTANCE: " + getRingCounterSensorReading());
         return data;
     }
 

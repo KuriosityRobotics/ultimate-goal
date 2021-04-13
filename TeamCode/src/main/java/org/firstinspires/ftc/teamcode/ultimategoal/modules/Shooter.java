@@ -12,7 +12,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private final Robot robot;
     private final boolean isOn;
 
-    public final TurretModule turretModule;
+    public final ShooterModule shooterModule;
     public final HopperModule hopperModule;
 
     // States
@@ -29,27 +29,37 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     public final static int HIGHGOAL_FLYWHEEL_SPEED = 1750;
     public final static int POWERSHOT_FLYWHEEL_SPEED = 1200; // todo
 
-    // 2.5E-03*x + 0.607
-    private static final double FLAP_ANGLE_TO_POSITION_LINEAR_TERM = 0.0025;
-    private static final double FLAP_ANGLE_TO_POSITION_CONSTANT_TERM = 0.607;
+//    // 2.5E-03*x + 0.607
+//    private static final double FLAP_ANGLE_TO_POSITION_LINEAR_TERM = 0.0025;
+//    private static final double FLAP_ANGLE_TO_POSITION_CONSTANT_TERM = 0.607;
 
     // -0.0372 + 2.79E-03x + -1.31E-05x^2
 //    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = -1.31E-05; // TODO RETUNE
 //    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 2.79E-03;
 //    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = -0.0222; // -0.0222
-    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 0; // TODO RETUNE
-    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 0;
-    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.2; // -0.0222
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 0.0; // TODO RETUNE
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 0.0;
+    private static final double HIGH_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.1; // -0.0222
+
+//    // 0.865 + -0.0184x + 1.22E-04x^2
+//    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 1.22e-04; // TODO RETUNE
+//    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = -0.0184;
+//    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.865;
 
     // 0.865 + -0.0184x + 1.22E-04x^2
-    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 1.22e-04; // TODO RETUNE
-    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = -0.0184;
-    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.865;
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 0; // TODO RETUNE
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 0;
+    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0;
+
+//    // 0.766 + -2.73E-03x + 1.82E-05x^2
+//    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_SQUARE_TERM = 1.82e-05; // TODO RETUNE
+//    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -2.73e-03;
+//    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.763; // 0.766
 
     // 0.766 + -2.73E-03x + 1.82E-05x^2
-    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_SQUARE_TERM = 1.82e-05; // TODO RETUNE
-    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -2.73e-03;
-    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.763; // 0.766
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_SQUARE_TERM = 0; // TODO RETUNE
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = 0;
+    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0; // 0.766
 
     private double distanceToGoal;
     private double angleOffset;
@@ -64,10 +74,10 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         this.isOn = isOn;
         manualAngleCorrection = 0;
 
-        turretModule = new TurretModule(robot, isOn);
+        shooterModule = new ShooterModule(robot, isOn);
         hopperModule = new HopperModule(robot, isOn);
 
-        modules = new Module[]{turretModule, hopperModule};
+        modules = new Module[]{shooterModule, hopperModule};
     }
 
     public void toggleColour() {
@@ -84,45 +94,57 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         }
 
         if (flywheelOn) {
-            turretModule.flyWheelTargetSpeed = target.isPowershot() ? POWERSHOT_FLYWHEEL_SPEED : HIGHGOAL_FLYWHEEL_SPEED;
+            shooterModule.flyWheelTargetSpeed = target.isPowershot() ? POWERSHOT_FLYWHEEL_SPEED : HIGHGOAL_FLYWHEEL_SPEED;
         } else {
-            turretModule.flyWheelTargetSpeed = 0;
+            shooterModule.flyWheelTargetSpeed = 0;
         }
 
-        if (turretModule.flywheelsUpToSpeed()) {
+        if (shooterModule.flywheelsUpToSpeed()) {
             burstNum = 0;
         }
 
         if (queuedIndexes > 0) {
-            boolean safeToIndex = hopperModule.msUntilHopperRaised() > turretModule.INDEXER_RETURNED_TIME_MS;
-            boolean shooterReady = burstNum > 0 || turretModule.flywheelsUpToSpeed();
+            boolean safeToIndex = hopperModule.msUntilHopperRaised() > shooterModule.INDEXER_RETURNED_TIME_MS;
+            boolean shooterReady = burstNum > 0 || shooterModule.flywheelsUpToSpeed();
 
-            if (safeToIndex && shooterReady && !turretModule.indexRing) {
-                turretModule.indexRing = true;
-                turretModule.currentRingsInTurret = turretModule.currentRingsInTurret - 1;
+            if (safeToIndex && shooterReady && !shooterModule.indexRing) {
+                shooterModule.indexRing = true;
                 queuedIndexes--;
                 burstNum++;
             } else if (forceIndex) {
-                turretModule.currentRingsInTurret = turretModule.currentRingsInTurret - 1;
-                turretModule.indexRing = true;
+                shooterModule.indexRing = true;
             }
         }
 
         // Update both modules
         hopperModule.update();
-        turretModule.update();
+        shooterModule.update();
     }
 
+    long oldUpdateTime = 0;
+    double oldTurretTarget = 0;
+
     private void aimTurret() {
+
+        long currentUpdateTime = robot.getCurrentTimeMilli();
+
         double distanceToTarget = distanceToTarget(target);
 
         angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalAngleOffset(distanceToTarget);
 
-        double turretHeading = absoluteHeadingToTarget(target); //+ angleOffset; // TODO offset based on robot angle velo?
+        double absoluteTurretHeading = absoluteHeadingToTarget(target);
+        double turretTargetRaw = absoluteTurretHeading - robot.drivetrain.getCurrentHeading();
 
-        turretModule.setTargetTurretAngle(turretHeading - robot.drivetrain.getCurrentHeading());
+        double turretTargetVel = 1000*(turretTargetRaw - oldTurretTarget) / (currentUpdateTime - oldUpdateTime);
 
-        turretModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
+        double turretTargetAdj = turretTargetRaw - 0.1 * turretTargetVel;
+
+        shooterModule.setTargetTurretAngle(turretTargetAdj);
+
+        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalFlapPosition(distanceToTarget);
+
+        oldTurretTarget = turretTargetRaw;
+        oldUpdateTime = currentUpdateTime;
     }
 
     private double getPowershotAngleOffset(double distanceToTarget) {
@@ -149,23 +171,13 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 //                    + (0.002 * Math.cos((6.28 * distanceToTarget - 628) / (0.00066 * Math.pow(distanceToTarget, 2) + 12)))
 //                    + manualAngleFlapCorrection;
 //        }
-        return .25;
+        return .23;
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
         return (POWERSHOT_DISTANCE_TO_FLAP_POSITION_SQUARE_TERM * distanceToTarget * distanceToTarget)
                 + (POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM * distanceToTarget)
                 + POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM;
-    }
-
-    /**
-     * Convert an angle, in degrees, to flap position.
-     *
-     * @param angle Desired angle of flap servo, in degrees
-     * @return Position to set servo to to achieve angle
-     */
-    private double flapAngleToPosition(double angle) {
-        return (FLAP_ANGLE_TO_POSITION_LINEAR_TERM * angle) + FLAP_ANGLE_TO_POSITION_CONSTANT_TERM;
     }
 
     public void forceIndex() {
@@ -199,22 +211,16 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
      */
     public void setFlapPosition(double flapPosition) {
         if (!lockTarget) {
-            turretModule.shooterFlapPosition = flapPosition;
+            shooterModule.shooterFlapPosition = flapPosition;
         }
     }
 
     public double getFlyWheelTargetSpeed() {
-        return turretModule.flyWheelTargetSpeed;
+        return shooterModule.flyWheelTargetSpeed;
     }
 
     public void setFlyWheelTargetSpeed(double targetSpeed) {
-        turretModule.flyWheelTargetSpeed = targetSpeed;
-    }
-
-    public void setTurretTargetangle(double angle) {
-        if (!lockTarget) {
-            turretModule.setTargetTurretAngle(angle);
-        }
+        shooterModule.flyWheelTargetSpeed = targetSpeed;
     }
 
     /**
@@ -245,7 +251,7 @@ public void queueIndex( int numQueue) {
         if (hopperModule.getCurrentHopperPosition() != HopperModule.HopperPosition.AT_TURRET) {
             return false;
         }
-        turretModule.indexRing = true;
+        shooterModule.indexRing = true;
         return true;
     }
 
@@ -254,15 +260,15 @@ public void queueIndex( int numQueue) {
     }
 
     public boolean flywheelsUpToSpeed() {
-        return turretModule.flywheelsUpToSpeed();
+        return shooterModule.flywheelsUpToSpeed();
     }
 
     public boolean isFinishedIndexing() {
-        return turretModule.isFinishedIndexing();
+        return shooterModule.isFinishedIndexing();
     }
 
     public boolean isIndexerReturned() {
-        return turretModule.isIndexerReturned();
+        return shooterModule.isIndexerReturned();
     }
 
     public HopperModule.HopperPosition getHopperPosition() {
