@@ -227,8 +227,6 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         brakePoint = getCurrentPosition();
         brakeHeading = getCurrentHeading();
 
-        double[] velocitiesTowardsBrake = velocitiesTowardsPoint(brakePoint);
-
         towardsBrakeController.reset();
         normalToBrakeController.reset();
         angularBrakeController.reset();
@@ -429,9 +427,21 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @return The position of the robot, as a point.
      */
     public Point getCurrentPosition() {
-        Pose2d robotPose = t265Module.getRobotPose();
+        Point currentPosition;
+        if (t265Module.isOn()) {
+            Pose2d robotPose = t265Module.getRobotPose();
 
-        return new Point(robotPose.getTranslation());
+            Point t265Position = new Point(robotPose.getTranslation());
+
+            if (Double.isNaN(t265Position.x) || Double.isNaN(t265Position.y)) {
+                currentPosition = odometryModule.getCurrentPosition();
+            } else {
+                currentPosition = t265Position;
+            }
+        } else {
+            currentPosition = odometryModule.getCurrentPosition();
+        }
+        return currentPosition;
     }
 
     /**
@@ -440,7 +450,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      * @return A double in radians, of the robot's heading.
      */
     public double getCurrentHeading() {
-        return t265Module.getWorldHeadingRad();
+        if (t265Module.isOn()) {
+            return t265Module.getWorldHeadingRad();
+        } else {
+            return odometryModule.getWorldHeadingRad();
+        }
     }
 
     public Point getCurrentOdometryPosition() {
@@ -475,9 +489,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("xMovement: " + xMovement);
-        data.add("yMovement: " + yMovement);
-        data.add("turnMovement: " + turnMovement);
+        data.add("xMovement: " + xMovement + ", yMovement: " + yMovement + ", turnMovement: " + turnMovement);
         data.add("isSlowMode: " + isSlowMode);
         data.add("-");
         data.add("isBrake: " + brake);
