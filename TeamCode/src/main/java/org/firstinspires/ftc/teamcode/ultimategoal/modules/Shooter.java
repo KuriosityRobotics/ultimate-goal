@@ -137,7 +137,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         double turretTargetVel = 1000*(turretTargetRaw - oldTurretTarget) / (currentUpdateTime - oldUpdateTime);
 
-        double turretTargetAdj = turretTargetRaw - 0.1 * turretTargetVel;
+        double turretTargetAdj = turretTargetRaw + 0.05 * turretTargetVel;
 
         shooterModule.setTargetTurretAngle(turretTargetAdj);
 

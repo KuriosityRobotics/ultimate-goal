@@ -32,7 +32,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     Toggle g2x = new Toggle();
     Toggle g2a = new Toggle();
     Toggle g2b = new Toggle();
-    Toggle g2LT = new Toggle();
+    Toggle g2y = new Toggle();
     Toggle g2DR = new Toggle();
     Toggle g2DL = new Toggle();
     Toggle g2DU = new Toggle();
@@ -54,7 +54,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
         robot.startModules();
 
-        robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.OPEN;
+        robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.FUNNEL;
 
         while (opModeIsActive()) {
             if (g1b.isToggled(gamepad1.b)) {
@@ -149,11 +149,10 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     private void updateIntakeStates() {
-//        robot.intakeModule.tryToSetIntakePower(gamepad2.left_stick_y * 2);
-        robot.intakeModule.tryToSetIntakePower(1); // temporary so it is easier to test w one person
+        robot.intakeModule.tryToSetIntakePower(gamepad2.left_stick_y * 2);
 
-        if (g2LT.isToggled(gamepad2.left_trigger)) {
-            robot.intakeModule.blockerPosition.next();
+        if (g2y.isToggled(gamepad2.y)) {
+            robot.intakeModule.blockerPosition = robot.intakeModule.blockerPosition.next();
         }
     }
 
