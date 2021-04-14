@@ -8,11 +8,10 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 import java.util.ArrayList;
-
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.lineSegmentPointDistance;
 
 public class IntakeModule implements Module, TelemetryProvider {
     Robot robot;
@@ -41,11 +40,16 @@ public class IntakeModule implements Module, TelemetryProvider {
     private static final Point LEFT_BLOCKER_POSITION = new Point(-7.627, 11.86);
     private static final Point RIGHT_BLOCKER_POSITION = new Point(7.624, 11.86);
 
+    private static final double LEFT_BLOCKER_BLOCKING_POSITION = 0.85727;
+    private static final double RIGHT_BLOCKER_BLOCKING_POSITION = 0.0;
+    private static final double LEFT_BLOCKER_OPEN_POSITION = 0.370;
+    private static final double RIGHT_BLOCKER_OPEN_POSITION = 0.463;
+
+    private static final double LEFT_BLOCKER_SLOPE = (LEFT_BLOCKER_OPEN_POSITION- LEFT_BLOCKER_BLOCKING_POSITION)/Math.toRadians(120);
+    private static final double RIGHT_BLOCKER_SLOPE = (RIGHT_BLOCKER_OPEN_POSITION- RIGHT_BLOCKER_BLOCKING_POSITION)/Math.toRadians(120);
+
     // blocker is 7.623" long
     private static final double WALL_AVOID_DISTANCE = 7.623 + 5; // if blocker is within this threshold to the wall, it folds
-
-    private static final Point[] LEFT_BLOCKER_KNOWN_SERVO_POSITIONS = new Point[]{new Point(0, 0.85727), new Point(Math.toRadians(90), 0.492)};
-    private static final Point[] RIGHT_BLOCKER_KNOWN_SERVO_POSITIONS = new Point[]{new Point(0, 0.0), new Point(Math.toRadians(90), 0.347)};
 
     private static final Point[] PERIMETER_VERTICES = new Point[]{
             new Point(-9, -9),
@@ -59,7 +63,7 @@ public class IntakeModule implements Module, TelemetryProvider {
     long startTime = 0;
 
     public enum IntakeBlockerPosition {
-        BLOCKING, OPEN;
+        BLOCKING, FUNNEL, OPEN;
 
         public IntakeBlockerPosition next() {
             IntakeBlockerPosition position;
@@ -67,6 +71,9 @@ public class IntakeModule implements Module, TelemetryProvider {
             switch(name()) {
                 default:
                 case "BLOCKING":
+                    position = FUNNEL;
+                    break;
+                case "FUNNEL":
                     position = OPEN;
                     break;
                 case "OPEN":
@@ -151,86 +158,31 @@ public class IntakeModule implements Module, TelemetryProvider {
     }
 
     private void intakeBlockerLogic() {
-        intakeBlockerLogic(true);
-        intakeBlockerLogic(false);
-    }
 
-    private void intakeBlockerLogic(boolean isLeft) {
-        Point blockerLocation = blockerPosition(isLeft);
+        if (!doneUnlocking){
+            leftBlocker.setPosition(LEFT_BLOCKER_BLOCKING_POSITION);
+            rightBlocker.setPosition(RIGHT_BLOCKER_BLOCKING_POSITION);
+        } else if (blockerPosition == IntakeBlockerPosition.BLOCKING){
+            leftBlocker.setPosition(LEFT_BLOCKER_BLOCKING_POSITION);
+            rightBlocker.setPosition(RIGHT_BLOCKER_BLOCKING_POSITION);
+        } else if (blockerPosition == IntakeBlockerPosition.OPEN){
+            leftBlocker.setPosition(LEFT_BLOCKER_OPEN_POSITION);
+            rightBlocker.setPosition(RIGHT_BLOCKER_OPEN_POSITION);
+        } else if (blockerPosition == IntakeBlockerPosition.BLOCKING.FUNNEL){
+            if (Math.abs(MathFunctions.angleWrap(robot.drivetrain.getCurrentHeading())) < Math.toRadians(90)){
+                double headingToHighGoal = robot.shooter.relativeHeadingToTarget(robot.shooter.target.getAllianceHigh()) - robot.drivetrain.getOdometryAngleVel()*0.1;
+                double leftBlockerTargetAngle = Math.toRadians(90)-headingToHighGoal + BLOCKER_FUNNEL_ANGLE;
+                double rightBlockerTargetAngle = Math.toRadians(90)+headingToHighGoal + BLOCKER_FUNNEL_ANGLE;
 
-        // check if we're close to a wall
-        for (int i = 0; i <= PERIMETER_VERTICES.length; i++) {
-            Point vertex = PERIMETER_VERTICES[i];
-            Point nextVertex = i == PERIMETER_VERTICES.length - 1 ? PERIMETER_VERTICES[0] : PERIMETER_VERTICES[i + 1];
-
-            if (lineSegmentPointDistance(blockerLocation, vertex, nextVertex) < WALL_AVOID_DISTANCE) {
-                setBlockerPosition(0, isLeft);
-                return;
+                double leftBlockerTarget = LEFT_BLOCKER_BLOCKING_POSITION + LEFT_BLOCKER_SLOPE*leftBlockerTargetAngle;
+                double rightBlockerTarget = RIGHT_BLOCKER_BLOCKING_POSITION + RIGHT_BLOCKER_SLOPE*rightBlockerTargetAngle;
+                leftBlocker.setPosition(leftBlockerTarget);
+                rightBlocker.setPosition(rightBlockerTarget);
+            } else {
+                leftBlocker.setPosition(LEFT_BLOCKER_BLOCKING_POSITION);
+                rightBlocker.setPosition(RIGHT_BLOCKER_BLOCKING_POSITION);
             }
         }
-
-        switch (blockerPosition) {
-            case BLOCKING:
-                setBlockerPosition(0, isLeft);
-                break;
-            case OPEN:
-                blockerFunnel(isLeft);
-                break;
-        }
-    }
-
-    private void blockerFunnel(boolean isLeft) {
-        double headingToHighGoal = robot.shooter.relativeHeadingToTarget(robot.shooter.target.getAllianceHigh());
-
-        double targetAngle = robotRelativeHeadingToBlockerHeading(headingToHighGoal, isLeft) + BLOCKER_FUNNEL_ANGLE;
-
-        if (targetAngle > Math.toRadians(180)) {
-            targetAngle = 0;
-        }
-
-        setBlockerPosition(targetAngle, isLeft);
-    }
-
-    private static final double LEFT_BLOCKER_SERVOPOS_SCALE = ((LEFT_BLOCKER_KNOWN_SERVO_POSITIONS[0].y - LEFT_BLOCKER_KNOWN_SERVO_POSITIONS[1].y)
-            / (LEFT_BLOCKER_KNOWN_SERVO_POSITIONS[0].x - LEFT_BLOCKER_KNOWN_SERVO_POSITIONS[1].x));
-    private static final double LEFT_BLOCKER_SERVOPOS_CONSTANT = LEFT_BLOCKER_KNOWN_SERVO_POSITIONS[0].y - (LEFT_BLOCKER_SERVOPOS_SCALE * LEFT_BLOCKER_KNOWN_SERVO_POSITIONS[0].x);
-
-    private static final double RIGHT_BLOCKER_SERVOPOS_SCALE = ((RIGHT_BLOCKER_KNOWN_SERVO_POSITIONS[0].y - RIGHT_BLOCKER_KNOWN_SERVO_POSITIONS[1].y)
-            / (RIGHT_BLOCKER_KNOWN_SERVO_POSITIONS[0].x - RIGHT_BLOCKER_KNOWN_SERVO_POSITIONS[1].x));
-    private static final double RIGHT_BLOCKER_SERVOPOS_CONSTANT = RIGHT_BLOCKER_KNOWN_SERVO_POSITIONS[0].y - (RIGHT_BLOCKER_SERVOPOS_SCALE * RIGHT_BLOCKER_KNOWN_SERVO_POSITIONS[0].x);
-
-    private void setBlockerPosition(double angle, boolean isLeft) {
-        if (isLeft) {
-            double position = Range.clip((angle * LEFT_BLOCKER_SERVOPOS_SCALE) + LEFT_BLOCKER_SERVOPOS_CONSTANT, 0, 1);
-
-            leftBlocker.setPosition(position);
-        } else {
-            double position = Range.clip((angle * RIGHT_BLOCKER_SERVOPOS_SCALE) + RIGHT_BLOCKER_SERVOPOS_CONSTANT, 0, 1);
-
-            rightBlocker.setPosition(position);
-        }
-    }
-
-    /**
-     * Converts a heading relative to the robot to the blocker's heading system, where 0 is in front
-     * of the intake and positive is outwards.
-     *
-     * @param heading A heading relative to the robot (the direction the robot is facing is 0)
-     * @param isLeft  Whether to convert to the left blocker's system. If false, the right blocker.
-     * @return The heading converted into the blocker's heading system.
-     */
-    private double robotRelativeHeadingToBlockerHeading(double heading, boolean isLeft) {
-        if (isLeft) {
-            return Math.toRadians(90) - heading;
-        } else {
-            return Math.toRadians(90) + heading;
-        }
-    }
-
-    private Point blockerPosition(boolean isLeft) {
-        return isLeft ?
-                robot.drivetrain.positionOfRobotPart(LEFT_BLOCKER_POSITION)
-                : robot.drivetrain.positionOfRobotPart(RIGHT_BLOCKER_POSITION);
     }
 
     public boolean isOn() {
