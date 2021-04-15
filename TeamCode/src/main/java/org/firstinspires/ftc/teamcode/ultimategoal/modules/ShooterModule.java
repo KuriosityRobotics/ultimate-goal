@@ -62,7 +62,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     private static final double INDEXER_RETRACTED_POSITION = 0.72;
 
     private static final int INDEXER_PUSHED_TIME_MS = 250; // since start of index
-    public static final int INDEXER_RETURNED_TIME_MS = 400; // since start of index
+    public static final int INDEXER_RETURNED_TIME_MS = 300; // since start of index
 
     public ShooterModule(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);

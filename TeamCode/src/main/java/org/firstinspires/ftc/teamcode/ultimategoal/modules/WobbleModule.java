@@ -53,12 +53,12 @@ public class WobbleModule implements Module, TelemetryProvider {
     }
 
     public void initModules() {
-        wobbleLeft = robot.getServo("wobbleLeft");
-        wobbleRight = robot.getServo("wobbleRight");
+        wobbleLeft = robot.getServo("wobbleArm1");
+        wobbleRight = robot.getServo("wobbleArm2");
 
         wobbleClaw = robot.getServo("wobbleClaw");
 
-        wobbleClaw.setPosition(CLAW_CLAMP_POSITION);
+        wobbleClaw.setPosition(CLAW_OPEN_POSITION);
     }
 
     boolean oldIsClawClamped = false;
