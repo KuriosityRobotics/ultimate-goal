@@ -16,6 +16,8 @@ public class RingManager implements Module, TelemetryProvider {
     public boolean willAutoRaise;
     public boolean willAutoShoot;
 
+    public int ringsToAutoRaise = 1;
+
     // for incoming ring detection
     private double timeLastPass;
     private boolean seenRing = false;
@@ -84,7 +86,7 @@ public class RingManager implements Module, TelemetryProvider {
 
         ringsInHopper = (int)(distanceSensorPasses/2);
 
-        if (ringsInHopper == 3){
+        if (ringsInHopper == ringsToAutoRaise){
             if (!readyToPush){
                 readyToPush = true;
                 delayStartTime = currentTime;
@@ -94,7 +96,7 @@ public class RingManager implements Module, TelemetryProvider {
         //sus
         if (willAutoRaise){
             if (currentTime > delayStartTime + PUSH_DELAY_TIME){
-                if (ringsInHopper == 3){
+                if (ringsInHopper == ringsToAutoRaise){
                     robot.shooter.deliverRings();
                     ringsInShooter = ringsInHopper;
                     distanceSensorPasses = 0;
