@@ -29,6 +29,10 @@ public class SamPlebTest2 extends LinearOpMode {
     private Servo indexer;
     private Servo flap;
 
+    private Servo wobbleArm1;
+    private Servo wobbleArm2;
+    private Servo claw;
+
 
     public double pos = 0.22;
     double pos2 = 0.72;
@@ -45,6 +49,10 @@ public class SamPlebTest2 extends LinearOpMode {
     public void runOpMode() {
         intakeTop = (DcMotor) hardwareMap.get("intakeTop");
         intakeBottom = (DcMotor) hardwareMap.get("intakeBottom");
+        wobbleArm1 = (Servo) hardwareMap.get("wobbleArm1");
+        wobbleArm2 = (Servo) hardwareMap.get("wobbleArm2");
+
+        claw = (Servo) hardwareMap.get("wobbleClaw");
 
         intakeTop.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeBottom.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -96,6 +104,28 @@ public class SamPlebTest2 extends LinearOpMode {
 //                servo.setPosition(pos);
 //                pos += 0.0001;
                 hopper.setPosition(0.36);
+            }
+
+            if(gamepad2.b){
+                wobbleArm1.setPosition(0.2488);
+                wobbleArm2.setPosition(0.2488);
+                //arm up 0.0059
+//arm mid 0.2488
+//arm down 0.47466
+//claw open 0
+//claw close 0.3
+            }else if(gamepad2.left_bumper){
+                wobbleArm1.setPosition(0);
+                wobbleArm2.setPosition(0);
+            }else if(gamepad2.right_bumper){
+                wobbleArm1.setPosition(0.47);
+                wobbleArm2.setPosition(0.47);
+            }
+
+            if(gamepad2.right_trigger>0){
+                claw.setPosition(0);
+            }else if(gamepad2.left_trigger>0){
+                claw.setPosition(0.3);
             }
 
             if(gamepad2.right_stick_x > 0) {
@@ -154,7 +184,7 @@ public class SamPlebTest2 extends LinearOpMode {
                 if(toggle) {
                     pos2 = 0.72;
                 }else{
-                    pos2 = 0.45;
+                    pos2 = 0.47;
                 }
                 startTime = SystemClock.elapsedRealtime();
             }else if(!gamepad1.a){
