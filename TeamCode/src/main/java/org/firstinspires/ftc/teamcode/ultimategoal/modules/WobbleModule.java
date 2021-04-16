@@ -12,8 +12,8 @@ public class WobbleModule implements Module, TelemetryProvider {
     boolean isOn;
 
     // States
-    public boolean isClawClamped = true;
-    public WobbleArmPosition wobbleArmPosition = WobbleArmPosition.RAISED;
+    public boolean isClawClamped = false;
+    public WobbleArmPosition wobbleArmPosition = WobbleArmPosition.LOWERED;
 
     private double wobbleRightTargetPosition;
     private double wobbleLeftTargetPosition;
@@ -59,6 +59,7 @@ public class WobbleModule implements Module, TelemetryProvider {
         wobbleClaw = robot.getServo("wobbleClaw");
 
         wobbleClaw.setPosition(CLAW_OPEN_POSITION);
+
     }
 
     boolean oldIsClawClamped = false;
