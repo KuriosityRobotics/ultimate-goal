@@ -38,8 +38,8 @@ public class PIDController implements TelemetryProvider {
     }
 
     public double calculatePID(double error) {
-        integral += error * 0.004;
-        double derivative = (error - prevError) / 0.004;
+        integral += error * 0.020;
+        double derivative = (error - prevError) / 0.020;
 
         scale = P * error + I * integral + D * derivative;
 
