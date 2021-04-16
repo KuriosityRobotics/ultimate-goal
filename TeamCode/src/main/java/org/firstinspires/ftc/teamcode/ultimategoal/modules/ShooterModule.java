@@ -9,9 +9,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain.BrakeController;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain.TargetVelocityFunction;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain.VelocityPidController;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PIDController;
 
 import java.util.ArrayList;
 
@@ -66,10 +64,14 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     public enum IndexerPosition {RETRACTED, PUSHED}
 
+    PIDController turretController;
+
     public ShooterModule(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
         this.robot = robot;
         this.isOn = isOn;
+
+        turretController = new PIDController(1.5, 0.0, 0.0, robot);
 
         targetTurretAngle = 0;
 
@@ -129,64 +131,20 @@ public class ShooterModule implements Module, TelemetryProvider {
         indexerLogic(currentTime);
     }
 
-    BrakeController controller = new BrakeController(
-            new VelocityPidController(0.029, 0, 5.52),
-            new TargetVelocityFunction(Math.toRadians(110), Math.toRadians(2), Math.toRadians(11), Math.toRadians(0.4)),
-            0.3, Math.toRadians(165));
-
-    private double lastTurretAngle = 0;
-    private long lastLoopTime = 0;
-    private double lastTargetAngle = 180;
-
-    private long freezeTime = 0;
-    boolean froze = false;
+    private double pow;
 
     private void turretLogic() {
 //        Log.v("turret", "--------");
 
         this.currentTurretAngle = turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
 
-        long currentTime = robot.getCurrentTimeMilli();
-
         double error = targetTurretAngle - currentTurretAngle;
-        double velo = 1000 * ((currentTurretAngle - lastTurretAngle) / (currentTime - lastLoopTime)); // rad/s
 
-        if (Math.abs(velo) > 0 || currentTime > freezeTime + 1000) {
-            froze = false;
+        if (Math.abs(error) < Math.toDegrees(2)) {
+            turretController.reset();
         }
 
-        double pow;
-        if (Math.abs(error) > 0.3) { // If there is very large error
-            controller.reset();
-            controller.setScale(Math.signum(error));
-            pow = Math.signum(error);
-        } else if (Math.abs(targetTurretAngle - lastTargetAngle) > 0.01) { // If we have a new target
-            controller.reset();
-            pow = controller.calculatePower(error, velo);
-        } else if (froze) { // If we are freezing the controller (due to the system having a large delay)
-            controller.reset();
-            pow = controller.calculatePower(error, velo);
-//            Log.v("turret", "freezing power");
-        } else {
-            pow = controller.calculatePower(error, velo);
-        }
-
-        // freeze the controller (due to large delay) if conditions are right
-        if (velo == 0 && Math.abs(pow) > 0.1 && !froze) {
-//            Log.v("turret", "SETTING FREEZE");
-            froze = true;
-            freezeTime = currentTime;
-        }
-
-//        Log.v("turret", "" + controller.targetVelocity(angleWrap(targetTurretAngle - currentTurretAngle)));
-//        Log.v("turret", "" + velo);
-//        Log.v("turret", "" + pow);
-//        Log.v("turret", "error: " + error);
-//        Log.v("turret", "atbrake: " + controller.getAtBrake() + " stopcoast: " + controller.getStopCoast());
-
-        lastTurretAngle = currentTurretAngle;
-        lastLoopTime = currentTime;
-        lastTargetAngle = targetTurretAngle;
+        pow = turretController.calculatePID(error);
 
         turnTurret(pow);
     }
@@ -307,6 +265,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         data.add("--");
         data.add("Target turret angle: " + Math.toDegrees(angleWrap(targetTurretAngle)));
         data.add("Current turret angle: " + Math.toDegrees(currentTurretAngle));
+        data.add("pow: " + pow);
         data.add("Flap angle: " + shooterFlapPosition);
         return data;
     }
