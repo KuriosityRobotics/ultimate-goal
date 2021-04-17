@@ -10,6 +10,7 @@ public class PIDController implements TelemetryProvider {
     public double P;
     public double I;
     public double D;
+    public double P_og;
 
     double integral;
     double prevError;
@@ -20,12 +21,13 @@ public class PIDController implements TelemetryProvider {
         this.P = P;
         this.I = I;
         this.D = D;
-
+        P_og = P;
         reset();
     }
 
     public void reset() {
         integral = 0;
+//        P = P_og;
         prevError = 1000000;
     }
 

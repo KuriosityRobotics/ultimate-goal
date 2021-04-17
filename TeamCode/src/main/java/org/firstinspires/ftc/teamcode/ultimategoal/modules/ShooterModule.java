@@ -22,9 +22,10 @@ public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
-    public static double P = 0.65;
-    public static double I = 0.35;
+    public static double P = 0.5;
+    public static double I = 0.01;
     public static double D = 0.0;
+    public static double F = 0.0001;
 
     // States
     private double targetTurretAngle;
@@ -78,7 +79,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         this.robot = robot;
         this.isOn = isOn;
 
-        turretController = new PIDController(0.65, 0.35, 0.00, robot);
+        turretController = new PIDController(P, I, D, robot);
 
         targetTurretAngle = 0;
 
@@ -272,6 +273,10 @@ public class ShooterModule implements Module, TelemetryProvider {
         HashMap<String, Object> data = new HashMap<>();
         data.put("turretPos", Math.toDegrees(currentTurretAngle));
         data.put("turretTargetPos", Math.toDegrees(angleWrap(targetTurretAngle)));
+        data.put("turretController P", turretController.P);
+        data.put("turretController I", turretController.I);
+        data.put("turretController D", turretController.D);
+        data.put("turret Power: ", pow);
         return data;
     }
 
