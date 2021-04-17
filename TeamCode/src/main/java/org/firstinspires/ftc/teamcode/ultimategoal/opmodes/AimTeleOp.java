@@ -59,7 +59,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
         robot.startModules();
 
-        robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.FUNNEL;
+        robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.BLOCKING;
 
         while (opModeIsActive()) {
             if (g1b.isToggled(gamepad1.b)) {

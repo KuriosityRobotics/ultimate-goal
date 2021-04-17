@@ -36,9 +36,9 @@ public class IntakeModule implements Module, TelemetryProvider {
     private static final Point LEFT_BLOCKER_POSITION = new Point(-7.627, 11.86);
     private static final Point RIGHT_BLOCKER_POSITION = new Point(7.624, 11.86);
 
-    private static final double LEFT_BLOCKER_BLOCKING_POSITION = 0.85727;
+    private static final double LEFT_BLOCKER_BLOCKING_POSITION = 0.85727 + 0.125;
     private static final double RIGHT_BLOCKER_BLOCKING_POSITION = 0.0;
-    private static final double LEFT_BLOCKER_OPEN_POSITION = 0.370;
+    private static final double LEFT_BLOCKER_OPEN_POSITION = 0.370 + 0.125;
     private static final double RIGHT_BLOCKER_OPEN_POSITION = 0.463;
 
     private static final double LEFT_BLOCKER_SLOPE = (LEFT_BLOCKER_OPEN_POSITION - LEFT_BLOCKER_BLOCKING_POSITION) / Math.toRadians(120);
