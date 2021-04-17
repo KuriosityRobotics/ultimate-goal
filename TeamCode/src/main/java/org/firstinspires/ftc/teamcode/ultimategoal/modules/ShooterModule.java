@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -12,12 +13,18 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PIDController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
 
+@Config
 public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
+
+    public static double P = 0.65;
+    public static double I = 0.35;
+    public static double D = 0.0;
 
     // States
     private double targetTurretAngle;
@@ -140,6 +147,10 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         double error = targetTurretAngle - currentTurretAngle;
 
+        turretController.P = P;
+        turretController.I = I;
+        turretController.D = D;
+
         if (Math.abs(error) < Math.toDegrees(2)) {
             turretController.reset();
         }
@@ -254,6 +265,14 @@ public class ShooterModule implements Module, TelemetryProvider {
     @Override
     public boolean isOn() {
         return isOn;
+    }
+
+    @Override
+    public HashMap<String, Object> getDashboardData() {
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("turretPos", Math.toDegrees(currentTurretAngle));
+        data.put("turretTargetPos", Math.toDegrees(angleWrap(targetTurretAngle)));
+        return data;
     }
 
     @Override
