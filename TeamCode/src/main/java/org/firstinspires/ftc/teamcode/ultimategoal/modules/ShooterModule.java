@@ -71,7 +71,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         this.robot = robot;
         this.isOn = isOn;
 
-        turretController = new PIDController(1.5, 0.0, 0.0, robot);
+        turretController = new PIDController(0.65, 0.35, 0.00, robot);
 
         targetTurretAngle = 0;
 
