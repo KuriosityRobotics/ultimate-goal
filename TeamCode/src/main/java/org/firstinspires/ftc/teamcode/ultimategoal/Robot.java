@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.ultimategoal;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.hardware.lynx.LynxModule;
