@@ -22,10 +22,14 @@ public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
-    public static double P = 0.5;
-    public static double I = 0.01;
-    public static double D = 0.0;
-    public static double F = 0.0001;
+    public static double P = 0.25;
+    public static double I = 0;
+    public static double D = 0;
+    public static double FULL_SPEED_THRESHOLD = Math.toRadians(36);
+    public static double STOP_SCALE = 2;
+    public static double CLOSE_SCALE = 0.8;
+    public static double CLOSE_THRESHOLD = 9;
+    public static double CLOSE_STOP_SCALE = 1.45;
 
     // States
     private double targetTurretAngle;
@@ -140,6 +144,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     private double pow;
+    private double lastPos;
 
     private void turretLogic() {
 //        Log.v("turret", "--------");
@@ -152,11 +157,27 @@ public class ShooterModule implements Module, TelemetryProvider {
         turretController.I = I;
         turretController.D = D;
 
-        if (Math.abs(error) < Math.toDegrees(2)) {
+        if (Math.abs(error) < Math.toRadians(0.5)) {
             turretController.reset();
         }
 
         pow = turretController.calculatePID(error);
+
+        if (Math.abs(error) < Math.toRadians(CLOSE_THRESHOLD)) {
+            pow = error * CLOSE_SCALE;
+            if (Math.abs(currentTurretAngle - lastPos) < 0.1) {
+                pow *= CLOSE_STOP_SCALE;
+            }
+        } else {
+            if (Math.abs(currentTurretAngle - lastPos) < 0.1) {
+                pow *= STOP_SCALE;
+            }
+        }
+        lastPos = currentTurretAngle;
+
+        if (Math.abs(error) > FULL_SPEED_THRESHOLD) {
+            pow = Math.signum(error);
+        }
 
         turnTurret(pow);
     }

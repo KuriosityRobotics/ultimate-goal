@@ -4,7 +4,7 @@ package org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain;
  * Calculates the desired power to brake using a VelocityPIDController
  */
 public class BrakeController {
-    VelocityPidController velocityPIDController;
+    VelocityPidController velocityPidController;
     TargetVelocityFunction targetVelocityFunction;
 
     private double velocityMax;
@@ -20,7 +20,7 @@ public class BrakeController {
     /**
      * Constructs a BrakeController.
      *
-     * @param velocityPIDController
+     * @param velocityPidController
      * @param targetVelocityFunction
      * @param initialScaleFactor     The factor multiplied against the target speed to determine the
      *                               starting scale after the PID is reset.
@@ -28,14 +28,14 @@ public class BrakeController {
      *                               brake controller. This has an effect when the speed of the
      *                               robot as braking begins is very low.
      */
-    public BrakeController(VelocityPidController velocityPIDController, TargetVelocityFunction targetVelocityFunction, double initialScaleFactor, double minVelocityCap) {
-        this(velocityPIDController, targetVelocityFunction, initialScaleFactor, minVelocityCap, true);
+    public BrakeController(VelocityPidController velocityPidController, TargetVelocityFunction targetVelocityFunction, double initialScaleFactor, double minVelocityCap) {
+        this(velocityPidController, targetVelocityFunction, initialScaleFactor, minVelocityCap, true);
     }
 
     /**
      * Constructs a BrakeController.
      *
-     * @param velocityPIDController
+     * @param velocityPidController
      * @param targetVelocityFunction
      * @param initialScaleFactor     The factor multiplied against the target speed to determine the
      *                               starting scale after the PID is reset.
@@ -45,8 +45,8 @@ public class BrakeController {
      * @param cutOffAfterCoast       Whether or not power is simply cut off if the desired velocity
      *                               is 0.
      */
-    public BrakeController(VelocityPidController velocityPIDController, TargetVelocityFunction targetVelocityFunction, double initialScaleFactor, double minVelocityCap, boolean cutOffAfterCoast) {
-        this.velocityPIDController = velocityPIDController;
+    public BrakeController(VelocityPidController velocityPidController, TargetVelocityFunction targetVelocityFunction, double initialScaleFactor, double minVelocityCap, boolean cutOffAfterCoast) {
+        this.velocityPidController = velocityPidController;
         this.targetVelocityFunction = targetVelocityFunction;
         this.initialScaleFactor = initialScaleFactor;
         this.minVelocityCap = minVelocityCap;
@@ -61,7 +61,7 @@ public class BrakeController {
 
             double newScale = Math.min(targetVelocityFunction.desiredVelocity(distanceToTarget), velocityMax) * initialScaleFactor;
             // TODO doesn't work for neg ^^
-            velocityPIDController.reset(newScale);
+            velocityPidController.reset(newScale);
             reset = false;
         }
 
@@ -70,7 +70,7 @@ public class BrakeController {
                 && Math.abs(currentVelocity) < 0.08;
         if (!atBrake && stopCoast && Math.abs(currentVelocity) < 0.1) {
             atBrake = true;
-            velocityPIDController.reset(0);
+            velocityPidController.reset(0);
         } else if (absoluteDistanceToTarget > targetVelocityFunction.coastThreshold) { // Too far from brake point to be considered @ it?
             atBrake = false;
             stopCoast = false;
@@ -88,7 +88,7 @@ public class BrakeController {
 
             double error = targetVelocity - currentVelocity;
 
-            return velocityPIDController.calculateScale(error);
+            return velocityPidController.calculateScale(error);
         }
     }
 
@@ -110,7 +110,7 @@ public class BrakeController {
     }
 
     public void setScale(double scale) {
-        velocityPIDController.reset(scale);
+        velocityPidController.reset(scale);
     }
 
     public boolean getAtBrake() {
