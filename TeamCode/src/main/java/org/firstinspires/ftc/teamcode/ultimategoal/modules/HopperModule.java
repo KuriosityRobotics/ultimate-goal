@@ -27,7 +27,7 @@ public class HopperModule implements Module, TelemetryProvider {
     private static final double LINKAGE_LOWERED_POSITION = 0;
     private static final double LINKAGE_RAISED_POSITION = 0.36;
 
-    private static final int RAISE_TIME_MS = 900; // from lowered to apex
+    private static final int RAISE_TIME_MS = 700; // from lowered to apex
     private static final int RAISE_TRANSITIONING_TIME_MS = RAISE_TIME_MS / 2; // from lowered to interfering with shooter
     private static final int LOWER_TIME_MS = 500; // from apex to lowered
     private static final int LOWER_CLEAR_SHOOTER_TIME_MS = LOWER_TIME_MS / 2; // from apex to no longer interfering with shooter
