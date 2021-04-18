@@ -2,6 +2,9 @@ package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
 import android.os.SystemClock;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -13,7 +16,15 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 //@Disabled
 @TeleOp
+@Config
 public class SamPlebTest2 extends LinearOpMode {
+    public FtcDashboard dashboard;
+
+    public TelemetryPacket packet;
+
+    public static double hopperDown = 0.03;
+    public static double hopperUp = 0.55;
+
     private  DcMotor intakeTop;
     private  DcMotor intakeBottom;
     private Servo hopper;
@@ -29,8 +40,12 @@ public class SamPlebTest2 extends LinearOpMode {
     private Servo indexer;
     private Servo flap;
 
+    private Servo wobbleArm1;
+    private Servo wobbleArm2;
+    private Servo claw;
 
-    public double pos = 0.27;
+
+    public double pos = 0.22;
     double pos2 = 0.72;
     boolean toggle = false;
     public double flyWheelTargetSpeed = 1750;
@@ -43,8 +58,15 @@ public class SamPlebTest2 extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        this.dashboard = FtcDashboard.getInstance();
+        this.packet = new TelemetryPacket();
+
         intakeTop = (DcMotor) hardwareMap.get("intakeTop");
         intakeBottom = (DcMotor) hardwareMap.get("intakeBottom");
+        wobbleArm1 = (Servo) hardwareMap.get("wobbleArm1");
+        wobbleArm2 = (Servo) hardwareMap.get("wobbleArm2");
+
+        claw = (Servo) hardwareMap.get("wobbleClaw");
 
         intakeTop.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeBottom.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -91,11 +113,34 @@ public class SamPlebTest2 extends LinearOpMode {
             if(gamepad2.a){
 //                servo.setPosition(pos);
 //                pos -= 0.0001;
-                hopper.setPosition(0.0);
+                hopper.setPosition(hopperDown);
             }else if(gamepad2.x){
 //                servo.setPosition(pos);
 //                pos += 0.0001;
-                hopper.setPosition(0.36);
+//                hopper.setPosition(0.36);
+                hopper.setPosition(hopperUp);
+            }
+
+            if(gamepad2.b){
+                wobbleArm1.setPosition(0.2488);
+                wobbleArm2.setPosition(0.2488);
+                //arm up 0.0059
+//arm mid 0.2488
+//arm down 0.47466
+//claw open 0
+//claw close 0.3
+            }else if(gamepad2.left_bumper){
+                wobbleArm1.setPosition(0);
+                wobbleArm2.setPosition(0);
+            }else if(gamepad2.right_bumper){
+                wobbleArm1.setPosition(0.47);
+                wobbleArm2.setPosition(0.47);
+            }
+
+            if(gamepad2.right_trigger>0){
+                claw.setPosition(0);
+            }else if(gamepad2.left_trigger>0){
+                claw.setPosition(0.3);
             }
 
             if(gamepad2.right_stick_x > 0) {
@@ -154,7 +199,7 @@ public class SamPlebTest2 extends LinearOpMode {
                 if(toggle) {
                     pos2 = 0.72;
                 }else{
-                    pos2 = 0.45;
+                    pos2 = 0.47;
                 }
                 startTime = SystemClock.elapsedRealtime();
             }else if(!gamepad1.a){
@@ -174,3 +219,4 @@ public class SamPlebTest2 extends LinearOpMode {
         }
     }
 }
+
