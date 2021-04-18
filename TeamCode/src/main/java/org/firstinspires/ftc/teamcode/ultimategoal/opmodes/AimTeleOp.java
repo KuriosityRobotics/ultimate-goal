@@ -41,13 +41,12 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     Toggle g2DU = new Toggle();
     Toggle g2DD = new Toggle();
     Toggle g2LB = new Toggle();
+    Toggle g2RB = new Toggle();
 
     BluePowershotsAction bluePowershotsAction = new BluePowershotsAction();
     private boolean doPowershotsAction = false;
 
     public void runOpMode() {
-
-
         initRobot();
 
         robot.telemetryDump.registerProvider(this);
@@ -67,6 +66,10 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
                 } else {
                     robot.shooter.flywheelOn = false;
                 }
+            }
+
+            if(g2RB.isToggled(gamepad2.right_bumper)){
+                robot.ringManager.resetRingCounters();
             }
 
             if (doPowershotsAction) {

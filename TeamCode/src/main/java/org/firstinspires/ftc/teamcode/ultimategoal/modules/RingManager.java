@@ -124,8 +124,17 @@ public class RingManager implements Module, TelemetryProvider {
         oldIndexerPosition = currentIndexerPosition;
     }
 
+    public void resetRingCounters() {
+        distanceSensorPasses = 0;
+        ringsInIntake = 0;
+        ringsInHopper = 0;
+        ringsInShooter = 0;
+    }
+
     public boolean canIntake() {
-        if (ringsInHopper + ringsInShooter < 3) {
+
+        long currentTime = robot.getCurrentTimeMilli();
+        if (ringsInHopper + ringsInShooter < autoRaiseThreshold) {
             return true;
         } else {
             return robot.shooter.getHopperPosition() == HopperModule.HopperPosition.LOWERED;

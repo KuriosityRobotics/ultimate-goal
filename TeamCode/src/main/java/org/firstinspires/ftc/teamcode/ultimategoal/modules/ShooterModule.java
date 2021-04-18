@@ -71,7 +71,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     private static final double INDEXER_PUSHED_POSITION = 0.45;
     private static final double INDEXER_RETRACTED_POSITION = 0.72;
 
-    private static final int INDEXER_PUSHED_TIME_MS = 250; // since start of index
+    private static final int INDEXER_PUSHED_TIME_MS = 160; // since start of index
     public static final int INDEXER_RETURNED_TIME_MS = 300; // since start of index
 
     public enum IndexerPosition {RETRACTED, PUSHED}
