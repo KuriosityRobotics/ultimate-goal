@@ -102,19 +102,6 @@ public class IntakeModule implements Module, TelemetryProvider {
         rightBlocker = robot.getServo("blockerRight");
     }
 
-    // TODO clean up: better if ringManger set stopIntake instead of dependencies both ways
-    // ideally intakeModule can work without ringManager (lessen dependencies)
-    public void tryToSetIntakePower(double desired) {
-        if (desired > 0) { // Intake iff total amount of rings on robot is less than three.
-            if (robot.ringManager.canIntake())
-                this.intakePower = desired;
-            else
-                this.intakePower = 0;
-        } else if (desired <= 0) { // Allow outtake always
-            this.intakePower = desired;
-        }
-    }
-
     public void update() {
         intakeLogic();
         intakeBlockerLogic();

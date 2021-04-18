@@ -20,7 +20,6 @@ public class RingManager implements Module, TelemetryProvider {
     public int autoRaiseThreshold = 1;
 
     // Data
-    public int ringsInIntake; // will implement later
     public int ringsInHopper;
     public int ringsInShooter;
 
@@ -37,7 +36,6 @@ public class RingManager implements Module, TelemetryProvider {
 
         robot.telemetryDump.registerProvider(this);
 
-        ringsInIntake = 0;
         ringsInHopper = 0; // will change to 3 later b/c autonomous starts w 3 rings
         ringsInShooter = 0;
 
@@ -52,13 +50,11 @@ public class RingManager implements Module, TelemetryProvider {
     }
 
     public void update() {
-        if (ringsInShooter < 0) {
-            ringsInShooter = 0;
-        }
-
         countPassingRings();
         detectHopperDelivery();
         detectShotRings();
+
+        stopIntakeLogic();
     }
 
     private void countPassingRings() {
@@ -118,34 +114,33 @@ public class RingManager implements Module, TelemetryProvider {
 
         // when indexer has returned from an index the shooter loses a ring
         if (oldIndexerPosition == ShooterModule.IndexerPosition.PUSHED && currentIndexerPosition == ShooterModule.IndexerPosition.RETRACTED) {
-            ringsInShooter--;
+            if (ringsInShooter > 0) {
+                ringsInShooter--;
+            }
         }
 
         oldIndexerPosition = currentIndexerPosition;
     }
 
-    public void resetRingCounters() {
-        distanceSensorPasses = 0;
-        ringsInIntake = 0;
-        ringsInHopper = 0;
-        ringsInShooter = 0;
+    private void stopIntakeLogic() {
+        if (ringsInHopper + ringsInShooter >= 3) {
+            robot.intakeModule.stopIntake = true;
+        } else if (robot.shooter.getHopperPosition() != HopperModule.HopperPosition.LOWERED) {
+            robot.intakeModule.stopIntake = seeingRing;
+        } else {
+            robot.intakeModule.stopIntake = false;
+        }
     }
 
-    public boolean canIntake() {
-
-        long currentTime = robot.getCurrentTimeMilli();
-        if (ringsInHopper + ringsInShooter < autoRaiseThreshold) {
-            return true;
-        } else {
-            return robot.shooter.getHopperPosition() == HopperModule.HopperPosition.LOWERED;
-            // TODO move this out, also we can intake if we have less than three and the hopper is transitioning until the ring hits the sensor
-        }
+    public void resetRingCounters() {
+        distanceSensorPasses = 0;
+        ringsInHopper = 0;
+        ringsInShooter = 0;
     }
 
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("Ring passes: " + distanceSensorPasses);
-        data.add("Rings in intake: " + ringsInIntake);
         data.add("Rings in hopper: " + ringsInHopper);
         data.add("Rings in shooter: " + ringsInShooter);
         data.add("Will Auto Raise:  " + willAutoRaise);

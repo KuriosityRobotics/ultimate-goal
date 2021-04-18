@@ -154,7 +154,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     private void updateIntakeStates() {
-        robot.intakeModule.tryToSetIntakePower(gamepad2.left_stick_y * 2);
+        robot.intakeModule.intakePower = gamepad2.left_stick_y * 2;
 
         if (g2y.isToggled(gamepad2.y)) {
             robot.intakeModule.blockerPosition = robot.intakeModule.blockerPosition.next();
