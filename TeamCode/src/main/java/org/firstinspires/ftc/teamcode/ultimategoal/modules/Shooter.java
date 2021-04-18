@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions;
 
 import java.util.ArrayList;
 
@@ -13,8 +12,8 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private final Robot robot;
     private final boolean isOn;
 
-    public final ShooterModule shooterModule;
-    public final HopperModule hopperModule;
+    private final ShooterModule shooterModule;
+    private final HopperModule hopperModule;
 
     // States
     public ITarget target = BLUE_HIGH;
@@ -33,13 +32,13 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private static final double TURRET_DISTANCE_FROM_BACK = 7;
 
     private static final double[][] HIGH_GOAL_DATA = {
-            {85.0 - TURRET_DISTANCE_FROM_BACK , 0.23  , Math.toRadians(6.910)},
-            {90.0 - TURRET_DISTANCE_FROM_BACK , 0.2289, Math.toRadians(6.899)},
-            {95.0 - TURRET_DISTANCE_FROM_BACK , 0.2299, Math.toRadians(6.886)},
+            {85.0 - TURRET_DISTANCE_FROM_BACK, 0.23, Math.toRadians(6.910)},
+            {90.0 - TURRET_DISTANCE_FROM_BACK, 0.2289, Math.toRadians(6.899)},
+            {95.0 - TURRET_DISTANCE_FROM_BACK, 0.2299, Math.toRadians(6.886)},
             {100.0 - TURRET_DISTANCE_FROM_BACK, 0.2285, Math.toRadians(5.951)},
             {105.0 - TURRET_DISTANCE_FROM_BACK, 0.2292, Math.toRadians(6.010)},
-            {110.0 - TURRET_DISTANCE_FROM_BACK, 0.228 , Math.toRadians(7.347)},
-            {115.0 - TURRET_DISTANCE_FROM_BACK, 0.226 , Math.toRadians(6.614)},
+            {110.0 - TURRET_DISTANCE_FROM_BACK, 0.228, Math.toRadians(7.347)},
+            {115.0 - TURRET_DISTANCE_FROM_BACK, 0.226, Math.toRadians(6.614)},
             {120.0 - TURRET_DISTANCE_FROM_BACK, 0.2259, Math.toRadians(5.135)},
             {125.0 - TURRET_DISTANCE_FROM_BACK, 0.2247, Math.toRadians(5.573)},
             {130.0 - TURRET_DISTANCE_FROM_BACK, 0.2266, Math.toRadians(6.507)}
@@ -108,7 +107,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         }
 
         if (queuedIndexes > 0) {
-            boolean safeToIndex = hopperModule.msUntilHopperRaised() > shooterModule.INDEXER_RETURNED_TIME_MS;
+            boolean safeToIndex = hopperModule.msUntilHopperRaised() > ShooterModule.INDEXER_RETURNED_TIME_MS;
             boolean shooterReady = burstNum > 0 || shooterModule.flywheelsUpToSpeed();
 
             if (safeToIndex && shooterReady && !shooterModule.indexRing) {
@@ -121,31 +120,30 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         }
 
         // Update both modules
-        hopperModule.update();
-        shooterModule.update();
+        if (hopperModule.isOn()) hopperModule.update();
+        if (shooterModule.isOn()) shooterModule.update();
     }
 
     long oldUpdateTime = 0;
     double oldTurretTarget = 0;
 
     private void aimTurret() {
-
         long currentUpdateTime = robot.getCurrentTimeMilli();
 
         distanceToTarget = distanceToTarget(target);
 
-        angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalValues(distanceToTarget)[1];
+        angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalAimValues(distanceToTarget)[1];
 
         double absoluteTurretHeading = absoluteHeadingToTarget(target);
+
         double turretTargetRaw = absoluteTurretHeading - robot.drivetrain.getCurrentHeading();
+        double turretTargetVel = 1000 * (turretTargetRaw - oldTurretTarget) / (currentUpdateTime - oldUpdateTime);
 
-        double turretTargetVel = 1000*(turretTargetRaw - oldTurretTarget) / (currentUpdateTime - oldUpdateTime);
+        double adjustedTurretTarget = turretTargetRaw + 0.00 * turretTargetVel;
 
-        double turretTargetAdj = turretTargetRaw + 0.00 * turretTargetVel;
+        shooterModule.setTargetTurretAngle(adjustedTurretTarget + angleOffset);
 
-        shooterModule.setTargetTurretAngle(turretTargetAdj + angleOffset);
-
-        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalValues(distanceToTarget)[0];
+        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalAimValues(distanceToTarget)[0];
 
         oldTurretTarget = turretTargetRaw;
         oldUpdateTime = currentUpdateTime;
@@ -157,23 +155,29 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
                 + POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
     }
 
-    private double[] getHighGoalValues (double distanceToTarget) { // TODO RETUNE
-
+    /**
+     * Calculate the flap angle and the offset angle required for a given distanceToTarget.
+     *
+     * @param distanceToTarget
+     * @return A double[] of {flap angle, offsetAngle}.
+     */
+    private double[] getHighGoalAimValues(double distanceToTarget) { // TODO RETUNE
+        // find the last datapoint w/ distance smaller than the current distance
         int distanceIndex = HIGH_GOAL_DATA.length - 2; // lower bound
-        for (int i = 1; i < HIGH_GOAL_DATA.length-1; i++){
-            if (HIGH_GOAL_DATA[i][0] > distanceToTarget){
-                distanceIndex = i-1; // -1 accounts for lower bound
+        for (int i = 0; i < HIGH_GOAL_DATA.length; i++) {
+            if (HIGH_GOAL_DATA[i + 1][0] > distanceToTarget) {
+                distanceIndex = i;
                 break;
             }
         }
 
         double deltaD = distanceToTarget - HIGH_GOAL_DATA[distanceIndex][0];
-        double flangleSlope = (HIGH_GOAL_DATA[distanceIndex+1][1] - HIGH_GOAL_DATA[distanceIndex][1])/5;
-        double offsetSlope = (HIGH_GOAL_DATA[distanceIndex+1][2] - HIGH_GOAL_DATA[distanceIndex][2])/5;
-        double flangle = HIGH_GOAL_DATA[distanceIndex][1] + flangleSlope*deltaD;
-        double offsetAngle =  HIGH_GOAL_DATA[distanceIndex][2] + offsetSlope*deltaD;
+        double flangleSlope = (HIGH_GOAL_DATA[distanceIndex + 1][1] - HIGH_GOAL_DATA[distanceIndex][1]) / (HIGH_GOAL_DATA[distanceIndex + 1][0] - HIGH_GOAL_DATA[distanceIndex][0]);
+        double offsetSlope = (HIGH_GOAL_DATA[distanceIndex + 1][2] - HIGH_GOAL_DATA[distanceIndex][2]) / (HIGH_GOAL_DATA[distanceIndex + 1][0] - HIGH_GOAL_DATA[distanceIndex][0]);
+        double flangle = HIGH_GOAL_DATA[distanceIndex][1] + flangleSlope * deltaD;
+        double offsetAngle = HIGH_GOAL_DATA[distanceIndex][2] + offsetSlope * deltaD;
 
-        return new double[] {flangle,offsetAngle};
+        return new double[]{flangle, offsetAngle};
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
@@ -217,10 +221,6 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         }
     }
 
-    public double getFlyWheelTargetSpeed() {
-        return shooterModule.flyWheelTargetSpeed;
-    }
-
     public void setFlyWheelTargetSpeed(double targetSpeed) {
         shooterModule.flyWheelTargetSpeed = targetSpeed;
     }
@@ -236,8 +236,8 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         queuedIndexes += 1;
     }
 
-    public void queueIndex( int numQueue) {
-    queuedIndexes += numQueue;
+    public void queueIndex(int numQueue) {
+        queuedIndexes += numQueue;
     }
 
     /**
@@ -261,10 +261,6 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         hopperModule.deliverRings = true;
     }
 
-    public boolean flywheelsUpToSpeed() {
-        return shooterModule.flywheelsUpToSpeed();
-    }
-
     public boolean isFinishedIndexing() {
         return shooterModule.isFinishedIndexing();
     }
@@ -275,6 +271,10 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     public HopperModule.HopperPosition getHopperPosition() {
         return hopperModule.getCurrentHopperPosition();
+    }
+
+    public ShooterModule.IndexerPosition getIndexerPosition() {
+        return shooterModule.getIndexerPosition();
     }
 
     @Override
