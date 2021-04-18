@@ -130,7 +130,7 @@ public class Robot extends ModuleCollection {
 //        this.visionModule = new VisionModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.intakeModule, this.wobbleModule, this.shooter, this.ringManager
+                this.drivetrain, this.ringManager, this.intakeModule, this.shooter, this.wobbleModule
         };
 
         // Initialize modules
