@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
@@ -20,8 +19,8 @@ public class IntakeModule implements Module, TelemetryProvider {
     // States
     public boolean doneUnlocking;
     public double intakePower = 0;
+    boolean stopIntake;
     public IntakeBlockerPosition blockerPosition;
-    public double intakeDistanceVoltage;
 
     // Actuators
     DcMotor intakeTop;
@@ -29,9 +28,6 @@ public class IntakeModule implements Module, TelemetryProvider {
 
     Servo leftBlocker;
     Servo rightBlocker;
-
-    // Sensors
-    AnalogInput intakeDistance;
 
     // Constants
     private static final int UNLOCK_TIME = 1200;
@@ -45,8 +41,8 @@ public class IntakeModule implements Module, TelemetryProvider {
     private static final double LEFT_BLOCKER_OPEN_POSITION = 0.370;
     private static final double RIGHT_BLOCKER_OPEN_POSITION = 0.463;
 
-    private static final double LEFT_BLOCKER_SLOPE = (LEFT_BLOCKER_OPEN_POSITION- LEFT_BLOCKER_BLOCKING_POSITION)/Math.toRadians(120);
-    private static final double RIGHT_BLOCKER_SLOPE = (RIGHT_BLOCKER_OPEN_POSITION- RIGHT_BLOCKER_BLOCKING_POSITION)/Math.toRadians(120);
+    private static final double LEFT_BLOCKER_SLOPE = (LEFT_BLOCKER_OPEN_POSITION - LEFT_BLOCKER_BLOCKING_POSITION) / Math.toRadians(120);
+    private static final double RIGHT_BLOCKER_SLOPE = (RIGHT_BLOCKER_OPEN_POSITION - RIGHT_BLOCKER_BLOCKING_POSITION) / Math.toRadians(120);
 
     // blocker is 7.623" long
     private static final double WALL_AVOID_DISTANCE = 7.623 + 5; // if blocker is within this threshold to the wall, it folds
@@ -58,9 +54,7 @@ public class IntakeModule implements Module, TelemetryProvider {
             new Point(-9, 141 - 9)};
 
     // Helpers
-    boolean holdRing;
-
-    long startTime = 0;
+    long startTime;
 
     public enum IntakeBlockerPosition {
         BLOCKING, FUNNEL, OPEN;
@@ -68,7 +62,7 @@ public class IntakeModule implements Module, TelemetryProvider {
         public IntakeBlockerPosition next() {
             IntakeBlockerPosition position;
 
-            switch(name()) {
+            switch (name()) {
                 default:
                 case "BLOCKING":
                     position = FUNNEL;
@@ -93,15 +87,12 @@ public class IntakeModule implements Module, TelemetryProvider {
 
         doneUnlocking = false;
         blockerPosition = IntakeBlockerPosition.BLOCKING;
-        intakeDistanceVoltage = 0; // make sure that this value is safe
 
-        holdRing = false;
+        stopIntake = false;
         startTime = 0;
     }
 
     public void initModules() {
-        intakeDistance = robot.hardwareMap.get(AnalogInput.class, "distance");
-
         intakeTop = robot.getDcMotor("intakeTop");
         intakeBottom = robot.getDcMotor("intakeBottom");
 
@@ -112,44 +103,39 @@ public class IntakeModule implements Module, TelemetryProvider {
         rightBlocker = robot.getServo("blockerRight");
     }
 
+    // TODO clean up: better if ringManger set stopIntake instead of dependencies both ways
+    // ideally intakeModule can work without ringManager (lessen dependencies)
     public void tryToSetIntakePower(double desired) {
-        if(desired > 0) { // Intake iff total amount of rings on robot is less than three.
-            if(robot.ringManager.canIntake())
+        if (desired > 0) { // Intake iff total amount of rings on robot is less than three.
+            if (robot.ringManager.canIntake())
                 this.intakePower = desired;
             else
                 this.intakePower = 0;
-        } else if (desired <= 0){ // Allow outtake always
+        } else if (desired <= 0) { // Allow outtake always
             this.intakePower = desired;
         }
     }
 
     public void update() {
-        intakeDistanceVoltage = intakeDistance.getVoltage();
         intakeLogic();
         intakeBlockerLogic();
     }
 
     private void intakeLogic() {
+        double power;
         if (!doneUnlocking) {
-            double power = 1;
+            power = 1;
             if (startTime == 0) {
                 startTime = robot.getCurrentTimeMilli();
             } else if (robot.getCurrentTimeMilli() > startTime + UNLOCK_TIME) {
                 doneUnlocking = true;
                 power = 0;
             }
-            runIntake(power);
         } else {
-            if (robot.shooter.getHopperPosition() != HopperModule.HopperPosition.LOWERED) {
-
-            } else {
-                holdRing = false;
-            }
-
-            double power = holdRing ? 0 : intakePower;
-
-            runIntake(power);
+            power = stopIntake ? 0 : intakePower;
         }
+
+        runIntake(power);
     }
 
     private void runIntake(double power) {
@@ -158,24 +144,23 @@ public class IntakeModule implements Module, TelemetryProvider {
     }
 
     private void intakeBlockerLogic() {
-
-        if (!doneUnlocking){
+        if (!doneUnlocking) {
             leftBlocker.setPosition(LEFT_BLOCKER_BLOCKING_POSITION);
             rightBlocker.setPosition(RIGHT_BLOCKER_BLOCKING_POSITION);
-        } else if (blockerPosition == IntakeBlockerPosition.BLOCKING){
+        } else if (blockerPosition == IntakeBlockerPosition.BLOCKING) {
             leftBlocker.setPosition(LEFT_BLOCKER_BLOCKING_POSITION);
             rightBlocker.setPosition(RIGHT_BLOCKER_BLOCKING_POSITION);
-        } else if (blockerPosition == IntakeBlockerPosition.OPEN){
+        } else if (blockerPosition == IntakeBlockerPosition.OPEN) {
             leftBlocker.setPosition(LEFT_BLOCKER_OPEN_POSITION);
             rightBlocker.setPosition(RIGHT_BLOCKER_OPEN_POSITION);
-        } else if (blockerPosition == IntakeBlockerPosition.BLOCKING.FUNNEL){
-            if (Math.abs(MathFunctions.angleWrap(robot.drivetrain.getCurrentHeading())) < Math.toRadians(90)){
-                double headingToHighGoal = robot.shooter.relativeHeadingToTarget(robot.shooter.target.getAllianceHigh()) - robot.drivetrain.getOdometryAngleVel()*0.1;
-                double leftBlockerTargetAngle = Math.toRadians(90)-headingToHighGoal + BLOCKER_FUNNEL_ANGLE;
-                double rightBlockerTargetAngle = Math.toRadians(90)+headingToHighGoal + BLOCKER_FUNNEL_ANGLE;
+        } else if (blockerPosition == IntakeBlockerPosition.FUNNEL) {
+            if (Math.abs(MathFunctions.angleWrap(robot.drivetrain.getCurrentHeading())) < Math.toRadians(90)) {
+                double headingToHighGoal = robot.shooter.relativeHeadingToTarget(robot.shooter.target.getAllianceHigh()) - robot.drivetrain.getOdometryAngleVel() * 0.1;
+                double leftBlockerTargetAngle = Math.toRadians(90) - headingToHighGoal + BLOCKER_FUNNEL_ANGLE;
+                double rightBlockerTargetAngle = Math.toRadians(90) + headingToHighGoal + BLOCKER_FUNNEL_ANGLE;
 
-                double leftBlockerTarget = LEFT_BLOCKER_BLOCKING_POSITION + LEFT_BLOCKER_SLOPE*leftBlockerTargetAngle;
-                double rightBlockerTarget = RIGHT_BLOCKER_BLOCKING_POSITION + RIGHT_BLOCKER_SLOPE*rightBlockerTargetAngle;
+                double leftBlockerTarget = LEFT_BLOCKER_BLOCKING_POSITION + LEFT_BLOCKER_SLOPE * leftBlockerTargetAngle;
+                double rightBlockerTarget = RIGHT_BLOCKER_BLOCKING_POSITION + RIGHT_BLOCKER_SLOPE * rightBlockerTargetAngle;
                 leftBlocker.setPosition(leftBlockerTarget);
                 rightBlocker.setPosition(rightBlockerTarget);
             } else {

@@ -25,11 +25,11 @@ public class ShooterModule implements Module, TelemetryProvider {
     private double targetTurretAngle;
     public double flyWheelTargetSpeed;
     public boolean indexRing;
-    public IndexerPosition indexerPosition;
     public double shooterFlapPosition = FLAP_LOWER_LIMIT;
 
     // Data
     private double currentTurretAngle;
+    private IndexerPosition indexerPosition;
 
     // Motors
     private DcMotorEx flyWheel1;
@@ -63,6 +63,8 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     private static final int INDEXER_PUSHED_TIME_MS = 250; // since start of index
     public static final int INDEXER_RETURNED_TIME_MS = 300; // since start of index
+
+    public enum IndexerPosition {RETRACTED, PUSHED}
 
     public ShooterModule(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
@@ -221,24 +223,31 @@ public class ShooterModule implements Module, TelemetryProvider {
         }
     }
 
-    public enum IndexerPosition {RETRACTED, PUSHED}
-
     private void indexerLogic(long currentTime) {
         if (currentTime < indexTime + INDEXER_PUSHED_TIME_MS) {
-            indexerServo.setPosition(INDEXER_PUSHED_POSITION);
             indexerPosition = IndexerPosition.PUSHED;
         } else if (currentTime < indexTime + INDEXER_RETURNED_TIME_MS) {
-            indexerServo.setPosition(INDEXER_RETRACTED_POSITION);
             indexerPosition = IndexerPosition.RETRACTED;
         } else if (indexRing) {
-            indexerServo.setPosition(INDEXER_PUSHED_POSITION);
             indexerPosition = IndexerPosition.PUSHED;
 
             indexRing = false;
             indexTime = currentTime;
         } else {
-            indexerServo.setPosition(INDEXER_RETRACTED_POSITION);
             indexerPosition = IndexerPosition.RETRACTED;
+        }
+
+        setIndexerPosition();
+    }
+
+    private void setIndexerPosition() {
+        switch (indexerPosition) {
+            case PUSHED:
+                indexerServo.setPosition(INDEXER_PUSHED_POSITION);
+                break;
+            case RETRACTED:
+                indexerServo.setPosition(INDEXER_RETRACTED_POSITION);
+                break;
         }
     }
 
@@ -278,6 +287,10 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     public boolean isIndexerReturned() {
         return robot.getCurrentTimeMilli() > indexTime + INDEXER_RETURNED_TIME_MS;
+    }
+
+    public IndexerPosition getIndexerPosition() {
+        return indexerPosition;
     }
 
     @Override
