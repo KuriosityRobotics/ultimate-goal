@@ -30,20 +30,20 @@ public class WobbleModule implements Module, TelemetryProvider {
     private static final double CLAW_CLAMP_POSITION = 0.3;
     private static final double CLAW_OPEN_POSITION = 0;
 
-    public static final double WOBBLE_RAISED_LEFT_POSITON = 0.0059;
-    public static final double WOBBLE_RAISED_RIGHT_POSITON = 0.0059;
+    private static final double WOBBLE_RAISED_LEFT_POSITON = 0.0059;
+    private static final double WOBBLE_RAISED_RIGHT_POSITON = 0.0059;
 
-    public static final double WOBBLE_LOWERED_LEFT_POSITON = 0.47466;
-    public static final double WOBBLE_LOWERED_RIGHT_POSITON = 0.47466;
+    private static final double WOBBLE_LOWERED_LEFT_POSITON = 0.47466;
+    private static final double WOBBLE_LOWERED_RIGHT_POSITON = 0.47466;
 
-    public static final double WOBBLE_WALLDROP_LEFT_POSITON = 0.2488;
-    public static final double WOBBLE_WALLDROP_RIGHT_POSITON = 0.2488;
+    private static final double WOBBLE_WALLDROP_LEFT_POSITON = 0.2488;
+    private static final double WOBBLE_WALLDROP_RIGHT_POSITON = 0.2488;
 
-    public static final double WOBBLE_AUTODROP_LEFT_POSITON = 0.1;
-    public static final double WOBBLE_AUTODROP_RIGHT_POSITON = 0.1;
+    private static final double WOBBLE_AUTODROP_LEFT_POSITON = 0.1;
+    private static final double WOBBLE_AUTODROP_RIGHT_POSITON = 0.1;
 
-    public static final int CLAW_CLOSE_MS = 750;
-    public static final int CLAW_OPEN_MS = 750;
+    private static final int CLAW_CLOSE_MS = 750;
+    private static final int CLAW_OPEN_MS = 750;
 
     public WobbleModule(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -62,8 +62,8 @@ public class WobbleModule implements Module, TelemetryProvider {
 
     }
 
-    boolean oldIsClawClamped = false;
-    long clawTransitionTime = 0;
+    private boolean oldIsClawClamped = false;
+    private long clawTransitionTime = 0;
 
     public void update() {
         long currentTime = robot.getCurrentTimeMilli();

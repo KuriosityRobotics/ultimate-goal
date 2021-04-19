@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
@@ -15,7 +14,7 @@ public class HopperModule implements Module, TelemetryProvider {
     // States
     public boolean deliverRings;
     boolean wasAtTurret = false;
-    public HopperPosition currentHopperPosition;
+    public HopperPosition targetHopperPosition;
 
     // Servos
     private Servo hopperLinkage;
@@ -29,7 +28,7 @@ public class HopperModule implements Module, TelemetryProvider {
 
     private static final int RAISE_TIME_MS = 550; // from lowered to apex
     private static final int RAISE_TRANSITIONING_TIME_MS = RAISE_TIME_MS / 2; // from lowered to interfering with shooter
-    private static final int LOWER_TIME_MS = 300; // from apex to lowered
+    private static final int LOWER_TIME_MS = 200; // from apex to lowered
     private static final int LOWER_CLEAR_SHOOTER_TIME_MS = LOWER_TIME_MS / 2; // from apex to no longer interfering with shooter
 
     // Hopper position enum
@@ -43,7 +42,7 @@ public class HopperModule implements Module, TelemetryProvider {
 
         deliverRings = false;
         deliveryStartTime = 0;
-        currentHopperPosition = HopperPosition.LOWERED;
+        targetHopperPosition = HopperPosition.LOWERED;
     }
 
     @Override
@@ -59,11 +58,11 @@ public class HopperModule implements Module, TelemetryProvider {
         long currentTime = robot.getCurrentTimeMilli();
 
 
-        currentHopperPosition = calculateHopperPosition(this.deliveryStartTime, currentTime); // do the thing
+        targetHopperPosition = calculateHopperPosition(this.deliveryStartTime, currentTime); // do the thing
 
         // Determine target hopper position
         boolean raiseHopper;
-        if (currentHopperPosition == HopperPosition.LOWERED && this.deliverRings) {
+        if (targetHopperPosition == HopperPosition.LOWERED && this.deliverRings) {
             raiseHopper = true;
 
             this.deliveryStartTime = currentTime;

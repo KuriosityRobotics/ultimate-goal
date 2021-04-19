@@ -119,6 +119,14 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
             }
         }
 
+        if (robot.wobbleModule.wobbleArmPosition == WobbleModule.WobbleArmPosition.AUTO_DROP || robot.wobbleModule.wobbleArmPosition == WobbleModule.WobbleArmPosition.RAISED) {
+            shooterModule.upperAngleLimit = 0.75 * Math.PI;
+            shooterModule.lowerAngleLimit = -0.4 * Math.PI;
+            shooterModule.limitAngle = true;
+        } else {
+            shooterModule.limitAngle = false;
+        }
+
         // Update both modules
         if (hopperModule.isOn()) hopperModule.update();
         if (shooterModule.isOn()) shooterModule.update();
@@ -267,6 +275,10 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     public boolean isIndexerReturned() {
         return shooterModule.isIndexerReturned();
+    }
+
+    public HopperModule.HopperPosition targetHopperPosition() {
+        return hopperModule.targetHopperPosition;
     }
 
     public HopperModule.HopperPosition getHopperPosition() {
