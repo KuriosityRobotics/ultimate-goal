@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class RingManager implements Module, TelemetryProvider {
     Robot robot;
@@ -23,12 +24,16 @@ public class RingManager implements Module, TelemetryProvider {
     public int ringsInHopper;
     public int ringsInShooter;
 
+    public double lastSensorReading;
+
     // for incoming ring detection
-    private long lastLoopTime;
+    private boolean deliverRings;
+    private long deliverDelayStartTime;
     private boolean seeingRing = false;
     private int distanceSensorPasses = 0;
+    private boolean seenRingSinceStartDelivery = false;
 
-    private static final int INTAKE_STOP_DELAY_TIME = 600;
+    private static final int HOPPER_DELIVERY_DELAY = 750;
 
     public RingManager(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -40,9 +45,9 @@ public class RingManager implements Module, TelemetryProvider {
         ringsInShooter = 0;
 
         willAutoRaise = true;
-        autoShootRings = true;
+        autoShootRings = false;
 
-        this.lastLoopTime = robot.getCurrentTimeMilli();
+        deliverRings = false;
     }
 
     public void initModules() {
@@ -50,8 +55,8 @@ public class RingManager implements Module, TelemetryProvider {
     }
 
     public void update() {
-        countPassingRings();
         detectHopperDelivery();
+        countPassingRings();
         detectShotRings();
 
         stopIntakeLogic();
@@ -60,33 +65,40 @@ public class RingManager implements Module, TelemetryProvider {
     private void countPassingRings() {
         long currentTime = robot.getCurrentTimeMilli();
         double voltage = intakeDistance.getVoltage();
+        lastSensorReading = voltage;
 
-        if (Math.abs(2.2 - voltage) < Math.abs(1.1 - voltage)) {
+        if (voltage > 1.25) {
             seeingRing = true;
         } else if (seeingRing) { // we saw a ring but now we don't
-            int increment = 1;
-
-            // If we had a really large loop time and an odd number of passes, just round up
-            if (currentTime - lastLoopTime > 200 && distanceSensorPasses % 2 == 1) {
-                increment++;
-            }
-
             if (robot.intakeModule.intakeBottom.getPower() > 0) {// outtaking or intaking ?
-                distanceSensorPasses += increment;
+                distanceSensorPasses += 1;
             } else {
-                distanceSensorPasses -= increment;
+                distanceSensorPasses -= 1;
             }
 
             seeingRing = false;
         }
 
-        ringsInHopper = (int) (distanceSensorPasses / 2.0);
+        ringsInHopper = (int) Math.ceil(distanceSensorPasses / 2.0);
 
         if (ringsInHopper >= autoRaiseThreshold && willAutoRaise) {
-            robot.shooter.deliverRings();
+            if (!deliverRings && robot.shooter.getHopperPosition() == HopperModule.HopperPosition.LOWERED) {
+                deliverRings = true;
+                deliverDelayStartTime = currentTime;
+            } else if (deliverRings && seeingRing) { // if we're going to deliver BUT WAIT! there's another ring!
+                deliverDelayStartTime = currentTime;
+            }
         }
 
-        lastLoopTime = currentTime;
+        if (seeingRing && robot.shooter.getHopperPosition() != HopperModule.HopperPosition.LOWERED) {
+            seenRingSinceStartDelivery = true;
+        }
+
+        if (deliverRings && currentTime >= deliverDelayStartTime + HOPPER_DELIVERY_DELAY) {
+            deliverRings = false;
+            seenRingSinceStartDelivery = false;
+            robot.shooter.deliverRings();
+        }
     }
 
     private HopperModule.HopperPosition oldHopperPosition = HopperModule.HopperPosition.LOWERED;
@@ -122,11 +134,30 @@ public class RingManager implements Module, TelemetryProvider {
         oldIndexerPosition = currentIndexerPosition;
     }
 
+    boolean fullRings;
+    long fullRingsTime = 0;
     private void stopIntakeLogic() {
         if (ringsInHopper + ringsInShooter >= 3) {
-            robot.intakeModule.stopIntake = true;
-        } else if (robot.shooter.getHopperPosition() != HopperModule.HopperPosition.LOWERED) {
-            robot.intakeModule.stopIntake = seeingRing;
+            long currentTime = robot.getCurrentTimeMilli();
+
+            if (!fullRings) {
+                fullRingsTime = currentTime;
+            }
+
+            fullRings = true;
+
+            if (currentTime > fullRingsTime + 1000) {
+                robot.intakeModule.stopIntake = true;
+                return;
+            }
+        } else {
+            fullRings = false;
+        }
+
+        if (robot.shooter.targetHopperPosition() != HopperModule.HopperPosition.LOWERED) {
+            robot.intakeModule.stopIntake = seenRingSinceStartDelivery;
+        } else if (deliverRings) { // waiting to raise the hopper
+            robot.intakeModule.intakePower = 1;
         } else {
             robot.intakeModule.stopIntake = false;
         }
@@ -141,10 +172,18 @@ public class RingManager implements Module, TelemetryProvider {
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("Ring passes: " + distanceSensorPasses);
-        data.add("Rings in hopper: " + ringsInHopper);
-        data.add("Rings in shooter: " + ringsInShooter);
-        data.add("Will Auto Raise:  " + willAutoRaise);
-        data.add("Will Auto Shoot: " + autoShootRings);
+        data.add("deliverRings: " + deliverRings);
+        data.add("Rings in hopper: " + ringsInHopper + ", Rings in shooter: " + ringsInShooter);
+        data.add("Will Auto Raise:  " + willAutoRaise + ", Will Auto Shoot: " + autoShootRings);
+        return data;
+    }
+
+    @Override
+    public HashMap<String, Object> getDashboardData() {
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("Intake distance", lastSensorReading);
+        data.put("Distance passes", distanceSensorPasses);
+        data.put("rings in hopper", ringsInHopper);
         return data;
     }
 

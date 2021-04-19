@@ -107,7 +107,12 @@ public class IntakeModule implements Module, TelemetryProvider {
         intakeBlockerLogic();
     }
 
+    boolean wasStopped = false;
+    long stopTime = 0;
+
     private void intakeLogic() {
+        long currentTime = robot.getCurrentTimeMilli();
+
         double power;
         if (!doneUnlocking) {
             power = 1;
@@ -118,8 +123,20 @@ public class IntakeModule implements Module, TelemetryProvider {
                 power = 0;
             }
         } else {
-            power = stopIntake ? 0 : intakePower;
+            if (stopIntake && !wasStopped) {
+                stopTime = currentTime;
+            }
+
+            if (currentTime < stopTime + 100) {
+                power = -0.1;
+            } else if (stopIntake) {
+                power = intakePower < 0 ? intakePower : 0;
+            } else {
+                power = intakePower;
+            }
         }
+        wasStopped = stopIntake;
+
 
         runIntake(power);
     }
@@ -163,6 +180,7 @@ public class IntakeModule implements Module, TelemetryProvider {
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("Intake power: " + intakePower);
+        data.add("Stop intake: " + stopIntake);
         data.add("Blocker position: " + blockerPosition.toString());
         data.add("Done unlocking: " + doneUnlocking);
         return data;
