@@ -22,15 +22,6 @@ public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
-    public static double P = 0.25;
-    public static double I = 0;
-    public static double D = 0;
-    public static double FULL_SPEED_THRESHOLD = Math.toRadians(36);
-    public static double STOP_SCALE = 2;
-    public static double CLOSE_SCALE = 0.8;
-    public static double CLOSE_THRESHOLD = 9;
-    public static double CLOSE_STOP_SCALE = 1.45;
-
     // States
     private double targetTurretAngle;
     public double flyWheelTargetSpeed;
@@ -67,6 +58,15 @@ public class ShooterModule implements Module, TelemetryProvider {
     private static final double FLAP_STORE_POSITION = 0.0873856;
     private static final double FLAP_LOWER_LIMIT = 0;
     private static final double FLAP_UPPER_LIMIT = 0.29255;
+
+    private static final double P = 0.25;
+    private static final double I = 0;
+    private static final double D = 0;
+    private static final double FULL_SPEED_THRESHOLD = Math.toRadians(36);
+    private static final double STOP_SCALE = 2;
+    private static final double CLOSE_SCALE = 0.8;
+    private static final double CLOSE_THRESHOLD = Math.toRadians(9);
+    private static final double CLOSE_STOP_SCALE = 1.45;
 
     private static final double INDEXER_PUSHED_POSITION = 0.45;
     private static final double INDEXER_RETRACTED_POSITION = 0.72;
@@ -147,15 +147,9 @@ public class ShooterModule implements Module, TelemetryProvider {
     private double lastPos;
 
     private void turretLogic() {
-//        Log.v("turret", "--------");
-
         this.currentTurretAngle = turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
 
         double error = targetTurretAngle - currentTurretAngle;
-
-        turretController.P = P;
-        turretController.I = I;
-        turretController.D = D;
 
         if (Math.abs(error) < Math.toRadians(0.5)) {
             turretController.reset();
@@ -163,7 +157,7 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         pow = turretController.calculatePID(error);
 
-        if (Math.abs(error) < Math.toRadians(CLOSE_THRESHOLD)) {
+        if (Math.abs(error) < CLOSE_THRESHOLD) {
             pow = error * CLOSE_SCALE;
             if (Math.abs(currentTurretAngle - lastPos) < 0.1) {
                 pow *= CLOSE_STOP_SCALE;
