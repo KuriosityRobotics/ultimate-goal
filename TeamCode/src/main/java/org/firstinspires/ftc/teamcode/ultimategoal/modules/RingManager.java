@@ -16,13 +16,14 @@ public class RingManager implements Module, TelemetryProvider {
     AnalogInput intakeDistance;
 
     // States
-    public boolean willAutoRaise;
+    public boolean autoRaise;
     public boolean autoShootRings;
     public int autoRaiseThreshold = 1;
 
     // Data
-    public int ringsInHopper;
-    public int ringsInShooter;
+    private int ringsInHopper;
+    private int ringsInShooter;
+    private int totalRingsShot;
 
     public double lastSensorReading;
 
@@ -43,8 +44,9 @@ public class RingManager implements Module, TelemetryProvider {
 
         ringsInHopper = 0; // will change to 3 later b/c autonomous starts w 3 rings
         ringsInShooter = 0;
+        totalRingsShot = 0;
 
-        willAutoRaise = true;
+        autoRaise = true;
         autoShootRings = true;
 
         deliverRings = false;
@@ -81,7 +83,7 @@ public class RingManager implements Module, TelemetryProvider {
 
         ringsInHopper = (int) Math.ceil(distanceSensorPasses / 2.0);
 
-        if (ringsInHopper >= autoRaiseThreshold && willAutoRaise) {
+        if (getRingsInHopper() >= autoRaiseThreshold && autoRaise) {
             if (!deliverRings && robot.shooter.getHopperPosition() == HopperModule.HopperPosition.LOWERED) {
                 deliverRings = true;
                 deliverDelayStartTime = currentTime;
@@ -108,11 +110,11 @@ public class RingManager implements Module, TelemetryProvider {
 
         // when hopper push is finished move rings
         if (oldHopperPosition == HopperModule.HopperPosition.TRANSITIONING && currentHopperPosition == HopperModule.HopperPosition.LOWERED) {
-            ringsInShooter += ringsInHopper;
+            ringsInShooter = getRingsInShooter() + getRingsInHopper();
             distanceSensorPasses = 0;
 
             if (autoShootRings) {
-                robot.shooter.queueIndex(robot.ringManager.ringsInShooter);
+                robot.shooter.queueIndex(robot.ringManager.getRingsInShooter());
             }
         }
 
@@ -126,8 +128,9 @@ public class RingManager implements Module, TelemetryProvider {
 
         // when indexer has returned from an index the shooter loses a ring
         if (oldIndexerPosition == ShooterModule.IndexerPosition.PUSHED && currentIndexerPosition == ShooterModule.IndexerPosition.RETRACTED) {
-            if (ringsInShooter > 0) {
-                ringsInShooter--;
+            if (getRingsInShooter() > 0) {
+                ringsInShooter = getRingsInShooter() - 1;
+                totalRingsShot = getTotalRingsShot() + 1;
             }
         }
 
@@ -137,7 +140,7 @@ public class RingManager implements Module, TelemetryProvider {
     boolean fullRings;
     long fullRingsTime = 0;
     private void stopIntakeLogic() {
-        if (ringsInHopper + ringsInShooter >= 3) {
+        if (getRingsInHopper() + getRingsInShooter() >= 3) {
             long currentTime = robot.getCurrentTimeMilli();
 
             if (!fullRings) {
@@ -173,8 +176,8 @@ public class RingManager implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("Ring passes: " + distanceSensorPasses);
         data.add("deliverRings: " + deliverRings);
-        data.add("Rings in hopper: " + ringsInHopper + ", Rings in shooter: " + ringsInShooter);
-        data.add("Will Auto Raise:  " + willAutoRaise + ", Will Auto Shoot: " + autoShootRings);
+        data.add("Rings in hopper: " + getRingsInHopper() + ", Rings in shooter: " + getRingsInShooter());
+        data.add("Will Auto Raise:  " + autoRaise + ", Will Auto Shoot: " + autoShootRings);
         return data;
     }
 
@@ -183,7 +186,7 @@ public class RingManager implements Module, TelemetryProvider {
         HashMap<String, Object> data = new HashMap<>();
         data.put("Intake distance", lastSensorReading);
         data.put("Distance passes", distanceSensorPasses);
-        data.put("rings in hopper", ringsInHopper);
+        data.put("rings in hopper", getRingsInHopper());
         return data;
     }
 
@@ -199,5 +202,17 @@ public class RingManager implements Module, TelemetryProvider {
     @Override
     public String getName() {
         return "RingManager";
+    }
+
+    public int getRingsInHopper() {
+        return ringsInHopper;
+    }
+
+    public int getRingsInShooter() {
+        return ringsInShooter;
+    }
+
+    public int getTotalRingsShot() {
+        return totalRingsShot;
     }
 }
