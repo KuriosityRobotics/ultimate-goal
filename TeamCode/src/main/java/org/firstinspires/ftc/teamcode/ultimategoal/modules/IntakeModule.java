@@ -32,16 +32,18 @@ public class IntakeModule implements Module, TelemetryProvider {
     private static final int UNLOCK_TIME = 1200;
     private static final double BLOCKER_FUNNEL_ANGLE = Math.toRadians(45);
 
-    private static final Point LEFT_BLOCKER_POSITION = new Point(-7.627, 11.86);
-    private static final Point RIGHT_BLOCKER_POSITION = new Point(7.624, 11.86);
-
     private static final double LEFT_BLOCKER_BLOCKING_POSITION = 0.85727 + 0.125;
     private static final double RIGHT_BLOCKER_BLOCKING_POSITION = 0.0;
+    private static final double LEFT_BLOCKER_WOBBLE_POSITION = 0.85727 + 0.125;
+    private static final double RIGHT_BLOCKER_WOBBLE_POSITION = 0.0;
     private static final double LEFT_BLOCKER_OPEN_POSITION = 0.370 + 0.125;
     private static final double RIGHT_BLOCKER_OPEN_POSITION = 0.463;
 
     private static final double LEFT_BLOCKER_SLOPE = (LEFT_BLOCKER_OPEN_POSITION - LEFT_BLOCKER_BLOCKING_POSITION) / Math.toRadians(120);
     private static final double RIGHT_BLOCKER_SLOPE = (RIGHT_BLOCKER_OPEN_POSITION - RIGHT_BLOCKER_BLOCKING_POSITION) / Math.toRadians(120);
+
+    private static final Point LEFT_BLOCKER_POSITION = new Point(-7.627, 11.86);
+    private static final Point RIGHT_BLOCKER_POSITION = new Point(7.624, 11.86);
 
     // blocker is 7.623" long
     private static final double WALL_AVOID_DISTANCE = 7.623 + 5; // if blocker is within this threshold to the wall, it folds
@@ -56,7 +58,7 @@ public class IntakeModule implements Module, TelemetryProvider {
     long startTime;
 
     public enum IntakeBlockerPosition {
-        BLOCKING, FUNNEL, OPEN;
+        BLOCKING, FUNNEL, OPEN, WOBBLE;
 
         public IntakeBlockerPosition next() {
             IntakeBlockerPosition position;
@@ -150,26 +152,37 @@ public class IntakeModule implements Module, TelemetryProvider {
         if (!doneUnlocking) {
             leftBlocker.setPosition(LEFT_BLOCKER_BLOCKING_POSITION);
             rightBlocker.setPosition(RIGHT_BLOCKER_BLOCKING_POSITION);
-        } else if (blockerPosition == IntakeBlockerPosition.BLOCKING) {
-            leftBlocker.setPosition(LEFT_BLOCKER_BLOCKING_POSITION);
-            rightBlocker.setPosition(RIGHT_BLOCKER_BLOCKING_POSITION);
-        } else if (blockerPosition == IntakeBlockerPosition.OPEN) {
-            leftBlocker.setPosition(LEFT_BLOCKER_OPEN_POSITION);
-            rightBlocker.setPosition(RIGHT_BLOCKER_OPEN_POSITION);
-        } else if (blockerPosition == IntakeBlockerPosition.FUNNEL) {
-            if (Math.abs(MathFunctions.angleWrap(robot.drivetrain.getCurrentHeading())) < Math.toRadians(90)) {
-                double headingToHighGoal = robot.shooter.relativeHeadingToTarget(robot.shooter.target.getAllianceHigh()) - robot.drivetrain.getOdometryAngleVel() * 0.1;
-                double leftBlockerTargetAngle = Math.toRadians(90) - headingToHighGoal + BLOCKER_FUNNEL_ANGLE;
-                double rightBlockerTargetAngle = Math.toRadians(90) + headingToHighGoal + BLOCKER_FUNNEL_ANGLE;
+            return;
+        }
 
-                double leftBlockerTarget = LEFT_BLOCKER_BLOCKING_POSITION + LEFT_BLOCKER_SLOPE * leftBlockerTargetAngle;
-                double rightBlockerTarget = RIGHT_BLOCKER_BLOCKING_POSITION + RIGHT_BLOCKER_SLOPE * rightBlockerTargetAngle;
-                leftBlocker.setPosition(leftBlockerTarget);
-                rightBlocker.setPosition(rightBlockerTarget);
-            } else {
+        switch (blockerPosition) {
+            case BLOCKING:
                 leftBlocker.setPosition(LEFT_BLOCKER_BLOCKING_POSITION);
                 rightBlocker.setPosition(RIGHT_BLOCKER_BLOCKING_POSITION);
-            }
+                break;
+            case OPEN:
+                leftBlocker.setPosition(LEFT_BLOCKER_OPEN_POSITION);
+                rightBlocker.setPosition(RIGHT_BLOCKER_OPEN_POSITION);
+                break;
+            case WOBBLE:
+                leftBlocker.setPosition(LEFT_BLOCKER_WOBBLE_POSITION);
+                rightBlocker.setPosition(RIGHT_BLOCKER_WOBBLE_POSITION);
+                break;
+            case FUNNEL:
+                if (Math.abs(MathFunctions.angleWrap(robot.drivetrain.getCurrentHeading())) < Math.toRadians(90)) {
+                    double headingToHighGoal = robot.shooter.relativeHeadingToTarget(robot.shooter.target.getAllianceHigh()) - robot.drivetrain.getOdometryAngleVel() * 0.1;
+                    double leftBlockerTargetAngle = Math.toRadians(90) - headingToHighGoal + BLOCKER_FUNNEL_ANGLE;
+                    double rightBlockerTargetAngle = Math.toRadians(90) + headingToHighGoal + BLOCKER_FUNNEL_ANGLE;
+
+                    double leftBlockerTarget = LEFT_BLOCKER_BLOCKING_POSITION + LEFT_BLOCKER_SLOPE * leftBlockerTargetAngle;
+                    double rightBlockerTarget = RIGHT_BLOCKER_BLOCKING_POSITION + RIGHT_BLOCKER_SLOPE * rightBlockerTargetAngle;
+                    leftBlocker.setPosition(leftBlockerTarget);
+                    rightBlocker.setPosition(rightBlockerTarget);
+                } else {
+                    leftBlocker.setPosition(LEFT_BLOCKER_BLOCKING_POSITION);
+                    rightBlocker.setPosition(RIGHT_BLOCKER_BLOCKING_POSITION);
+                }
+                break;
         }
     }
 
