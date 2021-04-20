@@ -188,10 +188,6 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             robot.drivetrain.setPosition(0, 0, 0);
         }
 
-        if (gamepad1.left_bumper) {
-            robot.ringManager.setDistanceSensorPasses(6);
-        }
-
         robot.drivetrain.isSlowMode = gamepad1.right_bumper;
 
         robot.drivetrain.setMovements(xMovement, yMovement, turnMovement);

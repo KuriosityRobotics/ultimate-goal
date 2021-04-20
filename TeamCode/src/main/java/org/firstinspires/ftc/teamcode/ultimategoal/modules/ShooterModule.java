@@ -37,6 +37,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     // States
     private double targetTurretAngle;
     public double flyWheelTargetSpeed;
+
     public boolean indexRing;
     public double shooterFlapPosition = FLAP_LOWER_LIMIT;
 
@@ -251,7 +252,7 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     public boolean flywheelsUpToSpeed() {
         return flyWheel1.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
-                && flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD;
+                && flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD && flyWheelTargetSpeed > 0;
     }
 
     /**
