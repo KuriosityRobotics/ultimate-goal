@@ -108,7 +108,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         if (queuedIndexes > 0) {
             boolean safeToIndex = hopperModule.msUntilHopperRaised() > ShooterModule.INDEXER_RETURNED_TIME_MS;
-            boolean shooterReady = burstNum > 0 || shooterModule.flywheelsUpToSpeed();
+            boolean shooterReady = shooterModule.flywheelsUpToSpeed();
 
             if (safeToIndex && shooterReady && !shooterModule.indexRing) {
                 shooterModule.indexRing = true;
@@ -116,6 +116,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
                 burstNum++;
             } else if (forceIndex) {
                 shooterModule.indexRing = true;
+                forceIndex = false;
             }
         }
 

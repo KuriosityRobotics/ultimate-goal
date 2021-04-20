@@ -45,7 +45,7 @@ public class RingManager implements Module, TelemetryProvider {
         ringsInShooter = 0;
 
         willAutoRaise = true;
-        autoShootRings = false;
+        autoShootRings = true;
 
         deliverRings = false;
     }
@@ -108,7 +108,7 @@ public class RingManager implements Module, TelemetryProvider {
 
         // when hopper push is finished move rings
         if (oldHopperPosition == HopperModule.HopperPosition.TRANSITIONING && currentHopperPosition == HopperModule.HopperPosition.LOWERED) {
-            ringsInShooter = ringsInHopper;
+            ringsInShooter += ringsInHopper;
             distanceSensorPasses = 0;
 
             if (autoShootRings) {
