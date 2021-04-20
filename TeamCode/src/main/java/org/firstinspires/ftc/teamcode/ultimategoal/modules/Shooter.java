@@ -173,7 +173,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private double[] getHighGoalAimValues(double distanceToTarget) { // TODO RETUNE
         // find the last datapoint w/ distance smaller than the current distance
         int distanceIndex = HIGH_GOAL_DATA.length - 2; // lower bound
-        for (int i = 0; i < HIGH_GOAL_DATA.length; i++) {
+        for (int i = 0; i < HIGH_GOAL_DATA.length - 1; i++) {
             if (HIGH_GOAL_DATA[i + 1][0] > distanceToTarget) {
                 distanceIndex = i;
                 break;
