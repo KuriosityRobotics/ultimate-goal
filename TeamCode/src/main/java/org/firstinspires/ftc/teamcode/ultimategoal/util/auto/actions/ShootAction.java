@@ -8,8 +8,12 @@ public class ShootAction extends Action {
     Target.ITarget target;
 
     public ShootAction(Target.ITarget target) {
+        this(target, false);
+    }
+
+    public ShootAction(Target.ITarget target, boolean stopMovementForExecution) {
         this.target = target;
-        this.stopMovementForExecution = true;
+        this.stopMovementForExecution = stopMovementForExecution;
     }
 
     @Override

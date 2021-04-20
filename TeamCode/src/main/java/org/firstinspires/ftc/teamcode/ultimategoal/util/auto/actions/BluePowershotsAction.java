@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 
+import android.util.Log;
+
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Target;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
@@ -20,7 +22,7 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
     public boolean executeAction(Robot robot) {
         if (beginExecutionTime == 0) {
             this.robot = robot;
-            //            robot.telemetryDump.registerProvider(this);
+//            robot.telemetryDump.registerProvider(this);
             beginExecutionTime = robot.getCurrentTimeMilli();
 
             robot.shooter.lockTarget = true;
@@ -38,8 +40,6 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
         }
 
         switch (powershotNum) {
-            case -1:
-                break;
             case 0:
                 robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
                 break;
@@ -50,6 +50,7 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
                 robot.shooter.target = Target.Blue.BLUE_POWERSHOT3;
                 break;
             default:
+                Log.e("BluePowershotsAction", "How did powershot num get to an invalid value??");
                 return false;
         }
 

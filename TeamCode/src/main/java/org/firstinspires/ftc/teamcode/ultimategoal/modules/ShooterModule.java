@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 
-import android.util.Log;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -264,9 +262,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         double wrapped = angleWrap(angle);
 
         if (limitAngle) {
-            Log.v("wrapped", ""+wrapped);
             wrapped = new android.util.Range<>(lowerAngleLimit, upperAngleLimit).clamp(wrapped);
-            Log.v("clamped", ""+wrapped);
         }
 
         double target = currentTurretAngle + angleWrap(wrapped - currentTurretAngle);
@@ -284,6 +280,15 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     public double getCurrentTurretAngle() {
         return currentTurretAngle;
+    }
+
+    /**
+     * Get the error of the turret's angle.
+     *
+     * @return The target turret angle minus the current turret angle, in radians.
+     */
+    public double getTurretError() {
+        return targetTurretAngle - currentTurretAngle;
     }
 
     public boolean isFinishedIndexing() {
