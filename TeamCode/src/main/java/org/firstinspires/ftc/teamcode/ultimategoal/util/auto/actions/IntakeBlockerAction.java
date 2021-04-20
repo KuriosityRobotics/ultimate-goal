@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
 public class IntakeBlockerAction extends Action {
     IntakeModule.IntakeBlockerPosition position;
 
-    public void IntakeBlockerAction(IntakeModule.IntakeBlockerPosition position) {
+    public IntakeBlockerAction(IntakeModule.IntakeBlockerPosition position) {
         this.position = position;
     }
 
