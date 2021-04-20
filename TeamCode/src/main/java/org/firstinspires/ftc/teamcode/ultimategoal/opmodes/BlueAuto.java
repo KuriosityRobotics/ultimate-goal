@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.FlywheelAction;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.IntakeAction;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.RunIntakeAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ShootAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.WobbleArmAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.WobbleClawAction;
@@ -86,10 +86,10 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         robot.startModules();
 
-        //        PathFollow startTofirstDroppOffActions = new PathFollow(new Waypoint[]{
-        //                new Waypoint(STARTING, new FlywheelAction(true)),
-        //                new Waypoint(POWERSHOT, new BluePowershotsAction())
-        //        }, robot, "Start to powershot");
+//        PathFollow startTofirstDroppOffActions = new PathFollow(new Waypoint[]{
+//                new Waypoint(new Point(STARTING.getTranslation()), new FlywheelAction(true)),
+//                new Waypoint(POWERSHOT, new BluePowershotsAction())
+//        }, robot, "Start to powershot");
 
         ArrayList<Action> firstDropOffActions = new ArrayList<>();
         firstDropOffActions.add(new FlywheelAction(true));
@@ -114,11 +114,11 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         }, robot, "first wobble dropoff to powershot");
 
         ArrayList<Action> secondWobbleActions = new ArrayList<>();
-        secondWobbleActions.add(new IntakeAction(false));
+        secondWobbleActions.add(new RunIntakeAction(false));
         secondWobbleActions.add(new WobbleClawAction(true));
 
         ArrayList<Action> secondWobbleStartActions = new ArrayList<>();
-        secondWobbleStartActions.add(new IntakeAction(true));
+        secondWobbleStartActions.add(new RunIntakeAction(true));
         secondWobbleStartActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.LOWERED));
 
         PathFollow powerShotToSecondWobble = new PathFollow(new Waypoint[]{}, robot, "filler");
@@ -158,12 +158,12 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         ArrayList<Action> secondDropOffActions = new ArrayList<>();
         secondDropOffActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.LOWERED));
-        secondDropOffActions.add(new IntakeAction(true));
+        secondDropOffActions.add(new RunIntakeAction(true));
         secondDropOffActions.add(new WobbleClawAction(false));
 
 
         ArrayList<Action> secondDropOffStartActions = new ArrayList<>();
-        secondDropOffStartActions.add(new IntakeAction(true));
+        secondDropOffStartActions.add(new RunIntakeAction(true));
         secondDropOffStartActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.WALL_DROP));
 
         PathFollow secondWobbleToSecondWobbleDropOff = new PathFollow(new Waypoint[]{

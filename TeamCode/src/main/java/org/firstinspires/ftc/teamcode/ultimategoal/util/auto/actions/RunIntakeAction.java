@@ -3,10 +3,10 @@ package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
 
-public class IntakeAction extends Action {
+public class RunIntakeAction extends Action {
     boolean isIntakeOn;
 
-    public IntakeAction(boolean isIntakeOn) {
+    public RunIntakeAction(boolean isIntakeOn) {
         this.isIntakeOn = isIntakeOn;
     }
 
