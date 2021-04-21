@@ -46,7 +46,7 @@ public class ShootStackAction extends Action {
         if (robot.intakeModule.intakePower == 0) {
             robot.drivetrain.setMovements(0, 0, 0);
         } else {
-            robot.drivetrain.setMovementsTowardsPoint(end, 0.2, 0.9, 0, false, 0);
+            robot.drivetrain.setMovementsTowardsPoint(end, 0.6, 0.9, 0, false, 0);
         }
 
         int stackRingsShot = robot.ringManager.getTotalRingsShot() - startingRingsShot;
