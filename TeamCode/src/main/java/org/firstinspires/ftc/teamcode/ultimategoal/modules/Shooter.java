@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.opencv.core.Mat;
 
 import java.util.ArrayList;
 
@@ -27,7 +28,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     // Constants
     public final static int HIGHGOAL_FLYWHEEL_SPEED = 1750;
-    public final static int POWERSHOT_FLYWHEEL_SPEED = 1200; // todo
+    public final static int POWERSHOT_FLYWHEEL_SPEED = 1525; // todo
 
     private static final double TURRET_DISTANCE_FROM_BACK = 7;
 
@@ -152,16 +153,14 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         shooterModule.setTargetTurretAngle(adjustedTurretTarget + angleOffset);
 
-        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalAimValues(distanceToTarget)[0];
+        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalAimValues(distanceToTarget)[0] + 0.0025;
 
         oldTurretTarget = turretTargetRaw;
         oldUpdateTime = currentUpdateTime;
     }
 
     private double getPowershotAngleOffset(double distanceToTarget) {
-        return ((POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM * distanceToTarget * distanceToTarget)
-                + (POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM * distanceToTarget)
-                + POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM);
+        return Math.toRadians(4) + manualAngleCorrection;
     }
 
     /**
@@ -190,9 +189,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
-        return (POWERSHOT_DISTANCE_TO_FLAP_POSITION_SQUARE_TERM * distanceToTarget * distanceToTarget)
-                + (POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM * distanceToTarget)
-                + POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM;
+        return 0.2233;
     }
 
     public void forceIndex() {
@@ -271,7 +268,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     }
 
     public boolean isFinishedIndexing() {
-        return shooterModule.isFinishedIndexing();
+        return shooterModule.isFinishedIndexing() && queuedIndexes <= 0;
     }
 
     public boolean isIndexerReturned() {
@@ -302,6 +299,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         data.add("Queued indexes: " + queuedIndexes);
         data.add("Distance: " + distanceToTarget);
         data.add("angleOffset: " + angleOffset);
+        data.add("manual angle offset: " + manualAngleCorrection);
         data.add("--");
         data.add("lockTarget: " + lockTarget);
         data.add("burstNumber: " + burstNum);

@@ -34,7 +34,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     static final Pose2d STARTING = new Pose2d(48 - 9, 0, new Rotation2d(0));
 
-    public static final Point POWERSHOT = new Point(STARTING.getTranslation().getX() + 5, 23.5 * 2.5);
+    public static final Point POWERSHOT = new Point(STARTING.getTranslation().getX() + 5, 20.5 * 2.5);
 
     Vision.TargetGoal measuredZone;
 
@@ -46,7 +46,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     final Point STACK = new Point(34 - 9, 47 - (16.5 / 2));
 
-    final Point SECOND_WOBBLE = new Point(36 - 16, 30.5 - 4);
+    final Point SECOND_WOBBLE = new Point(36 - 18, 30.5 - 4);
 
     final double SHOOT_RING_Y = 60;
     final double SHOOT_RING_X = 28;
@@ -70,6 +70,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         waitForStart();
 
+
         measuredZone = vision.runDetection();
         switch (measuredZone) {
             case UNKNOWN:
@@ -88,17 +89,17 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         }
 
         robot.startModules();
-
+        robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.INIT;
 //        PathFollow startTofirstDroppOffActions = new PathFollow(new Waypoint[]{
 //                new Waypoint(new Point(STARTING.getTranslation()), new FlywheelAction(true)),
 //                new Waypoint(POWERSHOT, new BluePowershotsAction())
 //        }, robot, "Start to powershot");
 
         ArrayList<Action> powershotActions = new ArrayList<>();
-        powershotActions.add(new BluePowershotsAction());
+        powershotActions.add(new ShootAction(BLUE_HIGH));
+        powershotActions.add(new FlywheelAction(true));
 
         ArrayList<Action> startActions = new ArrayList<>();
-        startActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.WOBBLE));
         startActions.add(new FlywheelAction(true));
 
         PathFollow startToPowershot = new PathFollow(new Waypoint[]{
@@ -109,18 +110,21 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         ArrayList<Action> powershotToFirstWobbleStartActions= new ArrayList<>();
         powershotToFirstWobbleStartActions.add(new FlywheelAction(true));
-        powershotToFirstWobbleStartActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.RAISED));
+
         PathFollow powershotToFirstWobble = new PathFollow(new Waypoint[]{
                 new Waypoint(POWERSHOT, powershotToFirstWobbleStartActions),
-                new Waypoint(firstWobbleDropOff, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.OPEN))
+                new Waypoint(firstWobbleDropOff, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.STREAMLINE))
         }, robot, "first wobble dropoff to powershot");
 
         ArrayList<Action> secondWobbleStartActions = new ArrayList<>();
-        secondWobbleStartActions.add(new RunIntakeAction(true));
-        secondWobbleStartActions.add(new ShootStackAction(4,SECOND_WOBBLE,BLUE_HIGH));
+        secondWobbleStartActions.add(new RunIntakeAction(false));
+        secondWobbleStartActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.STREAMLINE));
+//        secondWobbleStartActions.add(new ShootStackAction(4,SECOND_WOBBLE,BLUE_HIGH));
 
         ArrayList<Action> secondWobbleEndActions = new ArrayList<>();
         secondWobbleEndActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.WOBBLE));
+        secondWobbleEndActions.add(new RunIntakeAction(false));
+        secondWobbleEndActions.add(new FlywheelAction(false));
 
         PathFollow powerShotToSecondWobble = new PathFollow(new Waypoint[]{}, robot, "filler");
         PathFollow firstwobbleToSecondWobble = new PathFollow(new Waypoint[]{}, robot, "filler");
@@ -130,6 +134,8 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         firstwobbleToSecondWobble = new PathFollow(new Waypoint[]{
                 new Waypoint(firstWobbleDropOff, secondWobbleStartActions),
+                new Waypoint(SECOND_WOBBLE.x,SECOND_WOBBLE.y + 55, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.OPEN)),
+                new Waypoint(SECOND_WOBBLE.x,SECOND_WOBBLE.y+8,new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.WOBBLE)),
                 new Waypoint(SECOND_WOBBLE,secondWobbleEndActions),
         }, robot, "Powershot to stack");
 //
@@ -160,12 +166,12 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 //        }
 
         ArrayList<Action> secondDropOffActions = new ArrayList<>();
-        secondDropOffActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.WOBBLE));
+        secondDropOffActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.OPEN));
 
 
         ArrayList<Action> secondDropOffStartActions = new ArrayList<>();
-        secondDropOffStartActions.add(new RunIntakeAction(true));
-        secondDropOffStartActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.OPEN));
+        secondDropOffStartActions.add(new RunIntakeAction(false));
+        secondDropOffStartActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.WOBBLE));
 
         PathFollow secondWobbleToSecondWobbleDropOff = new PathFollow(new Waypoint[]{
                 new Waypoint(SECOND_WOBBLE, secondDropOffStartActions),
@@ -176,7 +182,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         fromSecondWobbleActions.add(new FlywheelAction(true));
 
         ArrayList<Action> shootActions = new ArrayList<>();
-        shootActions.add(new ShootStackAction(2, new Point(SHOOT_RING_X,SHOOT_RING_Y), BLUE_HIGH));
+//        shootActions.add(new ShootStackAction(2, new Point(SHOOT_RING_X,SHOOT_RING_Y), BLUE_HIGH));
 
 
         PathFollow secondWobbleDropOffToShoot = new PathFollow(new Waypoint[]{
@@ -189,14 +195,20 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
                 new Waypoint(new Point(PARK.getTranslation().getX(), PARK.getTranslation().getY()))
         }, robot, "Second wobble drop off to park");
 
+
+
+        sleep(750);
+        robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.WOBBLE;
+
         startToPowershot.followPath(0, 1, 1, true, Math.toRadians(0));
         sleep(500);
 
         powershotToFirstWobble.followPath(0, 1, 1, true, Math.toRadians(-45));
         sleep(500);
 
-        firstwobbleToSecondWobble.followPath(0,1,1,true,Math.toRadians(180));
+        firstwobbleToSecondWobble.followPath(0,1,1,true,Math.toRadians(-150));
 
+        secondWobbleToSecondWobbleDropOff.followPath(0,1,1,true,0);
 //        if (measuredZone == Vision.TargetGoal.C) {
 //            robot.drivetrain.brakeHeading = Math.toRadians(90);
 //            sleep(500);
@@ -219,7 +231,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 //        secondWobbleDropOffToShoot.followPath(Math.toRadians(180), 1, 1, false, 0);
 //
 //        shootToPark.followPath(0, 1, 1, true, 0);
-//        sleep(2000);
+        sleep(2000);
     }
 
     @Override

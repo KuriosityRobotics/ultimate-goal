@@ -22,6 +22,13 @@ public class SamPlebTest2 extends LinearOpMode {
 
     public TelemetryPacket packet;
 
+    public static double leftIntake = 0.85;
+    public static double rightIntake = 0.1;
+
+    DcMotor turretEncoder;
+    public Servo leftBlocker;
+    public Servo rightBlocker;
+
     public static double hopperDown = 0.03;
     public static double hopperUp = 0.55;
 
@@ -45,10 +52,10 @@ public class SamPlebTest2 extends LinearOpMode {
     private Servo claw;
 
 
-    public double pos = 0.22;
+    public static double pos = 0.2307999;
     double pos2 = 0.72;
     boolean toggle = false;
-    public double flyWheelTargetSpeed = 1750;
+    public double flyWheelTargetSpeed = 1500;
 
     public double yMovement = 0;
     public double xMovement = 0;
@@ -67,6 +74,9 @@ public class SamPlebTest2 extends LinearOpMode {
         wobbleArm2 = (Servo) hardwareMap.get("wobbleArm2");
 
         claw = (Servo) hardwareMap.get("wobbleClaw");
+
+        leftBlocker = (Servo) hardwareMap.get("blockerLeft");
+        rightBlocker = (Servo) hardwareMap.get("blockerRight");
 
         intakeTop.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeBottom.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -101,6 +111,10 @@ public class SamPlebTest2 extends LinearOpMode {
 
         rightFlyWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         indexer.setPosition(pos2);
+        turretEncoder = (DcMotor) hardwareMap.get("intakeBottom");
+
+        turretEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         waitForStart();
 
@@ -109,7 +123,7 @@ public class SamPlebTest2 extends LinearOpMode {
         while (opModeIsActive()) {
             intakeTop.setPower(gamepad2.left_stick_y);
             intakeBottom.setPower(gamepad2.left_stick_y);
-
+            //0.2232
             if(gamepad2.a){
 //                servo.setPosition(pos);
 //                pos -= 0.0001;
@@ -142,6 +156,9 @@ public class SamPlebTest2 extends LinearOpMode {
             }else if(gamepad2.left_trigger>0){
                 claw.setPosition(0.3);
             }
+
+            leftBlocker.setPosition(leftIntake);
+            rightBlocker.setPosition(rightIntake);
 
             if(gamepad2.right_stick_x > 0) {
                 leftTurret.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -206,6 +223,8 @@ public class SamPlebTest2 extends LinearOpMode {
                 pos2 = 0.72;
             }
 
+            double angle = turretEncoder.getCurrentPosition() / 4842.60745;
+
             indexer.setPosition(pos2);
 
             telemetry.addLine("left speed: " + Double.toString(leftFlyWheel.getVelocity()));
@@ -213,6 +232,7 @@ public class SamPlebTest2 extends LinearOpMode {
             telemetry.addLine("servo angle: " + pos);
             telemetry.addLine("servo indexer: " + pos2);
             telemetry.addLine("set speed: " + flyWheelTargetSpeed);
+            telemetry.addLine("turret angle: " + Math.toDegrees(angle));
 
             telemetry.addLine("pos: " + pos);
             telemetry.update();
