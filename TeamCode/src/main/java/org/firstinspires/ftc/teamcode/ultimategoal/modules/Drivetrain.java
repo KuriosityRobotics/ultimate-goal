@@ -61,17 +61,13 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
             0.2, Math.toRadians(110)
     );
 
-    public Drivetrain(Robot robot, boolean isOn) {
-        this(robot, isOn, new Pose2d(0, 0, new Rotation2d(0)));
-    }
-
-    public Drivetrain(Robot robot, boolean isOn, Pose2d startingPosition) {
+    public Drivetrain(Robot robot, boolean isOn, Pose2d startingPosition, boolean isAuto) {
         this.robot = robot;
         this.isOn = isOn;
 
         drivetrainModule = new DrivetrainModule(robot, isOn);
         odometryModule = new OdometryModule(robot, isOn, startingPosition);
-        t265Module = new T265Module(robot, false, startingPosition);
+        t265Module = new T265Module(robot, !isAuto, startingPosition);
 
         modules = new Module[]{drivetrainModule, odometryModule, t265Module};
 

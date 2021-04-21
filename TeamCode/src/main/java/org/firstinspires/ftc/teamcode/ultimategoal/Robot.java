@@ -39,8 +39,6 @@ public class Robot extends ModuleCollection {
     public RingManager ringManager;
 //    public VisionModule visionModule;
 
-    private long currentTimeMilli;
-
     public HardwareMap hardwareMap;
     public Telemetry telemetry;
     private LinearOpMode linearOpMode;
@@ -54,6 +52,9 @@ public class Robot extends ModuleCollection {
     // Action executor
     public ActionExecutor actionExecutor;
 
+    // Helpers
+    private long currentTimeMilli;
+
     // REV Hubs
     private LynxModule revHub1;
     private LynxModule revHub2;
@@ -61,11 +62,7 @@ public class Robot extends ModuleCollection {
     // Constants
     public final static boolean WILL_FILE_DUMP = false;
 
-    public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode) {
-        this(hardwareMap, telemetry, linearOpMode, new Pose2d(0, 0, new Rotation2d(0)));
-    }
-
-    public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode, Pose2d startingPosition) {
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode, Pose2d startingPosition, boolean isAuto) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
         this.linearOpMode = linearOpMode;
@@ -74,27 +71,17 @@ public class Robot extends ModuleCollection {
         fileDump = new FileDump();
 
         initHubs();
-        initialize(startingPosition);
+        initialize(startingPosition, isAuto);
 
         actionExecutor = new ActionExecutor(this);
     }
 
-    public Robot(HardwareMap hardwareMap, Telemetry telemetry, OpMode linearOpMode) {
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode, Pose2d startingPosition) {
+        this(hardwareMap, telemetry, linearOpMode, startingPosition, true);
+    }
+
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, LinearOpMode linearOpMode) {
         this(hardwareMap, telemetry, linearOpMode, new Pose2d(0, 0, new Rotation2d(0)));
-        linearOpMode.internalPostLoop();
-    }
-
-    public Robot(HardwareMap hardwareMap, Telemetry telemetry, OpMode linearOpMode, Pose2d startingPosition) {
-        this.hardwareMap = hardwareMap;
-        this.telemetry = telemetry;
-
-        this.telemetryDump = new TelemetryDump(telemetry);
-        fileDump = new FileDump();
-
-        initHubs();
-        initialize(startingPosition);
-
-        actionExecutor = new ActionExecutor(this);
     }
 
     public void update() {
@@ -119,12 +106,12 @@ public class Robot extends ModuleCollection {
         }
     }
 
-    private void initialize(Pose2d startingPosition) {
+    private void initialize(Pose2d startingPosition, boolean isAuto) {
         // Add individual modules into the array here
-        this.drivetrain = new Drivetrain(this, true, startingPosition);
+        this.drivetrain = new Drivetrain(this, true, startingPosition, isAuto);
         this.shooter = new Shooter(this, true);
 
-        this.intakeModule = new IntakeModule(this, true);
+        this.intakeModule = new IntakeModule(this, true, isAuto);
         this.wobbleModule = new WobbleModule(this, true);
         this.ringManager = new RingManager(this, true);
 //        this.visionModule = new VisionModule(this, true);
