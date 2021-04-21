@@ -94,14 +94,14 @@ public class IntakeModule implements Module, TelemetryProvider {
         }
     }
 
-    public IntakeModule(Robot robot, boolean isOn) {
+    public IntakeModule(Robot robot, boolean isOn, boolean isAuto) {
         this.robot = robot;
         this.isOn = isOn;
 
         robot.telemetryDump.registerProvider(this);
 
-        doneUnlocking = false;
-        blockerPosition = IntakeModule.IntakeBlockerPosition.INIT;
+        doneUnlocking = !isAuto;
+        blockerPosition = isAuto ? IntakeModule.IntakeBlockerPosition.INIT : IntakeBlockerPosition.BLOCKING;
 
         stopIntake = false;
         startTime = 0;
