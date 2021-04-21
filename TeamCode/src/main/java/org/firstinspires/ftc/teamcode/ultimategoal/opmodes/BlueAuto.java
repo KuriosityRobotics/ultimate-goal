@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
@@ -13,8 +14,10 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.FlywheelAction;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.IntakeBlockerAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.RunIntakeAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ShootAction;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ShootStackAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.WobbleArmAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.WobbleClawAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
@@ -31,7 +34,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     static final Pose2d STARTING = new Pose2d(48 - 9, 0, new Rotation2d(0));
 
-    public static final Point POWERSHOT = new Point(STARTING.getTranslation().getX() + 5, 23.5 * 2.5);
+    public static final Point POWERSHOT = new Point(STARTING.getTranslation().getX() + 5, 20.5 * 2.5);
 
     Vision.TargetGoal measuredZone;
 
@@ -43,7 +46,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     final Point STACK = new Point(34 - 9, 47 - (16.5 / 2));
 
-    final Point SECOND_WOBBLE = new Point(36 - 16, 30.5 - 4);
+    final Point SECOND_WOBBLE = new Point(36 - 18, 30.5 - 4);
 
     final double SHOOT_RING_Y = 60;
     final double SHOOT_RING_X = 28;
@@ -67,6 +70,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         waitForStart();
 
+
         measuredZone = vision.runDetection();
         switch (measuredZone) {
             case UNKNOWN:
@@ -85,86 +89,89 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         }
 
         robot.startModules();
-
+        robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.INIT;
 //        PathFollow startTofirstDroppOffActions = new PathFollow(new Waypoint[]{
 //                new Waypoint(new Point(STARTING.getTranslation()), new FlywheelAction(true)),
 //                new Waypoint(POWERSHOT, new BluePowershotsAction())
 //        }, robot, "Start to powershot");
 
-        ArrayList<Action> firstDropOffActions = new ArrayList<>();
-        firstDropOffActions.add(new FlywheelAction(true));
-        firstDropOffActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.AUTO_DROP));
-        firstDropOffActions.add(new FlywheelAction(true));
-        firstDropOffActions.add(new WobbleClawAction(false));
+        ArrayList<Action> powershotActions = new ArrayList<>();
+        powershotActions.add(new ShootAction(BLUE_HIGH));
+        powershotActions.add(new FlywheelAction(true));
+
         ArrayList<Action> startActions = new ArrayList<>();
-        startActions.add(new WobbleClawAction(true));
-        startActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.WALL_DROP));
-        PathFollow startToFirstWobbleDropOff = new PathFollow(new Waypoint[]{
+        startActions.add(new FlywheelAction(true));
+
+        PathFollow startToPowershot = new PathFollow(new Waypoint[]{
                 new Waypoint(new Point(STARTING.getTranslation().getX(), STARTING.getTranslation().getY()), startActions),
                 new Waypoint(STACK.x + 15, STACK.y),
-                new Waypoint(firstWobbleDropOff, firstDropOffActions)
+                new Waypoint(POWERSHOT, powershotActions)
         }, robot, "startinng to first wobble dropoff");
 
-        ArrayList<Action> leavingFirstWobbleActions = new ArrayList<>();
-        leavingFirstWobbleActions.add(new FlywheelAction(true));
-        leavingFirstWobbleActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.RAISED));
-        PathFollow firstWobbleDropOffToPowerShot = new PathFollow(new Waypoint[]{
-                new Waypoint(firstWobbleDropOff, leavingFirstWobbleActions),
-                new Waypoint(POWERSHOT, new BluePowershotsAction())
+        ArrayList<Action> powershotToFirstWobbleStartActions= new ArrayList<>();
+        powershotToFirstWobbleStartActions.add(new FlywheelAction(true));
+
+        PathFollow powershotToFirstWobble = new PathFollow(new Waypoint[]{
+                new Waypoint(POWERSHOT, powershotToFirstWobbleStartActions),
+                new Waypoint(firstWobbleDropOff, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.STREAMLINE))
         }, robot, "first wobble dropoff to powershot");
 
-        ArrayList<Action> secondWobbleActions = new ArrayList<>();
-        secondWobbleActions.add(new RunIntakeAction(false));
-        secondWobbleActions.add(new WobbleClawAction(true));
-
         ArrayList<Action> secondWobbleStartActions = new ArrayList<>();
-        secondWobbleStartActions.add(new RunIntakeAction(true));
-        secondWobbleStartActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.LOWERED));
+        secondWobbleStartActions.add(new RunIntakeAction(false));
+        secondWobbleStartActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.STREAMLINE));
+//        secondWobbleStartActions.add(new ShootStackAction(4,SECOND_WOBBLE,BLUE_HIGH));
+
+        ArrayList<Action> secondWobbleEndActions = new ArrayList<>();
+        secondWobbleEndActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.WOBBLE));
+        secondWobbleEndActions.add(new RunIntakeAction(false));
+        secondWobbleEndActions.add(new FlywheelAction(false));
 
         PathFollow powerShotToSecondWobble = new PathFollow(new Waypoint[]{}, robot, "filler");
-        PathFollow powerShotToStack = new PathFollow(new Waypoint[]{}, robot, "filler");
+        PathFollow firstwobbleToSecondWobble = new PathFollow(new Waypoint[]{}, robot, "filler");
         PathFollow backFromStack = new PathFollow(new Waypoint[]{}, robot, "filler");
         PathFollow stackToSecondWobble = new PathFollow(new Waypoint[]{}, robot, "filler");
         PathFollow stackToSecondWobble2 = new PathFollow(new Waypoint[]{}, robot, "filler");
 
-        if (measuredZone == Vision.TargetGoal.C) {
-            powerShotToStack = new PathFollow(new Waypoint[]{
-                    new Waypoint(POWERSHOT, secondWobbleStartActions),
-                    new Waypoint(POWERSHOT.x + 6, STACK.y),
-            }, robot, "Powershot to stack");
-
-            backFromStack = new PathFollow(new Waypoint[]{
-                    new Waypoint(POWERSHOT.x + 6, STACK.y),
-                    new Waypoint(POWERSHOT.x + 4, STACK.y + 2),
-                    new Waypoint(STACK.x - 7, STACK.y + 3)
-            }, robot, "Back from stack");
-
-            stackToSecondWobble = new PathFollow(new Waypoint[]{
-                    new Waypoint(STACK.x - 7, STACK.y + 3),
-                    new Waypoint(STACK.x + 2, STACK.y),
-            }, robot, "Stack to second wobble");
-            stackToSecondWobble2 = new PathFollow(new Waypoint[]{
-                    new Waypoint(STACK.x + 2, STACK.y),
-                    new Waypoint(SECOND_WOBBLE, secondWobbleActions)
-            }, robot, "Stack to second wobble");
-        } else {
-            powerShotToSecondWobble = new PathFollow(new Waypoint[]{
-                    new Waypoint(POWERSHOT, secondWobbleStartActions),
-                    new Waypoint(STACK.x + 4, STACK.y),
-                    new Waypoint(STACK),
-                    new Waypoint(SECOND_WOBBLE, secondWobbleActions)
-            }, robot, "Powershot to second wobble");
-        }
+        firstwobbleToSecondWobble = new PathFollow(new Waypoint[]{
+                new Waypoint(firstWobbleDropOff, secondWobbleStartActions),
+                new Waypoint(SECOND_WOBBLE.x,SECOND_WOBBLE.y + 55, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.OPEN)),
+                new Waypoint(SECOND_WOBBLE.x,SECOND_WOBBLE.y+8,new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.WOBBLE)),
+                new Waypoint(SECOND_WOBBLE,secondWobbleEndActions),
+        }, robot, "Powershot to stack");
+//
+//        if (measuredZone == Vision.TargetGoal.C) {
+//
+//
+//            backFromStack = new PathFollow(new Waypoint[]{
+//                    new Waypoint(POWERSHOT.x + 6, STACK.y),
+//                    new Waypoint(POWERSHOT.x + 4, STACK.y + 2),
+//                    new Waypoint(STACK.x - 7, STACK.y + 3)
+//            }, robot, "Back from stack");
+//
+//            stackToSecondWobble = new PathFollow(new Waypoint[]{
+//                    new Waypoint(STACK.x - 7, STACK.y + 3),
+//                    new Waypoint(STACK.x + 2, STACK.y),
+//            }, robot, "Stack to second wobble");
+//            stackToSecondWobble2 = new PathFollow(new Waypoint[]{
+//                    new Waypoint(STACK.x + 2, STACK.y),
+//                    new Waypoint(SECOND_WOBBLE, secondWobbleActions)
+//            }, robot, "Stack to second wobble");
+//        } else {
+//            powerShotToSecondWobble = new PathFollow(new Waypoint[]{
+//                    new Waypoint(POWERSHOT, secondWobbleStartActions),
+//                    new Waypoint(STACK.x + 4, STACK.y),
+//                    new Waypoint(STACK),
+//                    new Waypoint(SECOND_WOBBLE, secondWobbleActions)
+//            }, robot, "Powershot to second wobble");
+//        }
 
         ArrayList<Action> secondDropOffActions = new ArrayList<>();
-        secondDropOffActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.LOWERED));
-        secondDropOffActions.add(new RunIntakeAction(true));
-        secondDropOffActions.add(new WobbleClawAction(false));
+        secondDropOffActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.OPEN));
 
 
         ArrayList<Action> secondDropOffStartActions = new ArrayList<>();
-        secondDropOffStartActions.add(new RunIntakeAction(true));
-        secondDropOffStartActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.WALL_DROP));
+        secondDropOffStartActions.add(new RunIntakeAction(false));
+        secondDropOffStartActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.WOBBLE));
 
         PathFollow secondWobbleToSecondWobbleDropOff = new PathFollow(new Waypoint[]{
                 new Waypoint(SECOND_WOBBLE, secondDropOffStartActions),
@@ -173,10 +180,9 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         ArrayList<Action> fromSecondWobbleActions = new ArrayList<>();
         fromSecondWobbleActions.add(new FlywheelAction(true));
-        fromSecondWobbleActions.add(new WobbleArmAction(WobbleModule.WobbleArmPosition.RAISED));
 
         ArrayList<Action> shootActions = new ArrayList<>();
-        shootActions.add(new ShootAction(BLUE_HIGH));
+//        shootActions.add(new ShootStackAction(2, new Point(SHOOT_RING_X,SHOOT_RING_Y), BLUE_HIGH));
 
 
         PathFollow secondWobbleDropOffToShoot = new PathFollow(new Waypoint[]{
@@ -189,34 +195,42 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
                 new Waypoint(new Point(PARK.getTranslation().getX(), PARK.getTranslation().getY()))
         }, robot, "Second wobble drop off to park");
 
-        startToFirstWobbleDropOff.followPath(0, 1, 1, true, Math.toRadians(-45));
+
+
+        sleep(750);
+        robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.WOBBLE;
+
+        startToPowershot.followPath(0, 1, 1, true, Math.toRadians(0));
         sleep(500);
 
-        firstWobbleDropOffToPowerShot.followPath(Math.toRadians(180), 1, 1, true, 0);
+        powershotToFirstWobble.followPath(0, 1, 1, true, Math.toRadians(-45));
         sleep(500);
 
-        if (measuredZone == Vision.TargetGoal.C) {
-            robot.drivetrain.brakeHeading = Math.toRadians(90);
-            sleep(500);
+        firstwobbleToSecondWobble.followPath(0,1,1,true,Math.toRadians(-150));
 
-            powerShotToStack.followPath(Math.toRadians(180), 1, 1, true, Math.toRadians(-90));
-
-            backFromStack.followPath(0, 1, 1, true, Math.toRadians(-90));
-
-            stackToSecondWobble.followPath(0, 1, 1, true, Math.toRadians(215));
-
-            stackToSecondWobble2.followPath(0, 0.55, 1, true, Math.toRadians(215));
-        } else {
-            powerShotToSecondWobble.followPath(0, 0.55, 1, true, Math.toRadians(215));
-        }
-        sleep(500);
-
-        secondWobbleToSecondWobbleDropOff.followPath(0, 1, 1, true, 0);
-        sleep(500);
-
-        secondWobbleDropOffToShoot.followPath(Math.toRadians(180), 1, 1, false, 0);
-
-        shootToPark.followPath(0, 1, 1, true, 0);
+        secondWobbleToSecondWobbleDropOff.followPath(0,1,1,true,0);
+//        if (measuredZone == Vision.TargetGoal.C) {
+//            robot.drivetrain.brakeHeading = Math.toRadians(90);
+//            sleep(500);
+//
+//            powerShotToStack.followPath(Math.toRadians(180), 1, 1, true, Math.toRadians(-90));
+//
+//            backFromStack.followPath(0, 1, 1, true, Math.toRadians(-90));
+//
+//            stackToSecondWobble.followPath(0, 1, 1, true, Math.toRadians(215));
+//
+//            stackToSecondWobble2.followPath(0, 0.55, 1, true, Math.toRadians(215));
+//        } else {
+//            powerShotToSecondWobble.followPath(0, 0.55, 1, true, Math.toRadians(215));
+//        }
+//        sleep(500);
+//
+//        secondWobbleToSecondWobbleDropOff.followPath(0, 1, 1, true, 0);
+//        sleep(500);
+//
+//        secondWobbleDropOffToShoot.followPath(Math.toRadians(180), 1, 1, false, 0);
+//
+//        shootToPark.followPath(0, 1, 1, true, 0);
         sleep(2000);
     }
 

@@ -31,7 +31,7 @@ public class ShootAction extends Action {
             return false;
         } else {
             if (robot.shooter.isFinishedIndexing()) {
-                robot.shooter.flywheelOn = false;
+//                robot.shooter.flywheelOn = false;
                 return true;
             } else {
                 return false;

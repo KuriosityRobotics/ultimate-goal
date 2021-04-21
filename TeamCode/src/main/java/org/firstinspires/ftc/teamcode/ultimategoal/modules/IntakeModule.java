@@ -34,10 +34,18 @@ public class IntakeModule implements Module, TelemetryProvider {
 
     private static final double LEFT_BLOCKER_BLOCKING_POSITION = 0.85727 + 0.125;
     private static final double RIGHT_BLOCKER_BLOCKING_POSITION = 0.0;
-    private static final double LEFT_BLOCKER_WOBBLE_POSITION = 0.85727 + 0.125;
-    private static final double RIGHT_BLOCKER_WOBBLE_POSITION = 0.0;
+
+    private static final double LEFT_BLOCKER_WOBBLE_POSITION = 0.85;
+    private static final double RIGHT_BLOCKER_WOBBLE_POSITION = 0.1;
+
     private static final double LEFT_BLOCKER_OPEN_POSITION = 0.370 + 0.125;
     private static final double RIGHT_BLOCKER_OPEN_POSITION = 0.463;
+
+    private static final double LEFT_BLOCKER_INIT_POSITION = 0.71;
+    private static final double RIGHT_BLOCKER_INIT_POSITION = 0.24;
+
+    private static final double LEFT_BLOCKER_STREAMLINE_POSITION = 0.370 + 0.125 - 0.4;
+    private static final double RIGHT_BLOCKER_STREAMLINE_POSITION = 0.463 + 0.4;
 
     private static final double LEFT_BLOCKER_SLOPE = (LEFT_BLOCKER_OPEN_POSITION - LEFT_BLOCKER_BLOCKING_POSITION) / Math.toRadians(120);
     private static final double RIGHT_BLOCKER_SLOPE = (RIGHT_BLOCKER_OPEN_POSITION - RIGHT_BLOCKER_BLOCKING_POSITION) / Math.toRadians(120);
@@ -58,7 +66,7 @@ public class IntakeModule implements Module, TelemetryProvider {
     long startTime;
 
     public enum IntakeBlockerPosition {
-        BLOCKING, FUNNEL, OPEN, WOBBLE;
+        BLOCKING, FUNNEL, OPEN, WOBBLE, STREAMLINE, INIT;
 
         public IntakeBlockerPosition next() {
             IntakeBlockerPosition position;
@@ -74,6 +82,12 @@ public class IntakeModule implements Module, TelemetryProvider {
                 case "OPEN":
                     position = BLOCKING;
                     break;
+                case "STREAMLINE":
+                    position = STREAMLINE;
+                    break;
+                case "INIT":
+                    position = INIT;
+                    break;
             }
 
             return position;
@@ -87,7 +101,7 @@ public class IntakeModule implements Module, TelemetryProvider {
         robot.telemetryDump.registerProvider(this);
 
         doneUnlocking = false;
-        blockerPosition = IntakeBlockerPosition.BLOCKING;
+        blockerPosition = IntakeModule.IntakeBlockerPosition.INIT;
 
         stopIntake = false;
         startTime = 0;
@@ -150,12 +164,20 @@ public class IntakeModule implements Module, TelemetryProvider {
 
     private void intakeBlockerLogic() {
         if (!doneUnlocking) {
-            leftBlocker.setPosition(LEFT_BLOCKER_BLOCKING_POSITION);
-            rightBlocker.setPosition(RIGHT_BLOCKER_BLOCKING_POSITION);
+            leftBlocker.setPosition(LEFT_BLOCKER_INIT_POSITION);
+            rightBlocker.setPosition(RIGHT_BLOCKER_INIT_POSITION);
             return;
         }
 
         switch (blockerPosition) {
+            case INIT:
+                leftBlocker.setPosition(LEFT_BLOCKER_INIT_POSITION);
+                rightBlocker.setPosition(RIGHT_BLOCKER_INIT_POSITION);
+                break;
+            case STREAMLINE:
+                leftBlocker.setPosition(LEFT_BLOCKER_STREAMLINE_POSITION);
+                rightBlocker.setPosition(RIGHT_BLOCKER_STREAMLINE_POSITION);
+                break;
             case BLOCKING:
                 leftBlocker.setPosition(LEFT_BLOCKER_BLOCKING_POSITION);
                 rightBlocker.setPosition(RIGHT_BLOCKER_BLOCKING_POSITION);
