@@ -163,7 +163,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     private void initRobot() {
-        robot = new Robot(hardwareMap, telemetry, this, BlueAuto.PARK);
+        robot = new Robot(hardwareMap, telemetry, this, BlueAuto.PARK, false);
 
         robot.drivetrain.weakBrake = true;
 

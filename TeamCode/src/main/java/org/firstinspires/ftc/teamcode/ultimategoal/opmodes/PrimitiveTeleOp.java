@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
 
 import android.os.SystemClock;
 
+import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 import java.util.ArrayList;
 
@@ -50,7 +52,7 @@ public class PrimitiveTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     private void initRobot() {
-        robot = new Robot(hardwareMap, telemetry, this);
+        robot = new Robot(hardwareMap, telemetry, this, new Pose2d(), false);
 
         robot.drivetrain.weakBrake = true;
     }

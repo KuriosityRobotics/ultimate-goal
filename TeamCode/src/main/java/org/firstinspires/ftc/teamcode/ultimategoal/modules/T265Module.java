@@ -48,10 +48,6 @@ public class T265Module implements Module, TelemetryProvider {
     // Constants
     private static final double INCHES_TO_METERS = 0.0254;
 
-    public T265Module(Robot robot, boolean isOn) {
-        this(robot, isOn, new Pose2d(0, 0, new Rotation2d(0)));
-    }
-
     public T265Module(Robot robot, boolean isOn, Pose2d startingPosition) {
         this.robot = robot;
         this.isOn = isOn;
