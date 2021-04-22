@@ -45,7 +45,7 @@ public class TargetVelocityFunction {
 //        if (trueDistance < stopThreshold) {
 //            targetTrueVelocity = 0;
 //        } else {
-            targetTrueVelocity = slowRate * trueDistance * 0.85;
+            targetTrueVelocity = slowRate * trueDistance * 0.8;
 //        }
 
         return targetTrueVelocity * sign;

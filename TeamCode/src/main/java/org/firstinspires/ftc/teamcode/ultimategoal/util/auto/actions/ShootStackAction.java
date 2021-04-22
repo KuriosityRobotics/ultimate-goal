@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 
+import android.util.Log;
+
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Target;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
@@ -27,6 +29,8 @@ public class ShootStackAction extends Action {
 
     @Override
     public boolean executeAction(Robot robot) {
+        Log.v("SHOOTSTACK", "UPDATE");
+
         if (beginExecutionTime == 0) {
             oldAutoRaise = robot.ringManager.autoRaise;
             oldAutoShoot = robot.ringManager.autoShootRings;
@@ -43,15 +47,17 @@ public class ShootStackAction extends Action {
             startingRingsShot = robot.ringManager.getTotalRingsShot();
         }
 
-        if (robot.intakeModule.intakePower == 0) {
+        robot.intakeModule.intakePower = 1;
+
+        if (robot.intakeModule.stopIntake) {
             robot.drivetrain.setMovements(0, 0, 0);
         } else {
-            robot.drivetrain.setMovementsTowardsPoint(end, 0.6, 0.9, 0, false, 0);
+            robot.drivetrain.setMovementsTowardsPoint(end, 0.3, 0.9, 0, false, 0);
         }
 
         int stackRingsShot = robot.ringManager.getTotalRingsShot() - startingRingsShot;
 
-        boolean done = (stackRingsShot >= ringsToExpect) || (robot.drivetrain.distanceToPoint(end) < 1);
+        boolean done = (stackRingsShot >= ringsToExpect);
 
         if (done) {
             robot.ringManager.autoRaise = oldAutoRaise;

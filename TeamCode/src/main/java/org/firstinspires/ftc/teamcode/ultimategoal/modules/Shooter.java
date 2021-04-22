@@ -26,9 +26,13 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     public double manualAngleCorrection;
     public double manualAngleFlapCorrection;
 
+    // helpers
+    private boolean queueDelivery = false;
+    private long lastIndexTime = 0;
+
     // Constants
     public final static int HIGHGOAL_FLYWHEEL_SPEED = 1750;
-    public final static int POWERSHOT_FLYWHEEL_SPEED = 1650; // todo
+    public final static int POWERSHOT_FLYWHEEL_SPEED = 1350; // todo
 
     private static final double TURRET_DISTANCE_FROM_BACK = 7;
 
@@ -94,14 +98,21 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     }
 
     public void update() {
+        long currentTime = robot.getCurrentTimeMilli();
+
         if (lockTarget) {
             aimTurret();
         }
 
-        if (flywheelOn) {
+        if (flywheelOn || currentTime < lastIndexTime + ShooterModule.INDEXER_RETURNED_TIME_MS + 400) {
             shooterModule.flyWheelTargetSpeed = target.isPowershot() ? POWERSHOT_FLYWHEEL_SPEED : HIGHGOAL_FLYWHEEL_SPEED;
         } else {
             shooterModule.flyWheelTargetSpeed = 0;
+        }
+
+        if (queueDelivery && shooterModule.isIndexerReturned()) {
+            hopperModule.deliverRings = true;
+            queueDelivery = false;
         }
 
         if (shooterModule.flywheelsUpToSpeed()) {
@@ -110,15 +121,20 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         if (queuedIndexes > 0) {
             boolean safeToIndex = hopperModule.msUntilHopperRaised() > ShooterModule.INDEXER_RETURNED_TIME_MS;
-            boolean shooterReady = shooterModule.flywheelsUpToSpeed();
+            boolean shooterReady = shooterModule.flywheelsUpToSpeed()
+                    && Math.abs(shooterModule.getTurretError()) < Math.toRadians(1.5)
+                    && Math.abs(shooterModule.getTurretVelocity()) < Math.toRadians(0.7);
+            boolean drivetrainReady = Math.hypot(robot.drivetrain.getOdometryXVel(), robot.drivetrain.getOdometryYVel()) < 1;
 
-            if (safeToIndex && shooterReady && !shooterModule.indexRing) {
+            if (safeToIndex && shooterReady && drivetrainReady && !shooterModule.indexRing) {
                 shooterModule.indexRing = true;
                 queuedIndexes--;
                 burstNum++;
+                lastIndexTime = currentTime;
             } else if (forceIndex) {
                 shooterModule.indexRing = true;
                 forceIndex = false;
+                lastIndexTime = currentTime;
             }
         }
 
@@ -162,7 +178,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     }
 
     private double getPowershotAngleOffset(double distanceToTarget) {
-        return Math.toRadians(4);
+        return 0;
     }
 
     /**
@@ -191,7 +207,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     }
 
     private double getPowershotFlapPosition(double distanceToTarget) {
-        return 0.2233;
+        return 0.2335;
     }
 
     public void forceIndex() {
@@ -257,16 +273,12 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         queuedIndexes += numRings;
     }
 
-    public boolean requestRingIndex() {
-        if (hopperModule.getCurrentHopperPosition() != HopperModule.HopperPosition.AT_TURRET) {
-            return false;
-        }
-        shooterModule.indexRing = true;
-        return true;
+    public void clearIndexes() {
+        queuedIndexes = 0;
     }
 
     public void deliverRings() {
-        hopperModule.deliverRings = true;
+        queueDelivery = true;
     }
 
     public boolean isFinishedIndexing() {

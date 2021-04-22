@@ -18,7 +18,7 @@ public class IntakeModule implements Module, TelemetryProvider {
     // States
     public boolean doneUnlocking;
     public double intakePower = 0;
-    boolean stopIntake;
+    public boolean stopIntake;
     public IntakeBlockerPosition blockerPosition;
 
     // Actuators

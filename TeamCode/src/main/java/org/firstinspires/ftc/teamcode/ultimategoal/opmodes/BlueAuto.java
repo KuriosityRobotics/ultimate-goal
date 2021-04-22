@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
 
+import android.util.Log;
+
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -7,22 +9,19 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
-import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.FlywheelAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.IntakeBlockerAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.RunIntakeAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ShootAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ShootStackAction;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.WobbleArmAction;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.WobbleClawAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 import org.firstinspires.ftc.teamcode.ultimategoal.vision.Vision;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
@@ -108,7 +107,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
                 new Waypoint(POWERSHOT, powershotActions)
         }, robot, "startinng to first wobble dropoff");
 
-        ArrayList<Action> powershotToFirstWobbleStartActions= new ArrayList<>();
+        ArrayList<Action> powershotToFirstWobbleStartActions = new ArrayList<>();
         powershotToFirstWobbleStartActions.add(new FlywheelAction(true));
 
         PathFollow powershotToFirstWobble = new PathFollow(new Waypoint[]{
@@ -116,10 +115,19 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
                 new Waypoint(firstWobbleDropOff, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.STREAMLINE))
         }, robot, "first wobble dropoff to powershot");
 
+        PathFollow backFromFirstWobble = new PathFollow(new Waypoint[] {
+                new Waypoint(firstWobbleDropOff),
+                new Waypoint(firstWobbleDropOff.x + 16, firstWobbleDropOff.y)
+        }, robot, "back away from first wobble");
+
+        PathFollow towardsStack = new PathFollow(new Waypoint[]{
+                new Waypoint(firstWobbleDropOff.x + 16, firstWobbleDropOff.y, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.BLOCKING)),
+                new Waypoint(STACK.x, STACK.y + 16)
+        }, robot, "towards the stack");
+
         ArrayList<Action> secondWobbleStartActions = new ArrayList<>();
         secondWobbleStartActions.add(new RunIntakeAction(false));
         secondWobbleStartActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.STREAMLINE));
-//        secondWobbleStartActions.add(new ShootStackAction(4,SECOND_WOBBLE,BLUE_HIGH));
 
         ArrayList<Action> secondWobbleEndActions = new ArrayList<>();
         secondWobbleEndActions.add(new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.WOBBLE));
@@ -134,9 +142,9 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         firstwobbleToSecondWobble = new PathFollow(new Waypoint[]{
                 new Waypoint(firstWobbleDropOff, secondWobbleStartActions),
-                new Waypoint(SECOND_WOBBLE.x,SECOND_WOBBLE.y + 55, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.OPEN)),
-                new Waypoint(SECOND_WOBBLE.x,SECOND_WOBBLE.y+8,new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.WOBBLE)),
-                new Waypoint(SECOND_WOBBLE,secondWobbleEndActions),
+                new Waypoint(SECOND_WOBBLE.x, SECOND_WOBBLE.y + 55, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.OPEN)),
+                new Waypoint(SECOND_WOBBLE.x, SECOND_WOBBLE.y + 8, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.WOBBLE)),
+                new Waypoint(SECOND_WOBBLE, secondWobbleEndActions),
         }, robot, "Powershot to stack");
 //
 //        if (measuredZone == Vision.TargetGoal.C) {
@@ -196,7 +204,6 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         }, robot, "Second wobble drop off to park");
 
 
-
         sleep(750);
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.WOBBLE;
 
@@ -206,9 +213,19 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         powershotToFirstWobble.followPath(0, 1, 1, true, Math.toRadians(-45));
         sleep(500);
 
-        firstwobbleToSecondWobble.followPath(0,1,1,true,Math.toRadians(-150));
+        backFromFirstWobble.followPath(Math.toRadians(180), 1, 1, false, Math.toRadians(-45));
 
-        secondWobbleToSecondWobbleDropOff.followPath(0,1,1,true,0);
+        towardsStack.followPath(0, 1, 1, true, Math.toRadians(180));
+
+        ShootStackAction shootStackAction = new ShootStackAction(4, new Point(STACK.x - 6, STACK.y - 12), BLUE_HIGH);
+        while (!shootStackAction.executeAction(robot) && opModeIsActive()) {
+            // yeet
+            Log.v("shoot stack!", "stack!");
+        }
+
+        firstwobbleToSecondWobble.followPath(0, 1, 1, true, Math.toRadians(-150));
+
+        secondWobbleToSecondWobbleDropOff.followPath(0, 1, 1, true, 0);
 //        if (measuredZone == Vision.TargetGoal.C) {
 //            robot.drivetrain.brakeHeading = Math.toRadians(90);
 //            sleep(500);
