@@ -57,7 +57,6 @@ public class PrimitiveTeleOp extends LinearOpMode implements TelemetryProvider {
         robot.drivetrain.weakBrake = true;
     }
 
-
     int numIndexes = 0;
 
     private void updateHopperStates() {
