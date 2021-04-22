@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
+import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -18,7 +19,7 @@ public class AutoPathTest extends LinearOpMode {
 
     public void runOpMode() {
 
-        robot = new Robot(hardwareMap, telemetry, this);
+        robot = new Robot(hardwareMap, telemetry, this, new Pose2d(), false);
 
         pf1 = new PathFollow(new Waypoint[]{
                 new Waypoint(0, 0),

@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.util.Log;
+
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
@@ -15,10 +18,13 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.distance;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.transformToCoordinateSystem;
 
+@Config
 public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     Robot robot;
     public boolean isOn;
@@ -40,23 +46,32 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public Point brakePoint;
     public double brakeHeading;
 
+    // Helpers
+    HashMap<String, Object> lastIterData;
+
     // Constants
     private final static double SLOW_MODE_FACTOR = 0.35;
     private final static double TURN_SCALE = Math.toRadians(30);
 
+    public static double TOWARDS_P = 0.0013;
+    public static double TOWARDS_D = 0.49;
+    public static double NORMAL_P = 0.008;
+    public static double NORMAL_D = 0.1;
+    public static double ANGULAR_P = 0.1;
+    public static double ANGULAR_D = 6.0;
     // Braking Controllers
     private final BrakeController towardsBrakeController = new BrakeController(
-            new VelocityPidController(0.0017, 0, 0.41),
-            new TargetVelocityFunction(1.77, 3, 10, 0.4),
-            0.0096, 10
+            new VelocityPidController(TOWARDS_P, 0, TOWARDS_D),
+            new TargetVelocityFunction(1.77, 5, 8, 0.5),
+            0.0094, 10
     );
     private final BrakeController normalToBrakeController = new BrakeController(
-            new VelocityPidController(0.0064, 0, 0.2),
+            new VelocityPidController(NORMAL_P, 0, NORMAL_D),
             new TargetVelocityFunction(0, 0, 0, 0),
             0, 1, false
     );
     private final BrakeController angularBrakeController = new BrakeController(
-            new VelocityPidController(0.1, 0, 6.0),
+            new VelocityPidController(ANGULAR_P, 0, ANGULAR_D),
             new TargetVelocityFunction(Math.toRadians(190), Math.toRadians(10), Math.toRadians(45), Math.toRadians(0.6)),
             0.2, Math.toRadians(110)
     );
@@ -69,9 +84,26 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         odometryModule = new OdometryModule(robot, isOn, startingPosition);
         t265Module = new T265Module(robot, !isAuto, startingPosition);
 
+        brakePoint = new Point(startingPosition.getTranslation());
+        brakeHeading = startingPosition.getHeading();
+
         modules = new Module[]{drivetrainModule, odometryModule, t265Module};
 
         robot.telemetryDump.registerProvider(this);
+
+        lastIterData = new HashMap<>();
+
+        // init data so it shows up on list at init (remove later)
+        lastIterData.put("distToBrake", 0);
+        lastIterData.put("velocityTowardsBrake", 0);
+        lastIterData.put("velocityNormalBrake", 0);
+        lastIterData.put("targetTowardsBrake", 0);
+        lastIterData.put("towardsPower", 0);
+        lastIterData.put("normalPower", 0);
+        lastIterData.put("angError", 0);
+        lastIterData.put("angTargetVelo", 0);
+        lastIterData.put("angVelo", 0);
+        lastIterData.put("angPower", 0);
     }
 
     @Override
@@ -208,14 +240,14 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     }
 
     private void adjustBrakeForWeak() {
-        if (distanceToPoint(brakePoint) > 0.7) {
+        if (distanceToPoint(brakePoint) > 1.5) {
             Point robotPosition = getCurrentPosition();
 
-            brakePoint = new Point((brakePoint.x + robotPosition.x) / 2, (brakePoint.y + robotPosition.y) / 2);
+            brakePoint = new Point((0.95 * robotPosition.x) + (0.05 * brakePoint.x), (0.95 * robotPosition.y) + (0.05 * brakePoint.y));
         }
 
         if (Math.abs(relativeAngleToPoint(brakePoint)) > 0.1) {
-            brakeHeading = getCurrentHeading();
+            brakeHeading = (brakeHeading + getCurrentHeading()) / 2;
         }
     }
 
@@ -241,9 +273,9 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         // nerf braking if weak brake
         if (weakBrake) {
-            xMovement *= 0.4;
-            yMovement *= 0.2;
-            turnMovement *= 0.9;
+            xMovement *= 0.6;
+            yMovement *= 0.95;
+            turnMovement *= 0.6;
 
 //            xMovement = Math.abs(xMovement) < 0.02 ? 0 : xMovement;
 //            yMovement = Math.abs(yMovement) < 0.02 ? 0 : yMovement;
@@ -289,6 +321,13 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 //        Log.v("BRAKING", "Towards power: " + towardsScale + ", Normal power: " + normalScale);
 //        Log.v("BRAKING", "converted x: " + convertedMovement.getTranslation().getX() + ", converted y: " + convertedMovement.getTranslation().getY());
 
+        lastIterData.put("distToBrake", distanceToPoint(brakePoint));
+        lastIterData.put("velocityTowardsBrake", velocityTowardsBrake);
+        lastIterData.put("velocityNormalBrake", velocityNormalToBrake);
+        lastIterData.put("targetTowardsBrake", towardsBrakeController.targetVelocity(distanceToPoint(brakePoint)));
+        lastIterData.put("towardsPower", towardsScale * 10);
+        lastIterData.put("normalPower", normalScale * 10);
+
         return new double[]{convertedMovement.getTranslation().getX(), convertedMovement.getTranslation().getY()};
     }
 
@@ -303,6 +342,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 //        Log.v("BRAKING", "ang velo: " + angularVelocity + ", target: " + angularBrakeController.targetVelocity(angleToTarget));
 //        Log.v("BRAKING", "ang power: " + angularPower);
 //        Log.v("BRAKING", "ang atbrake: " + angularBrakeController.getAtBrake());
+
+        lastIterData.put("angError", angleToTarget);
+        lastIterData.put("angTargetVelo", angularBrakeController.targetVelocity(angleToTarget));
+        lastIterData.put("angVelo", angularVelocity);
+        lastIterData.put("angPower", angularPower);
 
         return angularPower;
     }
@@ -491,6 +535,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         data.add("isBrake: " + brake);
         data.add("Brake Point: " + brakePoint + ", Brake heading: " + brakeHeading);
         return data;
+    }
+
+    @Override
+    public HashMap<String, Object> getDashboardData() {
+        return lastIterData;
     }
 
     @Override

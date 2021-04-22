@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
+import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -12,7 +13,7 @@ public class PlebBrake extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        robot = new Robot(hardwareMap, telemetry, this);
+        robot = new Robot(hardwareMap, telemetry, this, new Pose2d(), false);
 
         waitForStart();
 
