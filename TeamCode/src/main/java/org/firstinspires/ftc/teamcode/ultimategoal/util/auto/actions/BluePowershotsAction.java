@@ -26,6 +26,14 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
             beginExecutionTime = robot.getCurrentTimeMilli();
 
             robot.shooter.lockTarget = true;
+
+            robot.shooter.clearIndexes();
+
+//            // robot isn't ready for the powershots
+//            if (!robot.shooter.isFinishedIndexing()) {
+//                beginExecutionTime = 0;
+//                return false;
+//            }
         }
 
         if (robot.shooter.isFinishedIndexing()) {
@@ -38,6 +46,8 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
         } else {
             return false;
         }
+
+        robot.shooter.queueIndex();
 
         switch (powershotNum) {
             case 0:
@@ -55,8 +65,6 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
         }
 
         robot.shooter.flywheelOn = true;
-
-        robot.shooter.queueIndex();
 
         return false;
     }
