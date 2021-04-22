@@ -12,7 +12,10 @@ import java.util.ArrayList;
 public class BluePowershotsAction extends Action implements TelemetryProvider {
     Robot robot;
 
-    int powershotNum = -1;
+    int powershotNum = 0;
+
+    boolean oldWeakBrake;
+    boolean oldLockTarget;
 
     public BluePowershotsAction() {
         this.stopMovementForExecution = true;
@@ -25,29 +28,23 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
 //            robot.telemetryDump.registerProvider(this);
             beginExecutionTime = robot.getCurrentTimeMilli();
 
-            robot.shooter.lockTarget = true;
-
             robot.shooter.clearIndexes();
 
-//            // robot isn't ready for the powershots
-//            if (!robot.shooter.isFinishedIndexing()) {
-//                beginExecutionTime = 0;
-//                return false;
-//            }
-        }
-
-        if (robot.shooter.isFinishedIndexing()) {
-            powershotNum++;
-
-            if (powershotNum > 2 && robot.shooter.isIndexerReturned()) {
-                robot.shooter.flywheelOn = false;
-                return true;
+            // robot isn't ready for the powershots
+            if (!robot.shooter.isFinishedFiringQueue()) {
+                beginExecutionTime = 0;
+                return false;
             }
-        } else {
-            return false;
-        }
 
-        robot.shooter.queueIndex();
+            robot.shooter.queueIndex();
+
+            oldLockTarget = robot.shooter.lockTarget;
+            robot.shooter.lockTarget = false;
+            robot.shooter.stopTurret = true;
+
+            oldWeakBrake = robot.drivetrain.weakBrake;
+            robot.drivetrain.weakBrake = false;
+        }
 
         switch (powershotNum) {
             case 0:
@@ -65,6 +62,24 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
         }
 
         robot.shooter.flywheelOn = true;
+        robot.drivetrain.setBrakeHeading(robot.shooter.absoluteHeadingToTarget(robot.shooter.target) - robot.shooter.getTurretHeading());
+
+        if (robot.shooter.isFinishedFiringQueue()) {
+            powershotNum++;
+            robot.shooter.queueIndex();
+
+            if (powershotNum > 2 && robot.shooter.isIndexerReturned()) {
+                robot.shooter.flywheelOn = false;
+                robot.shooter.stopTurret = false;
+                robot.shooter.lockTarget = oldLockTarget;
+
+                robot.drivetrain.weakBrake = oldWeakBrake;
+
+                return true;
+            }
+        } else {
+            return false;
+        }
 
         return false;
     }

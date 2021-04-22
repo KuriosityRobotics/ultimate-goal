@@ -39,6 +39,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     public boolean indexRing;
     public double shooterFlapPosition = FLAP_LOWER_LIMIT;
 
+    public boolean lockTurret = false;
     public boolean limitAngle = false;
     public double lowerAngleLimit = -Math.PI;
     public double upperAngleLimit = Math.PI;
@@ -144,7 +145,8 @@ public class ShooterModule implements Module, TelemetryProvider {
     public void update() {
         long currentTime = robot.getCurrentTimeMilli();
 
-        turretLogic();
+
+        turnTurretToTarget();
 
         shooterFlap.setPosition(Range.clip(shooterFlapPosition, FLAP_LOWER_LIMIT, FLAP_UPPER_LIMIT));
 
@@ -153,7 +155,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         indexerLogic(currentTime);
     }
 
-    private void turretLogic() {
+    private void turnTurretToTarget() {
         this.currentTurretAngle = turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
 
         double error = targetTurretAngle - currentTurretAngle;

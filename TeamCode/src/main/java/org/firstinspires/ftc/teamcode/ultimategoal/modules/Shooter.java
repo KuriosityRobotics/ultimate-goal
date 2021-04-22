@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.opencv.core.Mat;
 
 import java.util.ArrayList;
 
@@ -19,6 +18,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     // States
     public ITarget target = BLUE_HIGH;
 
+    public boolean stopTurret = false;
     public boolean lockTarget = true;
     public boolean flywheelOn = false;
     public int queuedIndexes = 0;
@@ -33,6 +33,8 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     // Constants
     public final static int HIGHGOAL_FLYWHEEL_SPEED = 1750;
     public final static int POWERSHOT_FLYWHEEL_SPEED = 1350; // todo
+
+    private final static long RING_FIRE_TIME = 400;
 
     private static final double TURRET_DISTANCE_FROM_BACK = 7;
 
@@ -100,44 +102,29 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     public void update() {
         long currentTime = robot.getCurrentTimeMilli();
 
+        // aim turret
+        shooterModule.lockTurret = this.stopTurret;
         if (lockTarget) {
             aimTurret();
         }
 
-        if (flywheelOn || currentTime < lastIndexTime + ShooterModule.INDEXER_RETURNED_TIME_MS + 400) {
+        // run flywheel if needed
+        if (flywheelOn || currentTime < lastIndexTime + ShooterModule.INDEXER_RETURNED_TIME_MS + RING_FIRE_TIME) {
             shooterModule.flyWheelTargetSpeed = target.isPowershot() ? POWERSHOT_FLYWHEEL_SPEED : HIGHGOAL_FLYWHEEL_SPEED;
         } else {
             shooterModule.flyWheelTargetSpeed = 0;
         }
 
+        // hopper, only if indexer ready
         if (queueDelivery && shooterModule.isIndexerReturned()) {
             hopperModule.deliverRings = true;
             queueDelivery = false;
         }
 
-        if (shooterModule.flywheelsUpToSpeed()) {
-            burstNum = 0;
-        }
+        // indexer logic
+        handleIndexes();
 
-        if (queuedIndexes > 0) {
-            boolean safeToIndex = hopperModule.msUntilHopperRaised() > ShooterModule.INDEXER_RETURNED_TIME_MS;
-            boolean shooterReady = shooterModule.flywheelsUpToSpeed()
-                    && Math.abs(shooterModule.getTurretError()) < Math.toRadians(1.5)
-                    && Math.abs(shooterModule.getTurretVelocity()) < Math.toRadians(0.7);
-            boolean drivetrainReady = Math.hypot(robot.drivetrain.getOdometryXVel(), robot.drivetrain.getOdometryYVel()) < 1;
-
-            if (safeToIndex && shooterReady && drivetrainReady && !shooterModule.indexRing) {
-                shooterModule.indexRing = true;
-                queuedIndexes--;
-                burstNum++;
-                lastIndexTime = currentTime;
-            } else if (forceIndex) {
-                shooterModule.indexRing = true;
-                forceIndex = false;
-                lastIndexTime = currentTime;
-            }
-        }
-
+        // protect regions if the wobble is up // todo move shooter outside bad zone if it's inside
         if (robot.wobbleModule.wobbleArmPosition == WobbleModule.WobbleArmPosition.AUTO_DROP || robot.wobbleModule.wobbleArmPosition == WobbleModule.WobbleArmPosition.RAISED) {
             shooterModule.upperAngleLimit = 0.75 * Math.PI;
             shooterModule.lowerAngleLimit = -0.4 * Math.PI;
@@ -175,6 +162,35 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         oldTurretTarget = turretTargetRaw;
         oldUpdateTime = currentUpdateTime;
+    }
+
+    private void handleIndexes() {
+        long currentTime = robot.getCurrentTimeMilli();
+
+        if (shooterModule.flywheelsUpToSpeed()) {
+            burstNum = 0;
+        }
+
+        if (queuedIndexes > 0) {
+            double turretError = absoluteHeadingToTarget(target) - (robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle());
+
+            boolean safeToIndex = hopperModule.msUntilHopperRaised() > ShooterModule.INDEXER_RETURNED_TIME_MS;
+            boolean shooterReady = shooterModule.flywheelsUpToSpeed()
+                    && Math.abs(turretError) < Math.toRadians(1.5)
+                    && Math.abs(shooterModule.getTurretVelocity()) < Math.toRadians(0.7);
+            boolean drivetrainReady = Math.hypot(robot.drivetrain.getOdometryXVel(), robot.drivetrain.getOdometryYVel()) < 1;
+
+            if (safeToIndex && shooterReady && drivetrainReady && !shooterModule.indexRing) {
+                shooterModule.indexRing = true;
+                queuedIndexes--;
+                burstNum++;
+                lastIndexTime = currentTime;
+            } else if (forceIndex) {
+                shooterModule.indexRing = true;
+                forceIndex = false;
+                lastIndexTime = currentTime;
+            }
+        }
     }
 
     private double getPowershotAngleOffset(double distanceToTarget) {
@@ -285,8 +301,16 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         return shooterModule.isFinishedIndexing() && queuedIndexes <= 0;
     }
 
+    public boolean isFinishedFiringQueue() {
+        return robot.getCurrentTimeMilli() > lastIndexTime + RING_FIRE_TIME && isFinishedIndexing();
+    }
+
     public boolean isIndexerReturned() {
         return shooterModule.isIndexerReturned();
+    }
+
+    public double getTurretHeading() {
+        return shooterModule.getCurrentTurretAngle();
     }
 
     public HopperModule.HopperPosition targetHopperPosition() {
