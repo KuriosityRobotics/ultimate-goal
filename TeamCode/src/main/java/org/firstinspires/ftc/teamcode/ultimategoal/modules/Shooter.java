@@ -28,7 +28,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     // Constants
     public final static int HIGHGOAL_FLYWHEEL_SPEED = 1750;
-    public final static int POWERSHOT_FLYWHEEL_SPEED = 1525; // todo
+    public final static int POWERSHOT_FLYWHEEL_SPEED = 1650; // todo
 
     private static final double TURRET_DISTANCE_FROM_BACK = 7;
 
@@ -77,6 +77,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         this.robot = robot;
         this.isOn = isOn;
         manualAngleCorrection = 0;
+        manualAngleFlapCorrection = 0;
 
         shooterModule = new ShooterModule(robot, isOn);
         hopperModule = new HopperModule(robot, isOn);
@@ -151,16 +152,17 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         double adjustedTurretTarget = turretTargetRaw + 0.00 * turretTargetVel;
 
-        shooterModule.setTargetTurretAngle(adjustedTurretTarget + angleOffset);
+        shooterModule.setTargetTurretAngle(adjustedTurretTarget + angleOffset + manualAngleCorrection);
 
-        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) : getHighGoalAimValues(distanceToTarget)[0] + 0.0025;
+        shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) + manualAngleFlapCorrection
+                : getHighGoalAimValues(distanceToTarget)[0] + manualAngleFlapCorrection + 0.0025;
 
         oldTurretTarget = turretTargetRaw;
         oldUpdateTime = currentUpdateTime;
     }
 
     private double getPowershotAngleOffset(double distanceToTarget) {
-        return Math.toRadians(4) + manualAngleCorrection;
+        return Math.toRadians(4);
     }
 
     /**

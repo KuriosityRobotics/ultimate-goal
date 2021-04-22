@@ -67,6 +67,14 @@ public class T265Module implements Module, TelemetryProvider {
             t265Camera.setPose(new Pose2d(0, 0, new Rotation2d(Math.toRadians(180))));
         }
 
+        try {
+            t265Camera.start();
+
+            Log.d("CAMERA", "STARTING");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // reset helpers
         oldUpdateTime = SystemClock.elapsedRealtime();
         oldWorldPose = new Pose2d();

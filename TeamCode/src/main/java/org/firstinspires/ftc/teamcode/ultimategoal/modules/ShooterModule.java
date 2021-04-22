@@ -313,9 +313,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         HashMap<String, Object> data = new HashMap<>();
         data.put("turretPos", Math.toDegrees(currentTurretAngle));
         data.put("turretTargetPos", Math.toDegrees(angleWrap(targetTurretAngle)));
-        data.put("turretController P", turretController.P);
-        data.put("turretController I", turretController.I);
-        data.put("turretController D", turretController.D);
         data.put("turret Power: ", pow);
         return data;
     }

@@ -93,10 +93,15 @@ public class BrakeController {
     }
 
     public double targetVelocity(double distanceToTarget) {
-        return Math.min(
-                atBrake ? targetVelocityFunction.atBrakeDesiredVelocity(distanceToTarget)
-                        : targetVelocityFunction.desiredVelocity(distanceToTarget),
-                velocityMax);
+        double absoluteDistanceToTarget = Math.abs(distanceToTarget);
+        if (absoluteDistanceToTarget < targetVelocityFunction.stopThreshold || (stopCoast && !atBrake)) { // close enough
+            return 0;
+        } else {
+            return Math.min(
+                    atBrake ? targetVelocityFunction.atBrakeDesiredVelocity(distanceToTarget)
+                            : targetVelocityFunction.desiredVelocity(distanceToTarget),
+                    velocityMax);
+        }
     }
 
     /**
