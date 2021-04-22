@@ -70,9 +70,7 @@ public class PrimitiveTeleOp extends LinearOpMode implements TelemetryProvider {
         }
 
         if (numIndexes > 0) {
-            if (robot.shooter.requestRingIndex()) {
-                numIndexes--;
-            }
+            robot.shooter.queueIndex();
         }
     }
 

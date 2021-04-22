@@ -28,9 +28,9 @@ public class ShooterModule implements Module, TelemetryProvider {
     public static double D = 0;
     public static double FULL_SPEED_THRESHOLD = Math.toRadians(36);
     public static double STOP_SCALE = 2;
-    public static double CLOSE_SCALE = 0.8;
+    public static double CLOSE_SCALE = 0.90;
     public static double CLOSE_THRESHOLD = 9;
-    public static double CLOSE_STOP_SCALE = 1.45;
+    public static double CLOSE_STOP_SCALE = 1.75;
 
     // States
     private double targetTurretAngle;
@@ -63,6 +63,10 @@ public class ShooterModule implements Module, TelemetryProvider {
     // Helpers
     long indexTime;
 
+    private double lastTurretPosition;
+    private double turretVelocity;
+    private double turretPower;
+
     // Constants
     private static final double TURRET_MINIMUM_ANGLE = Math.toRadians(-180);
     private static final double TURRET_MAXIMUM_ANGLE = Math.toRadians(180);
@@ -78,7 +82,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     private static final double INDEXER_RETRACTED_POSITION = 0.72;
 
     private static final int INDEXER_PUSHED_TIME_MS = 160; // since start of index
-    public static final int INDEXER_RETURNED_TIME_MS = 300; // since start of index
+    public static final int INDEXER_RETURNED_TIME_MS = 400; // since start of index
 
     public enum IndexerPosition {RETRACTED, PUSHED}
 
@@ -149,12 +153,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         indexerLogic(currentTime);
     }
 
-    private double pow;
-    private double lastPos;
-
     private void turretLogic() {
-//        Log.v("turret", "--------");
-
         this.currentTurretAngle = turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
 
         double error = targetTurretAngle - currentTurretAngle;
@@ -167,25 +166,27 @@ public class ShooterModule implements Module, TelemetryProvider {
             turretController.reset();
         }
 
-        pow = turretController.calculatePID(error);
+        turretPower = turretController.calculatePID(error);
+
+        turretVelocity = currentTurretAngle - lastTurretPosition;
 
         if (Math.abs(error) < Math.toRadians(CLOSE_THRESHOLD)) {
-            pow = error * CLOSE_SCALE;
-            if (Math.abs(currentTurretAngle - lastPos) < 0.1) {
-                pow *= CLOSE_STOP_SCALE;
+            turretPower = error * CLOSE_SCALE;
+            if (Math.abs(turretVelocity) < 0.1) {
+                turretPower *= CLOSE_STOP_SCALE;
             }
         } else {
-            if (Math.abs(currentTurretAngle - lastPos) < 0.1) {
-                pow *= STOP_SCALE;
+            if (Math.abs(turretVelocity) < 0.1) {
+                turretPower *= STOP_SCALE;
             }
         }
-        lastPos = currentTurretAngle;
+        lastTurretPosition = currentTurretAngle;
 
         if (Math.abs(error) > FULL_SPEED_THRESHOLD) {
-            pow = Math.signum(error);
+            turretPower = Math.signum(error);
         }
 
-        turnTurret(pow);
+        turnTurret(turretPower);
     }
 
     private void turnTurret(double power) {
@@ -213,7 +214,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel1.setVelocity(flyWheelTargetSpeed);
         flyWheel2.setVelocity(flyWheelTargetSpeed);
 
-        if (flywheelsUpToSpeed() && flyWheelTargetSpeed > 0) {
+        if (flywheelsUpToSpeed()) {
             robot.setLedColor(0, 200, 200);
         } else {
             robot.setLedColor(25, 25, 25);
@@ -250,7 +251,8 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     public boolean flywheelsUpToSpeed() {
         return flyWheel1.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
-                && flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD && flyWheelTargetSpeed > 0;
+                && flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
+                && flyWheelTargetSpeed > 0;
     }
 
     /**
@@ -280,6 +282,10 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     public double getCurrentTurretAngle() {
         return currentTurretAngle;
+    }
+
+    public double getTurretVelocity() {
+        return turretVelocity;
     }
 
     /**
@@ -313,7 +319,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         HashMap<String, Object> data = new HashMap<>();
         data.put("turretPos", Math.toDegrees(currentTurretAngle));
         data.put("turretTargetPos", Math.toDegrees(angleWrap(targetTurretAngle)));
-        data.put("turret Power: ", pow);
+        data.put("turret Power: ", turretPower);
         return data;
     }
 
@@ -326,7 +332,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         data.add("--");
         data.add("Target turret angle: " + Math.toDegrees(angleWrap(targetTurretAngle)));
         data.add("Current turret angle: " + Math.toDegrees(currentTurretAngle));
-        data.add("pow: " + pow);
+        data.add("pow: " + turretPower);
         data.add("Flap angle: " + shooterFlapPosition);
         return data;
     }

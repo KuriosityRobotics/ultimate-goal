@@ -64,7 +64,7 @@ public class ShooterTest extends LinearOpMode implements TelemetryProvider {
 //                flapPosition /= 2;
 
             if (a.isToggled(gamepad1.a)) {
-                robot.shooter.requestRingIndex();
+                robot.shooter.queueIndex();
             }
 //            if (b.isToggled(gamepad1.b))
 //                robot.shooter.nextTarget();

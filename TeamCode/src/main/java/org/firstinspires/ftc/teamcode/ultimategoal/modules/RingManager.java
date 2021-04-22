@@ -114,7 +114,7 @@ public class RingManager implements Module, TelemetryProvider {
             distanceSensorPasses = 0;
 
             if (autoShootRings) {
-                robot.shooter.queueIndex(robot.ringManager.getRingsInShooter());
+                robot.shooter.queueIndex(getRingsInShooter());
             }
         }
 
