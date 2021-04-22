@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
 
+import com.acmerobotics.dashboard.config.Config;
+
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
@@ -13,6 +15,7 @@ import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunction
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.lineSegmentCircleIntersection;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.lineSegmentPointDistance;
 
+@Config
 public class PathFollow implements TelemetryProvider, FileDumpProvider {
     Robot robot;
     private final boolean isFileDump = false;
@@ -25,6 +28,8 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     public static final double ANGLE_THRESHOLD = Math.toRadians(2);
     public static final double FOLLOW_RADIUS = 15;
     public static final double SLIP_FACTOR = 0;
+    public static double SLOWDOWN_P = 0.055;
+    public static double SLOWDOWN_CONSTANT = 0.1;
 
     // states
     private boolean isTargetingLastPoint;
@@ -94,7 +99,17 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
                     }
                 } else {
                     // go to the target point
-                    robot.drivetrain.setMovementsTowardsPoint(targetPoint, moveSpeed, turnSpeed, direction, false, angleLockHeadingAtEnd);
+                    double pathDistanceLeft = 0;
+                    for (int i = pathIndex; i < path.length - 2; i++) {
+                        Point start = path[i];
+                        Point end = path[i+1];
+
+                        pathDistanceLeft += Math.hypot(start.x - end.x, start.y - end.y);
+                    }
+
+                    double scaledMoveSpeed = Math.min(moveSpeed, (pathDistanceLeft * SLOWDOWN_P) + SLOWDOWN_CONSTANT);
+
+                    robot.drivetrain.setMovementsTowardsPoint(targetPoint, scaledMoveSpeed, turnSpeed, direction, false, angleLockHeadingAtEnd);
                 }
             }
 

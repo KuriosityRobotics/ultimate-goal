@@ -40,8 +40,6 @@ public class ModuleExecutor extends Thread implements TelemetryProvider {
             if (Robot.WILL_FILE_DUMP) {
                 robot.fileDump.doTick();
             }
-
-            robot.telemetryDump.update();
         }
         System.out.println("Module executor thread exited due to opMode no longer being active.");
 

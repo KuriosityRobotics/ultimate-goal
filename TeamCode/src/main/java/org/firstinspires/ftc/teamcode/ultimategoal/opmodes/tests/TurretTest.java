@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 
+@Disabled
 @TeleOp
 public class TurretTest extends LinearOpMode {
     Robot robot;

@@ -184,8 +184,6 @@ public class RingManager implements Module, TelemetryProvider {
     @Override
     public HashMap<String, Object> getDashboardData() {
         HashMap<String, Object> data = new HashMap<>();
-        data.put("Intake distance", lastSensorReading);
-        data.put("Distance passes", distanceSensorPasses);
         data.put("rings in hopper", getRingsInHopper());
         return data;
     }
