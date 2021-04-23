@@ -44,7 +44,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     Point firstWobbleDropOff;
 
-    final Point STACK = new Point(34 - 9, 47);
+    final Point STACK = new Point(34 - 9, 47 - (16.5 / 2));
 
     final Point SECOND_WOBBLE = new Point(36 - 18, 30.5 - 4);
 
@@ -246,8 +246,10 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 //        firstwobbleToSecondWobble.followPath(0, 1, 1, true, Math.toRadians(-150));
 
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.INIT;
+        sleep(500);
 
         stackToSecondWobble.followPath(0, 1, 1, true, Math.toRadians(180));
+        sleep(500);
 
         robot.drivetrain.setBrakeHeading(Math.toRadians(90));
         sleep(100);
@@ -261,6 +263,8 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         secondWobbleToSecondWobbleDropOff.followPath(0, 1, 1, true, 0);
         sleep(500);
+
+        secondDropOffToPark.followPath(0, 1, 1, true, 0);
 //        if (measuredZone == Vision.TargetGoal.C) {
 //            robot.drivetrain.brakeHeading = Math.toRadians(90);
 //            sleep(500);

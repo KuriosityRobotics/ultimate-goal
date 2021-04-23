@@ -15,9 +15,6 @@ public class ShootStackAction extends Action {
 
     int startingRingsShot;
 
-    boolean oldAutoRaise, oldAutoShoot;
-    int oldRaiseThreshold;
-
     public ShootStackAction(int ringsToExpect, Point end, Target.ITarget target) {
         this.ringsToExpect = ringsToExpect;
         this.end = end;
@@ -28,10 +25,6 @@ public class ShootStackAction extends Action {
     @Override
     public boolean executeAction(Robot robot) {
         if (beginExecutionTime == 0) {
-            oldAutoRaise = robot.ringManager.autoRaise;
-            oldAutoShoot = robot.ringManager.autoShootRings;
-            oldRaiseThreshold = robot.ringManager.autoRaiseThreshold;
-
             robot.ringManager.autoRaise = true;
             robot.ringManager.autoShootRings = true;
             robot.ringManager.autoRaiseThreshold = 1;
@@ -62,17 +55,7 @@ public class ShootStackAction extends Action {
 
         int stackRingsShot = robot.ringManager.getTotalRingsShot() - startingRingsShot;
 
-        boolean done = (stackRingsShot >= ringsToExpect) || (robot.drivetrain.distanceToPoint(end) < 1);
-
-        if (done) {
-            robot.ringManager.autoRaise = oldAutoRaise;
-            robot.ringManager.autoShootRings = oldAutoShoot;
-            robot.ringManager.autoRaiseThreshold = oldRaiseThreshold;
-
-            robot.shooter.flywheelOn = false;
-        }
-
-        return done;
+        return (stackRingsShot >= ringsToExpect) || (robot.drivetrain.distanceToPoint(end) < 1);
     }
 
     @Override
