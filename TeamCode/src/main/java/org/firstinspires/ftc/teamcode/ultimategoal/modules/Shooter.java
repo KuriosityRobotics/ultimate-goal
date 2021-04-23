@@ -21,10 +21,13 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     // States
     public ITarget target = BLUE_HIGH;
 
-    public boolean stopTurret = false;
     public boolean lockTarget = true;
     public boolean flywheelOn = false;
     public int queuedIndexes = 0;
+
+    public boolean manualTurret = false;
+    public double manualTurretPower = 0;
+
 
     public double manualAngleCorrection;
     public double manualAngleFlapCorrection;
@@ -107,7 +110,8 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         long currentTime = robot.getCurrentTimeMilli();
 
         // aim turret
-        shooterModule.stopTurret = this.stopTurret;
+        shooterModule.manualTurret = this.manualTurret;
+        shooterModule.manualPower = this.manualTurretPower;
         if (lockTarget) {
             aimTurret();
         } else {
