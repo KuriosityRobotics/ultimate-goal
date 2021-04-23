@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
+import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -25,6 +26,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
 
     // constants
     public static final double DISTANCE_THRESHOLD = 2;
+    public static final double NOBRAKE_THRESHOLD = 5;
     public static final double ANGLE_THRESHOLD = Math.toRadians(2);
     public static final double FOLLOW_RADIUS = 15;
     public static final double SLIP_FACTOR = 0;
@@ -42,6 +44,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     private double direction = 0;
     private double angleLockHeadingAtEnd = 0;
     private boolean willAngleLockAtEnd = false;
+    private boolean brakeAtEnd;
 
     public PathFollow(Waypoint[] path, Robot robot, String description) {
         this.path = path;
@@ -62,6 +65,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
         this.willAngleLockAtEnd = willAngleLockAtEnd;
         this.angleLockHeadingAtEnd = angleLockHeadingAtEnd;
         this.isTargetingLastPoint = false;
+        this.brakeAtEnd = brakeAtEnd;
 
         robot.actionExecutor.registerActions(path[0].actions);
 
@@ -222,7 +226,10 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     private boolean isDoneMoving(Point robotPosition, double heading) {
         Point endPoint = path[path.length - 1];
 
-        return (Math.hypot(robotPosition.x - endPoint.x, robotPosition.y - endPoint.y) < DISTANCE_THRESHOLD)
+        boolean atEnd = brakeAtEnd ? (Math.hypot(robotPosition.x - endPoint.x, robotPosition.y - endPoint.y) < DISTANCE_THRESHOLD)
+                : (Math.hypot(robotPosition.x - endPoint.x, robotPosition.y - endPoint.y) < NOBRAKE_THRESHOLD);
+
+        return atEnd
                 && (!willAngleLockAtEnd || Math.abs(angleWrap(angleLockHeadingAtEnd - heading)) < ANGLE_THRESHOLD)
                 && pathIndex == path.length - 2;
     }

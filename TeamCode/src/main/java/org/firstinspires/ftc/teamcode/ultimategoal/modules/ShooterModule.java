@@ -314,7 +314,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     public boolean isFinishedIndexing() {
-        return robot.getCurrentTimeMilli() > indexTime + INDEXER_PUSHED_TIME_MS;
+        return robot.getCurrentTimeMilli() > indexTime + INDEXER_PUSHED_TIME_MS && !indexRing;
     }
 
     public boolean isIndexerReturned() {
