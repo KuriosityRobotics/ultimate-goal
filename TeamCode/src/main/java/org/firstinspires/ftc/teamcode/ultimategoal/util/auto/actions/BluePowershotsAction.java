@@ -36,14 +36,16 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
                 return false;
             }
 
-            robot.shooter.queueIndex();
-
+            // actually begin action
             oldLockTarget = robot.shooter.lockTarget;
             robot.shooter.lockTarget = false;
             robot.shooter.stopTurret = true;
+            robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
 
             oldWeakBrake = robot.drivetrain.weakBrake;
             robot.drivetrain.weakBrake = false;
+
+            robot.shooter.queueIndex();
         }
 
         switch (powershotNum) {
@@ -78,8 +80,6 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
             }
 
             robot.shooter.queueIndex();
-        } else {
-            return false;
         }
 
         return false;
