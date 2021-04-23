@@ -30,7 +30,9 @@ public class ShooterModule implements Module, TelemetryProvider {
     public boolean indexRing;
     public double shooterFlapPosition = FLAP_LOWER_LIMIT;
 
-    public boolean stopTurret = false;
+    public boolean manualTurret = false;
+    public double manualPower = 0;
+
     public boolean limitAngle = false;
     public double lowerAngleLimit = -Math.PI;
     public double upperAngleLimit = Math.PI;
@@ -138,10 +140,10 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         calculateTurretPosition();
 
-        if (!stopTurret) {
+        if (!manualTurret) {
             turnTurretToTarget();
         } else {
-            turnTurret(0);
+            turnTurret(manualPower);
         }
 
         shooterFlap.setPosition(Range.clip(shooterFlapPosition, FLAP_LOWER_LIMIT, FLAP_UPPER_LIMIT));
@@ -345,7 +347,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         data.add("Target speed: " + flyWheelTargetSpeed + ", Flywheel1 speed: " + flyWheel1.getVelocity());
         data.add("isUpToSpeed: " + flywheelsUpToSpeed());
         data.add("--");
-        data.add("stopTurret: " + stopTurret);
+        data.add("stopTurret: " + manualTurret);
         data.add("Target turret angle: " + Math.toDegrees(targetTurretAngle));
         data.add("Current turret angle: " + Math.toDegrees(currentTurretAngle));
         data.add("pow: " + turretPower);

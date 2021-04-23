@@ -39,7 +39,8 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
             // actually begin action
             oldLockTarget = robot.shooter.lockTarget;
             robot.shooter.lockTarget = false;
-            robot.shooter.stopTurret = true;
+            robot.shooter.manualTurret = true;
+            robot.shooter.manualTurretPower = 0;
             robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
 
             oldWeakBrake = robot.drivetrain.weakBrake;
@@ -71,7 +72,7 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
 
             if (powershotNum > 2) {
                 robot.shooter.flywheelOn = false;
-                robot.shooter.stopTurret = false;
+                robot.shooter.manualTurret = false;
                 robot.shooter.lockTarget = oldLockTarget;
 
                 robot.drivetrain.weakBrake = oldWeakBrake;

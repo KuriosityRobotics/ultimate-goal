@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
 
 import android.os.SystemClock;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -25,23 +23,30 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     long lastUpdateTime = 0;
     long loopTime;
 
-    Toggle g1a = new Toggle();
-    Toggle g1b = new Toggle();
-    Toggle g1x = new Toggle();
-    Toggle g1y = new Toggle();
-    Toggle g1RT = new Toggle();
-    Toggle g1LB = new Toggle();
+    Toggle powershotsToggle = new Toggle();
 
-    Toggle g2x = new Toggle();
-    Toggle g2a = new Toggle();
-    Toggle g2b = new Toggle();
-    Toggle g2y = new Toggle();
-    Toggle g2DR = new Toggle();
-    Toggle g2DL = new Toggle();
-    Toggle g2DU = new Toggle();
-    Toggle g2DD = new Toggle();
-    Toggle g2LB = new Toggle();
-    Toggle g2RB = new Toggle();
+    Toggle resetCountersToggle = new Toggle();
+
+    Toggle flyWheelToggle = new Toggle();
+    Toggle nextTargetToggle = new Toggle();
+
+    Toggle deliverRingsToggle = new Toggle();
+    Toggle autoManagerToggle = new Toggle();
+
+    Toggle queueIndexesToggle = new Toggle();
+    Toggle forceIndexToggle = new Toggle();
+
+    Toggle wobbleClawToggle = new Toggle();
+    Toggle wobbleArmToggle = new Toggle();
+    Toggle blockerToggle = new Toggle();
+
+    Toggle autoTurretToggle = new Toggle();
+
+    Toggle manualAngleAddToggle = new Toggle();
+    Toggle manualAngleSubtractToggle = new Toggle();
+    Toggle manualFlapAddToggle = new Toggle();
+    Toggle manualFlapSubtractToggle = new Toggle();
+    Toggle resetCorrectionsToggle = new Toggle();
 
     BluePowershotsAction bluePowershotsAction = new BluePowershotsAction();
     private boolean doPowershotsAction = false;
@@ -58,7 +63,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.BLOCKING;
 
         while (opModeIsActive()) {
-            if (g1b.isToggled(gamepad1.b)) {
+            if (powershotsToggle.isToggled(gamepad1.b)) {
                 doPowershotsAction = !doPowershotsAction;
 
                 if (doPowershotsAction) {
@@ -68,7 +73,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
                 }
             }
 
-            if(g2RB.isToggled(gamepad2.right_bumper)){
+            if (resetCountersToggle.isToggled(gamepad2.right_bumper)) {
                 robot.ringManager.resetRingCounters();
             }
 
@@ -78,7 +83,9 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
                 doPowershotsAction = !bluePowershotsAction.executeAction(robot);
             } else {
-                updateShooterStates();
+                updateTurretStates();
+                updateRingDeliverySystemStates();
+                updateManualCorrections();
 
                 updateDrivetrainStates();
 
@@ -93,12 +100,12 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         }
     }
 
-    private void updateShooterStates() {
-        if (g1y.isToggled(gamepad1.y)) {
+    private void updateTurretStates() {
+        if (nextTargetToggle.isToggled(gamepad1.y)) {
             robot.shooter.nextTarget();
         }
 
-        if (g1a.isToggled(gamepad1.a)) {
+        if (flyWheelToggle.isToggled(gamepad1.a)) {
             robot.shooter.flywheelOn = !robot.shooter.flywheelOn;
 
             if (robot.shooter.flywheelOn) {
@@ -106,57 +113,72 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             }
         }
 
-        if (g2a.isToggled(gamepad2.a)) {
-            robot.shooter.deliverRings();
-        }
-
         if (robot.shooter.flywheelOn) {
-            if (g1RT.isToggled(gamepad1.right_trigger)) {
+            if (queueIndexesToggle.isToggled(gamepad1.right_trigger)) {
                 robot.shooter.queueIndex(3);
             }
         }
 
-        if (g1x.isToggled(gamepad1.x)) {
-            robot.shooter.lockTarget = !robot.shooter.lockTarget;
-        }
-
-        if (g1LB.isToggled(gamepad1.left_bumper)) {
+        if (forceIndexToggle.isToggled(gamepad1.left_bumper)) {
             robot.shooter.forceIndex();
             robot.shooter.queueIndex();
         }
 
-        if (g2DR.isToggled(gamepad2.dpad_right)) {
+        if (Math.abs(gamepad2.left_stick_x) > 0.1 || robot.shooter.manualTurret) {
+            robot.shooter.manualTurret = true;
+            robot.shooter.manualTurretPower = gamepad2.left_stick_x;
+        }
+
+        if (autoTurretToggle.isToggled(gamepad2.left_bumper)) {
+            robot.shooter.manualTurret = false;
+            robot.shooter.manualTurretPower = 0;
+        }
+    }
+
+    private void updateRingDeliverySystemStates() {
+        if (deliverRingsToggle.isToggled(gamepad2.a)) {
+            robot.shooter.deliverRings();
+        }
+
+        if (autoManagerToggle.isToggled(gamepad1.x)) {
+            robot.ringManager.autoRaise = !robot.ringManager.autoRaise;
+            robot.ringManager.autoShootRings = !robot.ringManager.autoShootRings;
+        }
+    }
+
+    private void updateManualCorrections() {
+        if (manualAngleAddToggle.isToggled(gamepad2.dpad_right)) {
             robot.shooter.manualAngleCorrection += Math.toRadians(2);
         }
-        if (g2DL.isToggled(gamepad2.dpad_left)) {
+        if (manualAngleSubtractToggle.isToggled(gamepad2.dpad_left)) {
             robot.shooter.manualAngleCorrection -= Math.toRadians(2);
         }
-        if (g2DU.isToggled(gamepad2.dpad_up)) {
+        if (manualFlapAddToggle.isToggled(gamepad2.dpad_up)) {
             robot.shooter.manualAngleFlapCorrection += 0.003;
         }
-        if (g2DD.isToggled(gamepad2.dpad_down)) {
+        if (manualFlapSubtractToggle.isToggled(gamepad2.dpad_down)) {
             robot.shooter.manualAngleFlapCorrection -= 0.003;
         }
-        if (g2LB.isToggled(gamepad2.left_bumper)) {
+        if (resetCorrectionsToggle.isToggled(gamepad2.right_trigger)) {
             robot.shooter.manualAngleFlapCorrection = 0;
             robot.shooter.manualAngleCorrection = 0;
         }
     }
 
     private void updateWobbleStates() {
-        if (g2x.isToggled(gamepad2.x)) {
+        if (wobbleClawToggle.isToggled(gamepad2.y)) {
             robot.wobbleModule.isClawClamped = !robot.wobbleModule.isClawClamped;
         }
 
-        if (g2b.isToggled(gamepad2.b)) {
+        if (wobbleArmToggle.isToggled(gamepad2.b)) {
             robot.wobbleModule.nextArmPosition();
         }
     }
 
     private void updateIntakeStates() {
-        robot.intakeModule.intakePower = gamepad2.left_stick_y * 2;
+        robot.intakeModule.intakePower = gamepad2.right_stick_y * 2;
 
-        if (g2y.isToggled(gamepad2.y)) {
+        if (blockerToggle.isToggled(gamepad2.x)) {
             robot.intakeModule.blockerPosition = robot.intakeModule.blockerPosition.next();
         }
     }
