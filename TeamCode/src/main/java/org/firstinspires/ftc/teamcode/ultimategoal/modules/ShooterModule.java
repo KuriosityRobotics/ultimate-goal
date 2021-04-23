@@ -23,15 +23,6 @@ public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
-    public static double P = 0.25;
-    public static double I = 0;
-    public static double D = 0;
-    public static double FULL_SPEED_THRESHOLD = Math.toRadians(36);
-    public static double STOP_SCALE = 2;
-    public static double CLOSE_SCALE = 0.90;
-    public static double CLOSE_THRESHOLD = 9;
-    public static double CLOSE_STOP_SCALE = 1.75;
-
     // States
     private double targetTurretAngle;
     public double flyWheelTargetSpeed;
@@ -39,7 +30,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     public boolean indexRing;
     public double shooterFlapPosition = FLAP_LOWER_LIMIT;
 
-    public boolean lockTurret = false;
+    public boolean stopTurret = false;
     public boolean limitAngle = false;
     public double lowerAngleLimit = -Math.PI;
     public double upperAngleLimit = Math.PI;
@@ -69,17 +60,17 @@ public class ShooterModule implements Module, TelemetryProvider {
     private double turretPower;
 
     // Constants
-    private static final double TURRET_MINIMUM_ANGLE = Math.toRadians(-180);
-    private static final double TURRET_MAXIMUM_ANGLE = Math.toRadians(180);
+    private static final double TURRET_MINIMUM_ANGLE = Math.toRadians(-270);
+    private static final double TURRET_MAXIMUM_ANGLE = Math.toRadians(185);
 
     private static final double TURRET_ENCODER_TO_ANGLE = 4842.60745;
     private static final int FLYWHEEL_SPEED_THRESHOLD = 200;
 
     private static final double FLAP_STORE_POSITION = 0.0873856;
-    private static final double FLAP_LOWER_LIMIT = 0;
+    private static final double FLAP_LOWER_LIMIT = 0.1766;
     private static final double FLAP_UPPER_LIMIT = 0.29255;
 
-    private static final double INDEXER_PUSHED_POSITION = 0.45;
+    private static final double INDEXER_PUSHED_POSITION = 0.4; //.45
     private static final double INDEXER_RETRACTED_POSITION = 0.72;
 
     private static final int INDEXER_PUSHED_TIME_MS = 160; // since start of index
@@ -145,8 +136,13 @@ public class ShooterModule implements Module, TelemetryProvider {
     public void update() {
         long currentTime = robot.getCurrentTimeMilli();
 
+        calculateTurretPosition();
 
-        turnTurretToTarget();
+        if (!stopTurret) {
+            turnTurretToTarget();
+        } else {
+            turnTurret(0);
+        }
 
         shooterFlap.setPosition(Range.clip(shooterFlapPosition, FLAP_LOWER_LIMIT, FLAP_UPPER_LIMIT));
 
@@ -155,9 +151,25 @@ public class ShooterModule implements Module, TelemetryProvider {
         indexerLogic(currentTime);
     }
 
-    private void turnTurretToTarget() {
+
+    public static double P = 0.25;
+    public static double I = 0;
+    public static double D = 0;
+    public static double FULL_SPEED_THRESHOLD = Math.toRadians(36);
+    public static double STOP_SCALE = 2;
+    public static double CLOSE_SCALE = 0.91;
+    public static double CLOSE_THRESHOLD = 9;
+    public static double CLOSE_STOP_SCALE = 1.76;
+
+    private void calculateTurretPosition() {
         this.currentTurretAngle = turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
 
+        turretVelocity = currentTurretAngle - lastTurretPosition;
+
+        lastTurretPosition = currentTurretAngle;
+    }
+
+    private void turnTurretToTarget() {
         double error = targetTurretAngle - currentTurretAngle;
 
         turretController.P = P;
@@ -170,8 +182,6 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         turretPower = turretController.calculatePID(error);
 
-        turretVelocity = currentTurretAngle - lastTurretPosition;
-
         if (Math.abs(error) < Math.toRadians(CLOSE_THRESHOLD)) {
             turretPower = error * CLOSE_SCALE;
             if (Math.abs(turretVelocity) < 0.1) {
@@ -182,7 +192,6 @@ public class ShooterModule implements Module, TelemetryProvider {
                 turretPower *= STOP_SCALE;
             }
         }
-        lastTurretPosition = currentTurretAngle;
 
         if (Math.abs(error) > FULL_SPEED_THRESHOLD) {
             turretPower = Math.signum(error);
@@ -195,6 +204,8 @@ public class ShooterModule implements Module, TelemetryProvider {
         if (power == 0) {
             turretLeft.setPower(0);
             turretRight.setPower(0);
+
+            return;
         }
 
         power = Range.clip(power, -1, 1);
@@ -252,8 +263,11 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     public boolean flywheelsUpToSpeed() {
-        return flyWheel1.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
-                && flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
+//        Log.v("shootermod", ""+flyWheel1.getVelocity());
+//        Log.v("shootermod", ""+flyWheel2.getVelocity());
+
+        return (flyWheel1.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
+                || flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD)
                 && flyWheelTargetSpeed > 0;
     }
 
@@ -328,11 +342,11 @@ public class ShooterModule implements Module, TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("Target speed: " + flyWheelTargetSpeed);
-        data.add("Flywheel1 speed: " + flyWheel1.getVelocity());
+        data.add("Target speed: " + flyWheelTargetSpeed + ", Flywheel1 speed: " + flyWheel1.getVelocity());
         data.add("isUpToSpeed: " + flywheelsUpToSpeed());
         data.add("--");
-        data.add("Target turret angle: " + Math.toDegrees(angleWrap(targetTurretAngle)));
+        data.add("stopTurret: " + stopTurret);
+        data.add("Target turret angle: " + Math.toDegrees(targetTurretAngle));
         data.add("Current turret angle: " + Math.toDegrees(currentTurretAngle));
         data.add("pow: " + turretPower);
         data.add("Flap angle: " + shooterFlapPosition);

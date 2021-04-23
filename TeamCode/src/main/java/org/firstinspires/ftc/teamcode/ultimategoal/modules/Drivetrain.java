@@ -55,10 +55,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     public static double TOWARDS_P = 0.0013;
     public static double TOWARDS_D = 0.49;
-    public static double NORMAL_P = 0.008;
+    public static double NORMAL_P = 0.009;
     public static double NORMAL_D = 0.1;
     public static double ANGULAR_P = 0.1;
-    public static double ANGULAR_D = 6.0;
+    public static double ANGULAR_D = 6.1;
     // Braking Controllers
     private final BrakeController towardsBrakeController = new BrakeController(
             new VelocityPidController(TOWARDS_P, 0, TOWARDS_D),
@@ -72,7 +72,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     );
     private final BrakeController angularBrakeController = new BrakeController(
             new VelocityPidController(ANGULAR_P, 0, ANGULAR_D),
-            new TargetVelocityFunction(Math.toRadians(190), Math.toRadians(10), Math.toRadians(45), Math.toRadians(0.6)),
+            new TargetVelocityFunction(Math.toRadians(192), Math.toRadians(8), Math.toRadians(47), Math.toRadians(0.5)),
             0.2, Math.toRadians(110)
     );
 
@@ -108,6 +108,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
     @Override
     public void update() {
+//        Log.v("DT", "update");
         if (odometryModule.isOn()) odometryModule.update();
         if (t265Module.isOn()) t265Module.update();
 
@@ -246,7 +247,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
             brakePoint = new Point((0.95 * robotPosition.x) + (0.05 * brakePoint.x), (0.95 * robotPosition.y) + (0.05 * brakePoint.y));
         }
 
-        if (Math.abs(relativeAngleToPoint(brakePoint)) > 0.1) {
+        if (Math.abs(getCurrentHeading() - brakeHeading) > Math.toRadians(1)) {
             brakeHeading = (brakeHeading + getCurrentHeading()) / 2;
         }
     }
@@ -275,7 +276,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         if (weakBrake) {
             xMovement *= 0.6;
             yMovement *= 0.95;
-            turnMovement *= 0.6;
+            turnMovement *= 0.45;
 
 //            xMovement = Math.abs(xMovement) < 0.02 ? 0 : xMovement;
 //            yMovement = Math.abs(yMovement) < 0.02 ? 0 : yMovement;
@@ -530,10 +531,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("xMovement: " + xMovement + ", yMovement: " + yMovement + ", turnMovement: " + turnMovement);
-        data.add("isSlowMode: " + isSlowMode);
+        data.add("weakBrake: " + weakBrake + ", isSlowMode: " + isSlowMode);
         data.add("-");
         data.add("isBrake: " + brake);
-        data.add("Brake Point: " + brakePoint + ", Brake heading: " + brakeHeading);
+        data.add("Brake Point: " + brakePoint + ", Brake heading: " + Math.toDegrees(brakeHeading));
         return data;
     }
 

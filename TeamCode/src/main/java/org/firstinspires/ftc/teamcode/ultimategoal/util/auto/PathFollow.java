@@ -24,7 +24,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     Point targetPoint = new Point(0, 0);
 
     // constants
-    public static final double DISTANCE_THRESHOLD = 0.75;
+    public static final double DISTANCE_THRESHOLD = 2;
     public static final double ANGLE_THRESHOLD = Math.toRadians(2);
     public static final double FOLLOW_RADIUS = 15;
     public static final double SLIP_FACTOR = 0;
@@ -52,6 +52,10 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     }
 
     public void followPath(double direction, double moveSpeed, double turnSpeed, boolean willAngleLockAtEnd, double angleLockHeadingAtEnd) {
+        followPath(direction, moveSpeed, turnSpeed, willAngleLockAtEnd, angleLockHeadingAtEnd, true);
+    }
+
+    public void followPath(double direction, double moveSpeed, double turnSpeed, boolean willAngleLockAtEnd, double angleLockHeadingAtEnd, boolean brakeAtEnd) {
         this.pathIndex = 0; // Reset pathIndex
         this.registeredLastAction = false;
         this.direction = direction;
@@ -88,7 +92,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
                     return;
                 }
             } else { // We still need to move
-                if (isTargetingLastPoint) {
+                if (isTargetingLastPoint && brakeAtEnd) {
                     // use brake
                     robot.drivetrain.setMovements(0, 0, 0);
 
@@ -107,7 +111,8 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
                         pathDistanceLeft += Math.hypot(start.x - end.x, start.y - end.y);
                     }
 
-                    double scaledMoveSpeed = Math.min(moveSpeed, (pathDistanceLeft * SLOWDOWN_P) + SLOWDOWN_CONSTANT);
+//                    double scaledMoveSpeed = Math.min(moveSpeed, (pathDistanceLeft * SLOWDOWN_P) + SLOWDOWN_CONSTANT);
+                    double scaledMoveSpeed = moveSpeed;
 
                     robot.drivetrain.setMovementsTowardsPoint(targetPoint, scaledMoveSpeed, turnSpeed, direction, false, angleLockHeadingAtEnd);
                 }

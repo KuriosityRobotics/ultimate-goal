@@ -143,7 +143,7 @@ public class IntakeModule implements Module, TelemetryProvider {
                 stopTime = currentTime;
             }
 
-            if (currentTime < stopTime + 100) {
+            if (currentTime < stopTime + 100 && intakePower == 0) {
                 power = -0.1;
             } else if (stopIntake) {
                 power = intakePower < 0 ? intakePower : 0;
@@ -152,7 +152,6 @@ public class IntakeModule implements Module, TelemetryProvider {
             }
         }
         wasStopped = stopIntake;
-
 
         runIntake(power);
     }

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.hardware.AnalogInput;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
@@ -62,6 +64,9 @@ public class RingManager implements Module, TelemetryProvider {
         detectShotRings();
 
         stopIntakeLogic();
+
+        Log.v("ringmanager", "inshooter: " + ringsInShooter);
+        Log.v("ringmanager", "inhopper: " + ringsInHopper);
     }
 
     private void countPassingRings() {
@@ -110,11 +115,12 @@ public class RingManager implements Module, TelemetryProvider {
 
         // when hopper push is finished move rings
         if (oldHopperPosition == HopperModule.HopperPosition.TRANSITIONING && currentHopperPosition == HopperModule.HopperPosition.LOWERED) {
-            ringsInShooter = getRingsInShooter() + getRingsInHopper();
+            ringsInShooter = ringsInShooter + ringsInHopper;
             distanceSensorPasses = 0;
 
             if (autoShootRings) {
-                robot.shooter.queueIndex(getRingsInShooter());
+                robot.shooter.queueIndex(ringsInShooter);
+                Log.v("ringmanager", "auto shot: " + ringsInShooter);
             }
         }
 
@@ -128,7 +134,7 @@ public class RingManager implements Module, TelemetryProvider {
 
         // when indexer has returned from an index the shooter loses a ring
         if (oldIndexerPosition == ShooterModule.IndexerPosition.PUSHED && currentIndexerPosition == ShooterModule.IndexerPosition.RETRACTED) {
-            if (getRingsInShooter() > 0) {
+            if (ringsInShooter > 0) {
                 ringsInShooter = getRingsInShooter() - 1;
                 totalRingsShot = getTotalRingsShot() + 1;
             }
@@ -139,23 +145,24 @@ public class RingManager implements Module, TelemetryProvider {
 
     boolean fullRings;
     long fullRingsTime = 0;
+
     private void stopIntakeLogic() {
-        if (getRingsInHopper() + getRingsInShooter() >= 3) {
-            long currentTime = robot.getCurrentTimeMilli();
-
-            if (!fullRings) {
-                fullRingsTime = currentTime;
-            }
-
-            fullRings = true;
-
-            if (currentTime > fullRingsTime + 1000) {
-                robot.intakeModule.stopIntake = true;
-                return;
-            }
-        } else {
-            fullRings = false;
-        }
+//        if (ringsInHopper + ringsInShooter >= 3) {
+//            long currentTime = robot.getCurrentTimeMilli();
+//
+//            if (!fullRings) {
+//                fullRingsTime = currentTime;
+//            }
+//
+//            fullRings = true;
+//
+//            if (currentTime > fullRingsTime + 1000) {
+//                robot.intakeModule.stopIntake = true;
+//                return;
+//            }
+//        } else {
+//            fullRings = false;
+//        }
 
         if (robot.shooter.targetHopperPosition() != HopperModule.HopperPosition.LOWERED) {
             robot.intakeModule.stopIntake = seenRingSinceStartDelivery;
@@ -212,5 +219,9 @@ public class RingManager implements Module, TelemetryProvider {
 
     public int getTotalRingsShot() {
         return totalRingsShot;
+    }
+
+    public boolean getSeeingRing() {
+        return seeingRing;
     }
 }
