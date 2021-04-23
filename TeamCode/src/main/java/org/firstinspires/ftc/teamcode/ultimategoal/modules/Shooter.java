@@ -45,43 +45,22 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private static final double TURRET_DISTANCE_FROM_BACK = 7;
 
     private static final double[][] HIGH_GOAL_DATA = {
-            {85.0 - TURRET_DISTANCE_FROM_BACK, 0.23, Math.toRadians(6.910)},
-            {90.0 - TURRET_DISTANCE_FROM_BACK, 0.2289, Math.toRadians(6.899)},
-            {95.0 - TURRET_DISTANCE_FROM_BACK, 0.2299, Math.toRadians(6.886)},
-            {100.0 - TURRET_DISTANCE_FROM_BACK, 0.2285, Math.toRadians(5.951)},
-            {105.0 - TURRET_DISTANCE_FROM_BACK, 0.2292, Math.toRadians(6.010)},
-            {110.0 - TURRET_DISTANCE_FROM_BACK, 0.228, Math.toRadians(7.347)},
-            {115.0 - TURRET_DISTANCE_FROM_BACK, 0.226, Math.toRadians(6.614)},
-            {120.0 - TURRET_DISTANCE_FROM_BACK, 0.2259, Math.toRadians(5.135)},
-            {125.0 - TURRET_DISTANCE_FROM_BACK, 0.2247, Math.toRadians(5.573)},
-            {130.0 - TURRET_DISTANCE_FROM_BACK, 0.2266, Math.toRadians(6.507)}
+            {85.0 - TURRET_DISTANCE_FROM_BACK, 0.24, Math.toRadians(8.983)},
+            {90.0 - TURRET_DISTANCE_FROM_BACK, 0.2389, Math.toRadians(8.9687)},
+            {95.0 - TURRET_DISTANCE_FROM_BACK, 0.2399, Math.toRadians(8.9518)},
+            {100.0 - TURRET_DISTANCE_FROM_BACK, 0.2385, Math.toRadians(7.7363)},
+            {105.0 - TURRET_DISTANCE_FROM_BACK, 0.2392, Math.toRadians(7.813)},
+            {110.0 - TURRET_DISTANCE_FROM_BACK, 0.238, Math.toRadians(9.5511)},
+            {115.0 - TURRET_DISTANCE_FROM_BACK, 0.236, Math.toRadians(8.5982)},
+            {120.0 - TURRET_DISTANCE_FROM_BACK, 0.2359, Math.toRadians(6.6755)},
+            {125.0 - TURRET_DISTANCE_FROM_BACK, 0.2347, Math.toRadians(7.2449)},
+            {130.0 - TURRET_DISTANCE_FROM_BACK, 0.2366, Math.toRadians(8.4591)}
     };
-
-//    // 0.865 + -0.0184x + 1.22E-04x^2
-//    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 1.22e-04; // TODO RETUNE
-//    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = -0.0184;
-//    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0.865;
-
-    // 0.865 + -0.0184x + 1.22E-04x^2
-    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_SQUARE_TERM = 0; // TODO RETUNE
-    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_LINEAR_TERM = 0;
-    private static final double POWER_DISTANCE_TO_ANGLE_OFFSET_CONSTANT_TERM = 0;
-
-//    // 0.766 + -2.73E-03x + 1.82E-05x^2
-//    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_SQUARE_TERM = 1.82e-05; // TODO RETUNE
-//    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = -2.73e-03;
-//    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0.763; // 0.766
-
-    // 0.766 + -2.73E-03x + 1.82E-05x^2
-    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_SQUARE_TERM = 0; // TODO RETUNE
-    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_LINEAR_TERM = 0;
-    private static final double POWERSHOT_DISTANCE_TO_FLAP_POSITION_CONSTANT_TERM = 0; // 0.766
 
     private double distanceToTarget;
     private double angleOffset;
     private double turretError;
 
-    private int burstNum = 0;
     private boolean forceIndex = false;
 
     public Shooter(Robot robot, boolean isOn) {
@@ -156,7 +135,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         distanceToTarget = distanceToTarget(target);
 
-        angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalAimValues(distanceToTarget)[1] * 1.3;
+        angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalAimValues(distanceToTarget)[1];
 
         double absoluteTurretHeading = absoluteHeadingToTarget(target);
 
@@ -175,22 +154,18 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     private void aimFlap() {
         shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotFlapPosition(distanceToTarget) + manualAngleFlapCorrection
-                : getHighGoalAimValues(distanceToTarget)[0] + manualAngleFlapCorrection + 0.0025 + 0.0075;
+                : getHighGoalAimValues(distanceToTarget)[0] + manualAngleFlapCorrection;
     }
 
     private void handleIndexes() {
         long currentTime = robot.getCurrentTimeMilli();
-
-        if (shooterModule.flywheelsUpToSpeed()) {
-            burstNum = 0;
-        }
 
         if (queuedIndexes < 0) {
             queuedIndexes = 0;
         }
 
         if (queuedIndexes > 0) {
-            angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalAimValues(distanceToTarget)[1] * 1.3;
+            angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalAimValues(distanceToTarget)[1];
 
             turretError = angleWrap(absoluteHeadingToTarget(target) + angleOffset + manualAngleCorrection)
                     - angleWrap(robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle());
@@ -209,10 +184,6 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
             if (safeToIndex && shooterReady && drivetrainReady && !shooterModule.indexRing) {
                 shooterModule.indexRing = true;
                 queuedIndexes--;
-
-                if (!target.isPowershot()) {
-                    burstNum++;
-                }
 
                 lastIndexTime = currentTime;
             } else if (forceIndex) {
@@ -300,7 +271,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     }
 
     public double desiredTurretHeading() {
-        angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalAimValues(distanceToTarget)[1] * 1.3;
+        angleOffset = target.isPowershot() ? getPowershotAngleOffset(distanceToTarget) : getHighGoalAimValues(distanceToTarget)[1];
 
         return absoluteHeadingToTarget(target) + angleOffset + manualAngleCorrection;
     }
@@ -380,7 +351,6 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         data.add("manual angle offset: " + manualAngleCorrection);
         data.add("--");
         data.add("lockTarget: " + lockTarget);
-        data.add("burstNumber: " + burstNum);
         return data;
     }
 
