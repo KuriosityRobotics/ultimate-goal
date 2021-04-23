@@ -57,7 +57,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public static double TOWARDS_D = 0.49;
     public static double NORMAL_P = 0.009;
     public static double NORMAL_D = 0.1;
-    public static double ANGULAR_P = 0.1;
+    public static double ANGULAR_P = 0.15;
     public static double ANGULAR_D = 6.1;
     // Braking Controllers
     private final BrakeController towardsBrakeController = new BrakeController(
