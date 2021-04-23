@@ -62,13 +62,12 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
         }
 
         robot.shooter.flywheelOn = true;
-        robot.drivetrain.setBrakeHeading(robot.shooter.absoluteHeadingToTarget(robot.shooter.target) - robot.shooter.getTurretHeading());
+        robot.drivetrain.setBrakeHeading(robot.shooter.desiredTurretHeading() - robot.shooter.getTurretHeading());
 
         if (robot.shooter.isFinishedFiringQueue()) {
             powershotNum++;
-            robot.shooter.queueIndex();
 
-            if (powershotNum > 2 && robot.shooter.isIndexerReturned()) {
+            if (powershotNum > 2) {
                 robot.shooter.flywheelOn = false;
                 robot.shooter.stopTurret = false;
                 robot.shooter.lockTarget = oldLockTarget;
@@ -77,6 +76,8 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
 
                 return true;
             }
+
+            robot.shooter.queueIndex();
         } else {
             return false;
         }
