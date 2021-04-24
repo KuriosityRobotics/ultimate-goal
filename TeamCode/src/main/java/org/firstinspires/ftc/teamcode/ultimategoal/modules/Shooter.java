@@ -47,10 +47,10 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private static final LinearInterpolation HIGH_GOAL_DATA = new LinearInterpolation(
             new double[][]{
                     {85.0 - TURRET_DISTANCE_FROM_BACK, 0.2383, Math.toRadians(7.312)},
-                    {90.0 - TURRET_DISTANCE_FROM_BACK, 0.2383, Math.toRadians(9.406)},
-                    {95.0 - TURRET_DISTANCE_FROM_BACK, 0.2372, Math.toRadians(9.477)},
-                    {100.0 - TURRET_DISTANCE_FROM_BACK, 0.2382, Math.toRadians(9.534)},
-                    {105.0 - TURRET_DISTANCE_FROM_BACK, 0.2385, Math.toRadians(8.384)},
+                    {90.0 - TURRET_DISTANCE_FROM_BACK, 0.24, Math.toRadians(9.2)},
+                    {95.0 - TURRET_DISTANCE_FROM_BACK, 0.241, Math.toRadians(9.19)},
+                    {100.0 - TURRET_DISTANCE_FROM_BACK, 0.24, Math.toRadians(9.2)},
+                    {105.0 - TURRET_DISTANCE_FROM_BACK, 0.24, Math.toRadians(8.1)},
                     {110.0 - TURRET_DISTANCE_FROM_BACK, 0.2374, Math.toRadians(8.881)},
                     {115.0 - TURRET_DISTANCE_FROM_BACK, 0.2374, Math.toRadians(7.191)},
                     {120.0 - TURRET_DISTANCE_FROM_BACK, 0.2362, Math.toRadians(7.181)},
@@ -151,7 +151,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         distanceToTarget = distanceToTarget(target);
 
-        angleOffset = target.isPowershot() ? getPowershotAimValues(distanceToTarget)[1] : getHighGoalAimValues(distanceToTarget)[1];
+        angleOffset = target.isPowershot() ? getPowershotAimValues(distanceToTarget)[1] * 0.9: getHighGoalAimValues(distanceToTarget)[1];
 
         double absoluteTurretHeading = absoluteHeadingToTarget(target);
 
