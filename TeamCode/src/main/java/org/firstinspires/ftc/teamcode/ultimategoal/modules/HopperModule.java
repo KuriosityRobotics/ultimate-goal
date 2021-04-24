@@ -29,7 +29,7 @@ public class HopperModule implements Module, TelemetryProvider {
     private static final int RAISE_TIME_MS = 500; // from lowered to apex
     private static final int RAISE_TRANSITIONING_TIME_MS = RAISE_TIME_MS / 2; // from lowered to interfering with shooter
     private static final int LOWER_TIME_MS = 250; // from apex to lowered
-    private static final int LOWER_CLEAR_SHOOTER_TIME_MS = LOWER_TIME_MS / 2; // from apex to no longer interfering with shooter
+    private static final int LOWER_CLEAR_SHOOTER_TIME_MS = (int) (LOWER_TIME_MS * 0.75); // from apex to no longer interfering with shooter
 
     // Hopper position enum
     public enum HopperPosition {LOWERED, TRANSITIONING, AT_TURRET}
