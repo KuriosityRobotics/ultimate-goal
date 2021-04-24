@@ -42,7 +42,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     final Point TARGET_A_DROPOFF_FIRST = new Point(23, 80 - 19);
     final Point TARGET_B_DROPOFF_FIRST = new Point(23.5 * 2 - 2, 88 - (16.5 / 2) + 6);
-    final Point TARGET_C_DROPOFF_FIRST = new Point(23 - 4, 112 - (16.5 / 2) + 8);
+    final Point TARGET_C_DROPOFF_FIRST = new Point(23 - 4, 112 - (16.5 / 2) + 9);
 
     Point firstWobbleDropOff;
 
@@ -55,7 +55,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     final Point TARGET_A_DROPOFF_SECOND = new Point(18 - 12, 47 + 4);
     final Point TARGET_B_DROPOFF_SECOND = new Point(23 + 12 - 9, 94.25 - 18);
-    final Point TARGET_C_DROPOFF_SECOND = new Point(14 - 2, 117 - 20 + 5);
+    final Point TARGET_C_DROPOFF_SECOND = new Point(14 - 6, 117 - 20 + 5);
 
     Point secondWobbleDropoff;
 
@@ -142,7 +142,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         }));
         PathFollow towardsStack = new PathFollow(new Waypoint[]{
                 new Waypoint(firstWobbleDropOff.x + 16, firstWobbleDropOff.y, towardsStackActions),
-                new Waypoint(STACK.x, STACK.y + 16)
+                new Waypoint(STACK.x, STACK.y + 21)
         }, robot, "towards the stack");
 
         ArrayList<Action> secondWobbleStartActions = new ArrayList<>();
@@ -231,7 +231,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         sleep(1000);
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.WOBBLE;
 
-        startToPowershot.followPath(0, 1, 1, true, Math.toRadians(0), true);
+        startToPowershot.followPath(0, 1, 1, false, Math.toRadians(0), true);
 
         BluePowershotsAction powershotsAction = new BluePowershotsAction();
         while (!powershotsAction.executeAction(robot) && opModeIsActive()) {
@@ -241,7 +241,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         robot.shooter.manualTurret = true;
 
         powershotToFirstWobble.followPath(0, 1, 1, true, Math.toRadians(-45));
-        sleep(500);
+//        sleep(500);
 
         long startTime = SystemClock.elapsedRealtime();
         long currentTime = startTime;
@@ -251,7 +251,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         }
 //        backFromFirstWobble.followPath(Math.toRadians(180), 1, 1, false, Math.toRadians(-45));
 
-        towardsStack.followPath(0, 0.6, 1, true, Math.toRadians(180), false);
+        towardsStack.followPath(0, 0.85, 1, false, Math.toRadians(180), false);
 
         robot.shooter.manualTurret = false;
 

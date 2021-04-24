@@ -34,9 +34,10 @@ public class RingManager implements Module, TelemetryProvider {
     private long deliverDelayStartTime;
     private boolean seeingRing = false;
     private int distanceSensorPasses = 0;
+    private int forwardDistanceSensorPasses = 0;
     private boolean seenRingSinceStartDelivery = false;
 
-    private static final int HOPPER_DELIVERY_DELAY = 600;
+    private static final int HOPPER_DELIVERY_DELAY = 400;
 
     public RingManager(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -79,6 +80,7 @@ public class RingManager implements Module, TelemetryProvider {
         } else if (seeingRing) { // we saw a ring but now we don't
             if (robot.intakeModule.intakeBottom.getPower() >= 0) {// outtaking or intaking ?
                 distanceSensorPasses += 1;
+                forwardDistanceSensorPasses += 1;
             } else {
                 distanceSensorPasses -= 1;
             }
@@ -88,7 +90,8 @@ public class RingManager implements Module, TelemetryProvider {
 
         ringsInHopper = (int) Math.ceil(distanceSensorPasses / 2.0);
 
-        if (ringsInHopper >= autoRaiseThreshold && autoRaise) {
+        boolean goingToIndex = robot.shooter.readyToIndex() && !robot.shooter.isFinishedFiringQueue();
+        if (ringsInHopper >= autoRaiseThreshold && autoRaise && !goingToIndex) {
             if (!deliverRings && robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED) {
                 deliverRings = true;
                 deliverDelayStartTime = currentTime;
@@ -125,6 +128,7 @@ public class RingManager implements Module, TelemetryProvider {
         if (oldHopperPosition == HopperModule.HopperPosition.TRANSITIONING && currentHopperPosition == HopperModule.HopperPosition.LOWERED) {
             ringsInShooter = ringsInShooter + ringsInHopper;
             distanceSensorPasses = 0;
+            forwardDistanceSensorPasses = 0;
 
             if (autoShootRings) {
                 robot.shooter.clearIndexes();
@@ -183,6 +187,7 @@ public class RingManager implements Module, TelemetryProvider {
 
     public void resetRingCounters() {
         distanceSensorPasses = 0;
+        forwardDistanceSensorPasses = 0;
         ringsInHopper = 0;
         ringsInShooter = 0;
     }
@@ -203,10 +208,6 @@ public class RingManager implements Module, TelemetryProvider {
         return data;
     }
 
-    public void setDistanceSensorPasses(int distanceSensorPasses) {
-        this.distanceSensorPasses = distanceSensorPasses;
-    }
-
     @Override
     public boolean isOn() {
         return isOn;
@@ -219,6 +220,10 @@ public class RingManager implements Module, TelemetryProvider {
 
     public int getDistanceSensorPasses() {
         return distanceSensorPasses;
+    }
+
+    public int getForwardDistanceSensorPasses() {
+        return forwardDistanceSensorPasses;
     }
 
     public int getRingsInHopper() {
@@ -243,5 +248,9 @@ public class RingManager implements Module, TelemetryProvider {
 
     public boolean getSeeingRing() {
         return seeingRing;
+    }
+
+    public boolean getDeliverRings() {
+        return deliverRings;
     }
 }
