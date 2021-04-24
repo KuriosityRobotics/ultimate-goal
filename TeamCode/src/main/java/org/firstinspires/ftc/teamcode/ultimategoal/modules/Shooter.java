@@ -143,6 +143,9 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     long oldUpdateTime = 0;
     double oldTurretTarget = 0;
 
+    boolean turretWasClose = false;
+    long turretCloseTime = 0;
+
     private void aimTurret() {
         long currentUpdateTime = robot.getCurrentTimeMilli();
 
@@ -157,7 +160,21 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         double adjustedTurretTarget = turretTargetRaw + 0.05 * turretTargetVel;
 
-        shooterModule.setTargetTurretAngle(adjustedTurretTarget + angleOffset + manualAngleCorrection);
+        turretError = angleWrap(absoluteHeadingToTarget(target) + angleOffset + manualAngleCorrection
+                - (robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle()));
+
+        boolean turretIsClose = turretError < Math.toRadians(8);
+        if (turretIsClose && !turretWasClose) {
+            turretCloseTime = currentUpdateTime;
+        }
+        turretWasClose = turretIsClose;
+
+        if (currentUpdateTime > turretCloseTime + 750 && turretIsClose) {
+            shooterModule.setTargetTurretAngle(shooterModule.getCurrentTurretAngle());
+            robot.drivetrain.brakeHeading = robot.drivetrain.getCurrentHeading() + turretError;
+        } else {
+            shooterModule.setTargetTurretAngle(adjustedTurretTarget + angleOffset + manualAngleCorrection);
+        }
 
         aimFlap();
 
