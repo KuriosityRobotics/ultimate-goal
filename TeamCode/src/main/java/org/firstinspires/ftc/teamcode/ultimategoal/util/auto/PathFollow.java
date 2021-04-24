@@ -28,6 +28,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     public static final double DISTANCE_THRESHOLD = 2;
     public static final double NOBRAKE_THRESHOLD = 10;
     public static final double ANGLE_THRESHOLD = Math.toRadians(2);
+    public static final double NOBRAKE_ANGLE_THRESHOLD = Math.toRadians(4);
     public static final double FOLLOW_RADIUS = 15;
     public static final double SLIP_FACTOR = 0;
     public static double SLOWDOWN_P = 0.055;
@@ -83,6 +84,8 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
 
                 if (willAngleLockAtEnd) {
                     robot.drivetrain.brakeHeading = angleLockHeadingAtEnd;
+                } else {
+                    robot.drivetrain.brakeHeading = robot.drivetrain.getCurrentHeading();
                 }
 
                 robot.drivetrain.setMovements(0, 0, 0);

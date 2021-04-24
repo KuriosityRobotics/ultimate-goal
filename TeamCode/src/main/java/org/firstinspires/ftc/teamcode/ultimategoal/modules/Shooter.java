@@ -5,6 +5,7 @@ import android.util.Log;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.LinearInterpolation;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.opencv.core.Mat;
 
 import java.util.ArrayList;
 
@@ -49,11 +50,11 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
                     {85.0 - TURRET_DISTANCE_FROM_BACK, 0.2383, Math.toRadians(7.312)},
                     {90.0 - TURRET_DISTANCE_FROM_BACK, 0.2383, Math.toRadians(9.406)},
                     {95.0 - TURRET_DISTANCE_FROM_BACK, 0.2367, Math.toRadians(9.477)},
-                    {100.0 - TURRET_DISTANCE_FROM_BACK, 0.2368, Math.toRadians(9.536)},
-                    {105.0 - TURRET_DISTANCE_FROM_BACK, 0.2360, Math.toRadians(8.389)},
-                    {110.0 - TURRET_DISTANCE_FROM_BACK, 0.2347, Math.toRadians(8.886)},
-                    {115.0 - TURRET_DISTANCE_FROM_BACK, 0.2352, Math.toRadians(7.194)},
-                    {120.0 - TURRET_DISTANCE_FROM_BACK, 0.2352, Math.toRadians(7.182)},
+                    {100.0 - TURRET_DISTANCE_FROM_BACK, 0.2371, Math.toRadians(9.536)},
+                    {105.0 - TURRET_DISTANCE_FROM_BACK, 0.2366, Math.toRadians(8.389)},
+                    {110.0 - TURRET_DISTANCE_FROM_BACK, 0.2351, Math.toRadians(8.886)},
+                    {115.0 - TURRET_DISTANCE_FROM_BACK, 0.2355, Math.toRadians(7.194)},
+                    {120.0 - TURRET_DISTANCE_FROM_BACK, 0.2354, Math.toRadians(7.182)},
                     {125.0 - TURRET_DISTANCE_FROM_BACK, 0.2352, Math.toRadians(7.650)},
                     {130.0 - TURRET_DISTANCE_FROM_BACK, 0.2358, Math.toRadians(7.643)}
             }
@@ -61,8 +62,8 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     private static final LinearInterpolation POWERSHOT_DATA = new LinearInterpolation(
             new double[][]{
-                    {85.0 - TURRET_DISTANCE_FROM_BACK, 0.2300, Math.toRadians(5.928)},
-                    {90.0 - TURRET_DISTANCE_FROM_BACK, 0.2294, Math.toRadians(5.0639)},
+                    {85.0 - TURRET_DISTANCE_FROM_BACK, 0.22995, Math.toRadians(5.928)},
+                    {90.0 - TURRET_DISTANCE_FROM_BACK, 0.22935, Math.toRadians(5.0639)},
                     {95.0 - TURRET_DISTANCE_FROM_BACK, 0.2290, Math.toRadians(5.5609)},
                     {100.0 - TURRET_DISTANCE_FROM_BACK, 0.2288, Math.toRadians(5.5609)},
                     {105.0 - TURRET_DISTANCE_FROM_BACK, 0.2281, Math.toRadians(5.6082)},
@@ -163,13 +164,14 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         turretError = angleWrap(absoluteHeadingToTarget(target) + angleOffset + manualAngleCorrection
                 - (robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle()));
 
-        boolean turretIsClose = turretError < Math.toRadians(8);
+        boolean turretIsClose = Math.abs(turretError) < Math.toRadians(5);
+
         if (turretIsClose && !turretWasClose) {
             turretCloseTime = currentUpdateTime;
         }
         turretWasClose = turretIsClose;
 
-        if (currentUpdateTime > turretCloseTime + 750 && turretIsClose) {
+        if (currentUpdateTime > turretCloseTime + 250 && turretIsClose) {
             shooterModule.setTargetTurretAngle(shooterModule.getCurrentTurretAngle());
             robot.drivetrain.brakeHeading = robot.drivetrain.getCurrentHeading() + turretError;
         } else {
@@ -201,18 +203,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
             turretError = angleWrap(absoluteHeadingToTarget(target) + angleOffset + manualAngleCorrection
                     - (robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle()));
 
-            boolean safeToIndex = hopperModule.msUntilHopperRaised() > ShooterModule.INDEXER_RETURNED_TIME_MS;
-            boolean shooterReady = shooterModule.flywheelsUpToSpeed()
-                    && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(0.4) : Math.abs(turretError) < Math.toRadians(3))
-                    && Math.abs(shooterModule.getTurretVelocity()) < 0.01;
-            boolean drivetrainReady = robot.drivetrain.getOdometryAngleVel() < Math.toRadians(0.1)
-                    && Math.hypot(robot.drivetrain.getOdometryXVel(), robot.drivetrain.getOdometryYVel()) < 1;
-
-            Log.v("shooter", "queuedindexes: " + queuedIndexes);
-            Log.v("shooter", "shooterready: " + shooterReady);
-            Log.v("shooter", "turret error: " + turretError);
-
-            if (safeToIndex && shooterReady && drivetrainReady && !shooterModule.indexRing) {
+            if (readyToIndex() && !shooterModule.indexRing) {
                 shooterModule.indexRing = true;
                 queuedIndexes--;
 
@@ -226,6 +217,17 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         }
     }
 
+    public boolean readyToIndex() {
+        boolean safeToIndex = hopperModule.msUntilHopperRaised() > ShooterModule.INDEXER_RETURNED_TIME_MS;
+        boolean shooterReady = shooterModule.flywheelsUpToSpeed()
+                && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(0.4) : Math.abs(turretError) < Math.toRadians(2))
+                && Math.abs(shooterModule.getTurretVelocity()) < 0.005;
+        boolean drivetrainReady = robot.drivetrain.getOdometryAngleVel() < Math.toRadians(0.1)
+                && Math.hypot(robot.drivetrain.getOdometryXVel(), robot.drivetrain.getOdometryYVel()) < 1;
+
+        return safeToIndex && shooterReady && drivetrainReady;
+    }
+
     /**
      * Calculate the flap angle and the offset angle required for a given distanceToTarget.
      *
@@ -235,8 +237,8 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private double[] getHighGoalAimValues(double distanceToTarget) {
         double[] output = HIGH_GOAL_DATA.interpolate(distanceToTarget);
 
-        output[0] += 0.00008;
-        output[1] += 0.01;
+        output[0] -= 0.001;
+        output[1] += 0.00;
 
         return output;
     }
@@ -244,7 +246,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private double[] getPowershotAimValues(double distanceToTarget) {
         double[] output = POWERSHOT_DATA.interpolate(distanceToTarget);
 
-        output[1] += 0.035;
+        output[1] += 0.04;
 
         return output;
     }

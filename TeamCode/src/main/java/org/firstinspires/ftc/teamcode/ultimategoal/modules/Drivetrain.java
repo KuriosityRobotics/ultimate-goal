@@ -53,16 +53,16 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double SLOW_MODE_FACTOR = 0.35;
     private final static double TURN_SCALE = Math.toRadians(30);
 
-    public static double TOWARDS_P = 0.00125;
-    public static double TOWARDS_D = 0.52;
+    public static double TOWARDS_P = 0.0012;
+    public static double TOWARDS_D = 0.515;
     public static double NORMAL_P = 0.009;
     public static double NORMAL_D = 0.1;
-    public static double ANGULAR_P = 0.15;
-    public static double ANGULAR_D = 6.15;
+    public static double ANGULAR_P = 0.1;
+    public static double ANGULAR_D = 6.0;
     // Braking Controllers
     private final BrakeController towardsBrakeController = new BrakeController(
             new VelocityPidController(TOWARDS_P, 0, TOWARDS_D),
-            new TargetVelocityFunction(1.85, 4, 10, 0.5),
+            new TargetVelocityFunction(1.95, 4, 10, 0.5),
             0.0094, 10
     );
     private final BrakeController normalToBrakeController = new BrakeController(
@@ -72,7 +72,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     );
     private final BrakeController angularBrakeController = new BrakeController(
             new VelocityPidController(ANGULAR_P, 0, ANGULAR_D),
-            new TargetVelocityFunction(Math.toRadians(192), Math.toRadians(8), Math.toRadians(47), Math.toRadians(0.5)),
+            new TargetVelocityFunction(Math.toRadians(210), Math.toRadians(10), Math.toRadians(70), Math.toRadians(0.5)),
             0.2, Math.toRadians(110)
     );
 
@@ -347,7 +347,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         lastIterData.put("angError", angleToTarget);
         lastIterData.put("angTargetVelo", angularBrakeController.targetVelocity(angleToTarget));
         lastIterData.put("angVelo", angularVelocity);
-        lastIterData.put("angPower", angularPower);
+        lastIterData.put("angPower", angularPower / 8);
 
         return angularPower;
     }
