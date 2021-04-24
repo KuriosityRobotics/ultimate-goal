@@ -72,7 +72,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     );
     private final BrakeController angularBrakeController = new BrakeController(
             new VelocityPidController(ANGULAR_P, 0, ANGULAR_D),
-            new TargetVelocityFunction(Math.toRadians(210), Math.toRadians(10), Math.toRadians(50), Math.toRadians(0.5)),
+            new TargetVelocityFunction(Math.toRadians(210), Math.toRadians(10), Math.toRadians(45), Math.toRadians(0.5)),
             0.2, Math.toRadians(110)
     );
 
