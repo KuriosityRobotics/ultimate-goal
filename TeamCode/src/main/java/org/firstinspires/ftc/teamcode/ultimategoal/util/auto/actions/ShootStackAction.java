@@ -46,12 +46,12 @@ public class ShootStackAction extends Action {
         Log.v("shootstack", "expect: " + ringsToExpect);
         Log.v("shootstack", "distsensorpasses: " + robot.ringManager.getDistanceSensorPasses());
 
-        if (robot.ringManager.getDistanceSensorPasses() >= 4) {
-            robot.intakeModule.intakePower = -0.5;
+        if (robot.ringManager.getForwardDistanceSensorPasses() >= 4 && !robot.ringManager.getDeliverRings()) {
+            robot.intakeModule.intakePower = -0.4;
         } else if (ringsShotSoFar + (robot.ringManager.getDistanceSensorPasses() / 2.0) >= 4) {
             robot.intakeModule.intakePower = 0;
         } else {
-            robot.intakeModule.intakePower = 1;
+            robot.intakeModule.intakePower = 0.9;
         }
 
 //        if (robot.shooter.getTurretVelocity() < 0.01 )
@@ -62,7 +62,7 @@ public class ShootStackAction extends Action {
                 robot.drivetrain.setMovements(0, 0, 0);
                 robot.drivetrain.setBrakePosition(end);
             } else {
-                robot.drivetrain.setMovementsTowardsPoint(end, 0.15, 0.9, 0, false, 0);
+                robot.drivetrain.setMovementsTowardsPoint(end, 0.2, 0.9, 0, false, 0);
             }
         }
 

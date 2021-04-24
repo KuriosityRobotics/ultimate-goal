@@ -161,15 +161,15 @@ public class ShooterModule implements Module, TelemetryProvider {
         lastTurretPosition = currentTurretAngle;
     }
 
-    public static double P = 0.45;
+    public static double P = 0.42;
     public static double I = 0;
     public static double D = 0;
     public static double FULL_SPEED_THRESHOLD = Math.toRadians(36);
     public static double STOP_SCALE = 1.4;
-    public static double CLOSE_SCALE = 0.80;
+    public static double CLOSE_SCALE = 0.75;
     public static double CLOSE_THRESHOLD = 10;
-    public static double CLOSE_STOP_SCALE = 1.2;
-    public static double MICRO_SCALE = 1.65;
+    public static double CLOSE_STOP_SCALE = 1.05;
+    public static double MICRO_SCALE = 1.6;
     public static double MICRO_STOP_SCALE = 1.60;
     public static double MICRO_THRESHOLD = 4;
 
