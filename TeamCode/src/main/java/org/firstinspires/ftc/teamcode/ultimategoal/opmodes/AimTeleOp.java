@@ -192,6 +192,9 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         robot.shooter.manualTurret = false;
     }
 
+    boolean wasNoPower = false;
+    long lastPowerTime = 0;
+
     private void updateDrivetrainStates() {
         double yMovement;
         double xMovement;
@@ -214,6 +217,20 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         robot.drivetrain.isSlowMode = gamepad1.right_bumper;
 
         robot.drivetrain.setMovements(xMovement, yMovement, turnMovement);
+
+        boolean isNoPower = Math.abs(xMovement) > 0 && Math.abs(yMovement) > 0 && Math.abs(turnMovement) > 0;
+        if (isNoPower && !wasNoPower) {
+            lastPowerTime = SystemClock.elapsedRealtime();
+        }
+        wasNoPower = isNoPower;
+
+        boolean robotStopped = Math.hypot(robot.drivetrain.getOdometryXVel(), robot.drivetrain.getOdometryYVel()) < 0.5
+                && Math.abs(robot.drivetrain.getOdometryAngleVel()) < Math.toRadians(0.1);
+        if (isNoPower && SystemClock.elapsedRealtime() > lastPowerTime + 750 && robotStopped) {
+            robot.drivetrain.weakBrake = false;
+        } else {
+            robot.drivetrain.weakBrake = true;
+        }
     }
 
     @Override
