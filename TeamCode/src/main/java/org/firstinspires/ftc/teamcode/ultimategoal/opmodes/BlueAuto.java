@@ -27,6 +27,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.vision.Vision;
 import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
+import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_POWERSHOT1;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
 
 @Autonomous
@@ -55,7 +56,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     final Point TARGET_A_DROPOFF_SECOND = new Point(18 - 12, 47 + 4);
     final Point TARGET_B_DROPOFF_SECOND = new Point(23 + 12 - 9, 94.25 - 18);
-    final Point TARGET_C_DROPOFF_SECOND = new Point(14 - 6, 117 - 20 + 5);
+    final Point TARGET_C_DROPOFF_SECOND = new Point(14 - 9, 117 - 20 + 5);
 
     Point secondWobbleDropoff;
 
@@ -142,7 +143,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         }));
         PathFollow towardsStack = new PathFollow(new Waypoint[]{
                 new Waypoint(firstWobbleDropOff.x + 16, firstWobbleDropOff.y, towardsStackActions),
-                new Waypoint(STACK.x, STACK.y + 21)
+                new Waypoint(STACK.x, STACK.y + 25)
         }, robot, "towards the stack");
 
         ArrayList<Action> secondWobbleStartActions = new ArrayList<>();
@@ -228,17 +229,20 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 //                new Waypoint(new Point(PARK.getTranslation().getX(), PARK.getTranslation().getY()))
 //        }, robot, "Second wobble drop off to park");
 
-        sleep(1000);
+        sleep(750);
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.WOBBLE;
 
-        startToPowershot.followPath(0, 1, 1, false, Math.toRadians(0), true);
+        startToPowershot.followPath(0, 1, 1, false, Math.toRadians(0), false);
+
+        robot.drivetrain.setBrakePosition(new Point(robot.drivetrain.getCurrentPosition().x, robot.drivetrain.getCurrentPosition().y + 6));
 
         BluePowershotsAction powershotsAction = new BluePowershotsAction();
         while (!powershotsAction.executeAction(robot) && opModeIsActive()) {
 //            Log.v("blueauto", "poweraction");
         }
 
-        robot.shooter.manualTurret = true;
+//        robot.shooter.manualTurret = true;
+        robot.shooter.target = BLUE_POWERSHOT1;
 
         powershotToFirstWobble.followPath(0, 1, 1, true, Math.toRadians(-45));
 //        sleep(500);
@@ -250,6 +254,8 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
             currentTime = SystemClock.elapsedRealtime();
         }
 //        backFromFirstWobble.followPath(Math.toRadians(180), 1, 1, false, Math.toRadians(-45));
+
+        robot.shooter.target = BLUE_HIGH;
 
         towardsStack.followPath(0, 0.85, 1, false, Math.toRadians(180), false);
 
@@ -264,25 +270,29 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
             // yeeter
         }
 
+        robot.intakeModule.stopIntake = true;
+
 //        firstwobbleToSecondWobble.followPath(0, 1, 1, true, Math.toRadians(-150));
 
-        robot.shooter.flywheelOn = false;
+        robot.shooter.queueIndex(3);
+
         robot.intakeModule.intakePower = 0;
 
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.OPEN;
         sleep(500);
 
-        stackToSecondWobble.followPath(0, 1, 1, true, Math.toRadians(200));
+        stackToSecondWobble.followPath(0, 0.5, 1, false, Math.toRadians(200), true);
         sleep(500);
 
-        robot.drivetrain.setBrakeHeading(Math.toRadians(90));
-        sleep(100);
         robot.drivetrain.setBrakeHeading(0);
         while (Math.abs(angleWrap(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading())) > Math.toRadians(10) && opModeIsActive()) {
             // wait
             Log.v("blueauto", "waitin");
         }
 
+        sleep(750);
+
+        robot.shooter.flywheelOn = false;
         robot.shooter.lockTarget = false;
         robot.shooter.setTurretTargetHeading(0);
 

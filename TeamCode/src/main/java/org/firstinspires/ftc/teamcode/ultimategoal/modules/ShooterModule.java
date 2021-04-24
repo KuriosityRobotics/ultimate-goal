@@ -66,7 +66,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     private static final double TURRET_MAXIMUM_ANGLE = Math.toRadians(270);
 
     private static final double TURRET_ENCODER_TO_ANGLE = 4842.60745;
-    private static final int FLYWHEEL_SPEED_THRESHOLD = 200;
+    private static final int FLYWHEEL_SPEED_THRESHOLD = 75;
 
     private static final double FLAP_STORE_POSITION = 0.0873856;
     private static final double FLAP_LOWER_LIMIT = 0.1766;

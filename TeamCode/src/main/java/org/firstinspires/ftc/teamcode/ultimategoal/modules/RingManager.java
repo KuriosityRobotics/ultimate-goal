@@ -21,6 +21,7 @@ public class RingManager implements Module, TelemetryProvider {
     public boolean autoRaise;
     public boolean autoShootRings;
     public int autoRaiseThreshold = 1;
+    public boolean intakeFollowThrough;
 
     // Data
     private int ringsInHopper;
@@ -53,6 +54,7 @@ public class RingManager implements Module, TelemetryProvider {
         autoShootRings = true;
 
         deliverRings = false;
+        intakeFollowThrough = true;
     }
 
     public void initModules() {
@@ -178,7 +180,7 @@ public class RingManager implements Module, TelemetryProvider {
 
         if (robot.shooter.targetHopperPosition() != HopperModule.HopperPosition.LOWERED) {
             robot.intakeModule.stopIntake = seenRingSinceStartDelivery;
-        } else if (deliverRings) { // waiting to raise the hopper
+        } else if (deliverRings && intakeFollowThrough) { // waiting to raise the hopper
             robot.intakeModule.intakePower = 1;
         } else {
             robot.intakeModule.stopIntake = false;

@@ -38,8 +38,8 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
 
             // actually begin action
             oldLockTarget = robot.shooter.lockTarget;
-            robot.shooter.lockTarget = false;
-            robot.shooter.manualTurret = true;
+//            robot.shooter.lockTarget = false;
+//            robot.shooter.manualTurret = true;
             robot.shooter.manualTurretPower = 0;
             robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
 
@@ -54,6 +54,9 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
                 robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
                 break;
             case 1:
+                robot.shooter.lockTarget = false;
+                robot.shooter.manualTurret = true;
+                robot.shooter.manualTurretPower = 0;
                 robot.shooter.target = Target.Blue.BLUE_POWERSHOT2;
                 break;
             case 2:
@@ -65,6 +68,8 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
         }
 
         robot.shooter.flywheelOn = true;
+        robot.drivetrain.setMovements(0, 0, 0);
+//        robot.drivetrain.setBrakePosition(robot.drivetrain.getCurrentPosition());
         robot.drivetrain.setBrakeHeading(robot.shooter.desiredTurretHeading() - robot.shooter.getTurretHeading());
 
         if (robot.shooter.isFinishedFiringQueue()) {
