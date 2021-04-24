@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 
-@Disabled
+//@Disabled
 @TeleOp
 public class ShooterMotorIdentification extends LinearOpMode {
     DcMotor flyWheel1;
