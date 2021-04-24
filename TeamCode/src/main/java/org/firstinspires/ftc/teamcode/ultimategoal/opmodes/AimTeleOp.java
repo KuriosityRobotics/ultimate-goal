@@ -124,15 +124,15 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             robot.shooter.queueIndex();
         }
 
-        if (Math.abs(gamepad2.left_stick_x) > 0.1 || robot.shooter.manualTurret) {
-            robot.shooter.manualTurret = true;
-            robot.shooter.manualTurretPower = gamepad2.left_stick_x;
-        }
-
-        if (autoTurretToggle.isToggled(gamepad2.left_bumper)) {
-            robot.shooter.manualTurret = false;
-            robot.shooter.manualTurretPower = 0;
-        }
+//        if (Math.abs(gamepad2.left_stick_x) > 0.1 || robot.shooter.manualTurret) {
+//            robot.shooter.manualTurret = true;
+//            robot.shooter.manualTurretPower = gamepad2.left_stick_x;
+//        }
+//
+//        if (autoTurretToggle.isToggled(gamepad2.left_bumper)) {
+//            robot.shooter.manualTurret = false;
+//            robot.shooter.manualTurretPower = 0;
+//        }
     }
 
     private void updateRingDeliverySystemStates() {
@@ -189,6 +189,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         robot.drivetrain.weakBrake = true;
 
         robot.shooter.lockTarget = true;
+        robot.shooter.manualTurret = false;
     }
 
     private void updateDrivetrainStates() {

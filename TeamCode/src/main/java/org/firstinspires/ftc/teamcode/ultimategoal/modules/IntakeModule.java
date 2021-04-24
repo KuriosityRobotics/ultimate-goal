@@ -35,8 +35,8 @@ public class IntakeModule implements Module, TelemetryProvider {
     private static final double LEFT_BLOCKER_BLOCKING_POSITION = 0.85727 + 0.125;
     private static final double RIGHT_BLOCKER_BLOCKING_POSITION = 0.0;
 
-    private static final double LEFT_BLOCKER_WOBBLE_POSITION = 0.85;
-    private static final double RIGHT_BLOCKER_WOBBLE_POSITION = 0.1;
+    private static final double LEFT_BLOCKER_WOBBLE_POSITION = 0.88;
+    private static final double RIGHT_BLOCKER_WOBBLE_POSITION = 0.09;
 
     private static final double LEFT_BLOCKER_OPEN_POSITION = 0.370 + 0.125;
     private static final double RIGHT_BLOCKER_OPEN_POSITION = 0.463;
