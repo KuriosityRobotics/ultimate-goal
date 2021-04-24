@@ -26,7 +26,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
 
     // constants
     public static final double DISTANCE_THRESHOLD = 2;
-    public static final double NOBRAKE_THRESHOLD = 5;
+    public static final double NOBRAKE_THRESHOLD = 10;
     public static final double ANGLE_THRESHOLD = Math.toRadians(2);
     public static final double FOLLOW_RADIUS = 15;
     public static final double SLIP_FACTOR = 0;

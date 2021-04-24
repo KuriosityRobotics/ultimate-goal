@@ -24,7 +24,7 @@ public class ShootAction extends Action {
             robot.shooter.lockTarget = true;
             robot.shooter.flywheelOn = true;
 
-            robot.shooter.queueIndexThreeRings();
+            robot.shooter.queueIndex(3);
 
             beginExecutionTime = robot.getCurrentTimeMilli();
 

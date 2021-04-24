@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 
+import android.util.Log;
+
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Target;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
@@ -34,28 +36,37 @@ public class ShootStackAction extends Action {
             robot.shooter.lockTarget = true;
 
             startingRingsShot = robot.ringManager.getTotalRingsShot();
+
+            beginExecutionTime = robot.getCurrentTimeMilli();
         }
 
-        if (robot.ringManager.getRingsInHopper() >= 2) {
+        int ringsShotSoFar = robot.ringManager.getTotalRingsShot() - startingRingsShot;
+
+        Log.v("shootstack", "ringsshosofar: " + ringsShotSoFar);
+        Log.v("shootstack", "expect: " + ringsToExpect);
+        Log.v("shootstack", "distsensorpasses: " + robot.ringManager.getDistanceSensorPasses());
+
+        if (robot.ringManager.getDistanceSensorPasses() >= 4) {
             robot.intakeModule.intakePower = -0.5;
+        } else if (ringsShotSoFar + (robot.ringManager.getDistanceSensorPasses() / 2.0) >= 4) {
+            robot.intakeModule.intakePower = 0;
         } else {
             robot.intakeModule.intakePower = 1;
         }
 
-        if (robot.intakeModule.stopIntake || robot.shooter.queuedIndexes > 0) {
+//        if (robot.shooter.getTurretVelocity() < 0.01 )
+        if (robot.intakeModule.stopIntake || !robot.shooter.isFinishedFiringQueue()) {
             robot.drivetrain.setMovements(0, 0, 0);
         } else {
             if (robot.drivetrain.distanceToPoint(end) < 8) {
                 robot.drivetrain.setMovements(0, 0, 0);
                 robot.drivetrain.setBrakePosition(end);
             } else {
-                robot.drivetrain.setMovementsTowardsPoint(end, 0.2, 0.9, 0, false, 0);
+                robot.drivetrain.setMovementsTowardsPoint(end, 0.15, 0.9, 0, false, 0);
             }
         }
 
-        int stackRingsShot = robot.ringManager.getTotalRingsShot() - startingRingsShot;
-
-        return (stackRingsShot >= ringsToExpect) || (robot.drivetrain.distanceToPoint(end) < 1);
+        return (ringsShotSoFar >= ringsToExpect) || (robot.getCurrentTimeMilli() > beginExecutionTime + 8000);
     }
 
     @Override

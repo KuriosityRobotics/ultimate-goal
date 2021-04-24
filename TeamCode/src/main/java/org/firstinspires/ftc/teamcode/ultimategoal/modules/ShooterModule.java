@@ -62,8 +62,8 @@ public class ShooterModule implements Module, TelemetryProvider {
     private double turretPower;
 
     // Constants
-    private static final double TURRET_MINIMUM_ANGLE = Math.toRadians(-270);
-    private static final double TURRET_MAXIMUM_ANGLE = Math.toRadians(185);
+    private static final double TURRET_MINIMUM_ANGLE = Math.toRadians(-215);
+    private static final double TURRET_MAXIMUM_ANGLE = Math.toRadians(270);
 
     private static final double TURRET_ENCODER_TO_ANGLE = 4842.60745;
     private static final int FLYWHEEL_SPEED_THRESHOLD = 200;
@@ -153,16 +153,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         indexerLogic(currentTime);
     }
 
-
-    public static double P = 0.25;
-    public static double I = 0;
-    public static double D = 0;
-    public static double FULL_SPEED_THRESHOLD = Math.toRadians(36);
-    public static double STOP_SCALE = 2;
-    public static double CLOSE_SCALE = 0.91;
-    public static double CLOSE_THRESHOLD = 9;
-    public static double CLOSE_STOP_SCALE = 1.76;
-
     private void calculateTurretPosition() {
         this.currentTurretAngle = turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
 
@@ -171,7 +161,21 @@ public class ShooterModule implements Module, TelemetryProvider {
         lastTurretPosition = currentTurretAngle;
     }
 
+    public static double P = 0.45;
+    public static double I = 0;
+    public static double D = 0;
+    public static double FULL_SPEED_THRESHOLD = Math.toRadians(36);
+    public static double STOP_SCALE = 1.4;
+    public static double CLOSE_SCALE = 0.80;
+    public static double CLOSE_THRESHOLD = 10;
+    public static double CLOSE_STOP_SCALE = 1.2;
+    public static double MICRO_SCALE = 1.65;
+    public static double MICRO_STOP_SCALE = 1.60;
+    public static double MICRO_THRESHOLD = 4;
+
     private void turnTurretToTarget() {
+        this.currentTurretAngle = turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
+
         double error = targetTurretAngle - currentTurretAngle;
 
         turretController.P = P;
@@ -184,16 +188,24 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         turretPower = turretController.calculatePID(error);
 
-        if (Math.abs(error) < Math.toRadians(CLOSE_THRESHOLD)) {
+        turretVelocity = currentTurretAngle - lastTurretPosition;
+
+        if (Math.abs(error) < Math.toRadians(MICRO_THRESHOLD)) {
+            turretPower = error * MICRO_SCALE;
+            if (Math.abs(turretVelocity) < 0.01) {
+                turretPower *= MICRO_STOP_SCALE;
+            }
+        } else if (Math.abs(error) < Math.toRadians(CLOSE_THRESHOLD)) {
             turretPower = error * CLOSE_SCALE;
-            if (Math.abs(turretVelocity) < 0.1) {
+            if (Math.abs(turretVelocity) < 0.01) {
                 turretPower *= CLOSE_STOP_SCALE;
             }
         } else {
-            if (Math.abs(turretVelocity) < 0.1) {
+            if (Math.abs(turretVelocity) < 0.01) {
                 turretPower *= STOP_SCALE;
             }
         }
+        lastTurretPosition = currentTurretAngle;
 
         if (Math.abs(error) > FULL_SPEED_THRESHOLD) {
             turretPower = Math.signum(error);
@@ -316,7 +328,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     public boolean isFinishedIndexing() {
-        return robot.getCurrentTimeMilli() > indexTime + INDEXER_PUSHED_TIME_MS && !indexRing;
+        return isIndexerReturned() && !indexRing;
     }
 
     public boolean isIndexerReturned() {
@@ -344,13 +356,13 @@ public class ShooterModule implements Module, TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("Target speed: " + flyWheelTargetSpeed + ", Flywheel1 speed: " + flyWheel1.getVelocity());
+        data.add("Target speed: " + flyWheelTargetSpeed);
+        data.add("Flywheel1 speed: " + flyWheel1.getVelocity() + ", flywheel2 speed: " + flyWheel2.getVelocity());
         data.add("isUpToSpeed: " + flywheelsUpToSpeed());
         data.add("--");
-        data.add("stopTurret: " + manualTurret);
+        data.add("manualTurret: " + manualTurret  + " manualPower: " + manualPower);
         data.add("Target turret angle: " + Math.toDegrees(targetTurretAngle));
         data.add("Current turret angle: " + Math.toDegrees(currentTurretAngle));
-        data.add("pow: " + turretPower);
         data.add("Flap angle: " + shooterFlapPosition);
         return data;
     }

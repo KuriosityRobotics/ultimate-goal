@@ -36,7 +36,7 @@ public class RingManager implements Module, TelemetryProvider {
     private int distanceSensorPasses = 0;
     private boolean seenRingSinceStartDelivery = false;
 
-    private static final int HOPPER_DELIVERY_DELAY = 750;
+    private static final int HOPPER_DELIVERY_DELAY = 600;
 
     public RingManager(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -77,7 +77,7 @@ public class RingManager implements Module, TelemetryProvider {
         if (voltage > 1.25) {
             seeingRing = true;
         } else if (seeingRing) { // we saw a ring but now we don't
-            if (robot.intakeModule.intakeBottom.getPower() > 0) {// outtaking or intaking ?
+            if (robot.intakeModule.intakeBottom.getPower() >= 0) {// outtaking or intaking ?
                 distanceSensorPasses += 1;
             } else {
                 distanceSensorPasses -= 1;
@@ -88,16 +88,24 @@ public class RingManager implements Module, TelemetryProvider {
 
         ringsInHopper = (int) Math.ceil(distanceSensorPasses / 2.0);
 
-        if (getRingsInHopper() >= autoRaiseThreshold && autoRaise) {
-            if (!deliverRings && robot.shooter.getHopperPosition() == HopperModule.HopperPosition.LOWERED) {
+        if (ringsInHopper >= autoRaiseThreshold && autoRaise) {
+            if (!deliverRings && robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED) {
                 deliverRings = true;
                 deliverDelayStartTime = currentTime;
             } else if (deliverRings && seeingRing) { // if we're going to deliver BUT WAIT! there's another ring!
-                deliverDelayStartTime = currentTime;
+                if (distanceSensorPasses % 2 == 0) {
+                    deliverDelayStartTime = currentTime;
+                } else {
+                    deliverDelayStartTime = currentTime + 500;
+                }
             }
         }
 
-        if (seeingRing && robot.shooter.getHopperPosition() != HopperModule.HopperPosition.LOWERED) {
+        if (ringsInShooter + ringsInHopper > 3) {
+            deliverRings = false;
+        }
+
+        if (seeingRing && robot.shooter.getCurrentHopperPosition() != HopperModule.HopperPosition.LOWERED) {
             seenRingSinceStartDelivery = true;
         }
 
@@ -111,7 +119,7 @@ public class RingManager implements Module, TelemetryProvider {
     private HopperModule.HopperPosition oldHopperPosition = HopperModule.HopperPosition.LOWERED;
 
     public void detectHopperDelivery() {
-        HopperModule.HopperPosition currentHopperPosition = robot.shooter.getHopperPosition();
+        HopperModule.HopperPosition currentHopperPosition = robot.shooter.getCurrentHopperPosition();
 
         // when hopper push is finished move rings
         if (oldHopperPosition == HopperModule.HopperPosition.TRANSITIONING && currentHopperPosition == HopperModule.HopperPosition.LOWERED) {
@@ -119,8 +127,8 @@ public class RingManager implements Module, TelemetryProvider {
             distanceSensorPasses = 0;
 
             if (autoShootRings) {
+                robot.shooter.clearIndexes();
                 robot.shooter.queueIndex(ringsInShooter);
-                Log.v("ringmanager", "auto shot: " + ringsInShooter);
             }
         }
 
@@ -135,8 +143,8 @@ public class RingManager implements Module, TelemetryProvider {
         // when indexer has returned from an index the shooter loses a ring
         if (oldIndexerPosition == ShooterModule.IndexerPosition.PUSHED && currentIndexerPosition == ShooterModule.IndexerPosition.RETRACTED) {
             if (ringsInShooter > 0) {
-                ringsInShooter = getRingsInShooter() - 1;
-                totalRingsShot = getTotalRingsShot() + 1;
+                ringsInShooter = ringsInShooter - 1;
+                totalRingsShot = totalRingsShot + 1;
             }
         }
 
@@ -183,7 +191,7 @@ public class RingManager implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         data.add("Ring passes: " + distanceSensorPasses);
         data.add("deliverRings: " + deliverRings);
-        data.add("Rings in hopper: " + getRingsInHopper() + ", Rings in shooter: " + getRingsInShooter());
+        data.add("Rings in hopper: " + ringsInHopper + ", Rings in shooter: " + ringsInShooter);
         data.add("Will Auto Raise:  " + autoRaise + ", Will Auto Shoot: " + autoShootRings);
         return data;
     }
@@ -191,7 +199,7 @@ public class RingManager implements Module, TelemetryProvider {
     @Override
     public HashMap<String, Object> getDashboardData() {
         HashMap<String, Object> data = new HashMap<>();
-        data.put("rings in hopper", getRingsInHopper());
+        data.put("rings in hopper", ringsInHopper);
         return data;
     }
 
@@ -209,6 +217,10 @@ public class RingManager implements Module, TelemetryProvider {
         return "RingManager";
     }
 
+    public int getDistanceSensorPasses() {
+        return distanceSensorPasses;
+    }
+
     public int getRingsInHopper() {
         return ringsInHopper;
     }
@@ -217,8 +229,16 @@ public class RingManager implements Module, TelemetryProvider {
         return ringsInShooter;
     }
 
+    public void addRingsInShooter(int num) {
+        ringsInShooter += num;
+    }
+
     public int getTotalRingsShot() {
         return totalRingsShot;
+    }
+
+    public int getRingsInSystem() {
+        return ringsInHopper + ringsInShooter;
     }
 
     public boolean getSeeingRing() {
