@@ -82,7 +82,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         drivetrainModule = new DrivetrainModule(robot, isOn);
         odometryModule = new OdometryModule(robot, isOn, startingPosition);
-        t265Module = new T265Module(robot, !isAuto, startingPosition);
+        t265Module = new T265Module(robot, false, startingPosition);
 
         brakePoint = new Point(startingPosition.getTranslation());
         brakeHeading = startingPosition.getHeading();
