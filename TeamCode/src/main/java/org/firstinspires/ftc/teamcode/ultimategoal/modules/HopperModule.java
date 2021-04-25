@@ -14,7 +14,7 @@ public class HopperModule implements Module, TelemetryProvider {
     // States
     public boolean deliverRings;
     boolean wasAtTurret = false;
-    public HopperPosition targetHopperPosition;
+    private HopperPosition currentHopperPosition;
 
     // Servos
     private Servo hopperLinkage;
@@ -42,7 +42,7 @@ public class HopperModule implements Module, TelemetryProvider {
 
         deliverRings = false;
         deliveryStartTime = 0;
-        targetHopperPosition = HopperPosition.LOWERED;
+        currentHopperPosition = HopperPosition.LOWERED;
     }
 
     @Override
@@ -57,12 +57,11 @@ public class HopperModule implements Module, TelemetryProvider {
     public void update() {
         long currentTime = robot.getCurrentTimeMilli();
 
-
-        targetHopperPosition = calculateHopperPosition(this.deliveryStartTime, currentTime); // do the thing
+        currentHopperPosition = calculateHopperPosition(this.deliveryStartTime, currentTime); // do the thing
 
         // Determine target hopper position
         boolean raiseHopper;
-        if (targetHopperPosition == HopperPosition.LOWERED && this.deliverRings) {
+        if (currentHopperPosition == HopperPosition.LOWERED && this.deliverRings) {
             raiseHopper = true;
 
             this.deliveryStartTime = currentTime;
