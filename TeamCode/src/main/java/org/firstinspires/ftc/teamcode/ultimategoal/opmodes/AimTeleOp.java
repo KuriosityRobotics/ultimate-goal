@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
 import java.util.ArrayList;
 
@@ -17,7 +18,6 @@ import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_
 
 @TeleOp
 public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
-
     Robot robot;
 
     long lastUpdateTime = 0;
@@ -51,6 +51,8 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     BluePowershotsAction bluePowershotsAction = new BluePowershotsAction();
     private boolean doPowershotsAction = false;
 
+    Point POWERSHOT = new Point(44, 51.25);
+
     public void runOpMode() {
         initRobot();
 
@@ -68,8 +70,12 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
                 if (doPowershotsAction) {
                     bluePowershotsAction = new BluePowershotsAction();
+
+                    robot.shooter.manualAngleFlapCorrection = 0;
+                    robot.shooter.manualAngleCorrection = 0;
                 } else {
                     robot.shooter.flywheelOn = false;
+                    robot.drivetrain.setBrakePosition(robot.drivetrain.getCurrentPosition());
                 }
             }
 
@@ -78,10 +84,11 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             }
 
             if (doPowershotsAction) {
-                robot.shooter.manualAngleFlapCorrection = 0;
-                robot.shooter.manualAngleCorrection = 0;
+                robot.drivetrain.setBrakePosition(POWERSHOT);
 
-                doPowershotsAction = !bluePowershotsAction.executeAction(robot);
+                if (robot.drivetrain.distanceToPoint(POWERSHOT) < 1) {
+                    doPowershotsAction = !bluePowershotsAction.executeAction(robot);
+                }
             } else {
                 robot.shooter.lockTarget = true;
 
