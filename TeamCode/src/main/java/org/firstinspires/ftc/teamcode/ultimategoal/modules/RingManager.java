@@ -62,9 +62,9 @@ public class RingManager implements Module, TelemetryProvider {
     }
 
     public void update() {
+        detectShotRings();
         detectHopperDelivery();
         countPassingRings();
-        detectShotRings();
 
         stopIntakeLogic();
 
@@ -92,12 +92,15 @@ public class RingManager implements Module, TelemetryProvider {
 
         ringsInHopper = (int) Math.ceil(distanceSensorPasses / 2.0);
 
-        boolean goingToIndex = robot.shooter.readyToIndex() && !robot.shooter.isFinishedFiringQueue();
-        if (autoRaise && ringsInHopper >= autoRaiseThreshold && !goingToIndex && (ringsInShooter + ringsInHopper <= 3)) {
-            if (!deliverRings && robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED) {
+        boolean readyToAutoDeliver = autoRaise && ringsInHopper >= autoRaiseThreshold;
+        boolean hopperReady = robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED;
+        boolean shooterNotFull = ringsInShooter + ringsInHopper <= 3;
+        boolean shooterWillIndex = robot.shooter.readyToIndex() && !robot.shooter.isFinishedFiringQueue();
+        if (readyToAutoDeliver && hopperReady && shooterNotFull && !shooterWillIndex) {
+            if (!deliverRings) {
                 deliverRings = true;
                 deliverDelayStartTime = currentTime;
-            } else if (deliverRings && seeingRing) { // if we're going to deliver BUT WAIT! there's another ring!
+            } else if (seeingRing) { // if we're going to deliver BUT WAIT! there's another ring!
                 if (distanceSensorPasses % 2 == 0) {
                     deliverDelayStartTime = currentTime;
                 } else {

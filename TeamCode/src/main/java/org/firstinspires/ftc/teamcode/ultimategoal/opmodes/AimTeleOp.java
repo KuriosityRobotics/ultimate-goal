@@ -153,7 +153,6 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     private void updateRingDeliverySystemStates() {
         if (deliverRingsToggle.isToggled(gamepad2.a)) {
             robot.shooter.deliverRings();
-            Log.v("aimteleop", "manual delivery");
         }
 
         if (autoManagerToggle.isToggled(gamepad1.x)) {
