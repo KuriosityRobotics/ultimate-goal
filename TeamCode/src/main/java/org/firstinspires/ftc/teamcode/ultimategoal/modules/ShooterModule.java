@@ -29,7 +29,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     public static double turretD = 0;
     public static double turretF = 15;
 
-    public static double feedForwardVelocityTurret = 0.1;
+    public static double feedForwardVelocityTurret = 13;
 
     // States
     private double targetTurretAngle;
