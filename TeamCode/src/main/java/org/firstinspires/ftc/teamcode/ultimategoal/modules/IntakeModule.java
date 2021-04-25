@@ -23,7 +23,6 @@ public class IntakeModule implements Module, TelemetryProvider {
 
     // Actuators
     DcMotor intakeTop;
-    DcMotor intakeBottom;
 
     Servo leftBlocker;
     Servo rightBlocker;
@@ -100,10 +99,8 @@ public class IntakeModule implements Module, TelemetryProvider {
 
     public void initModules() {
         intakeTop = robot.getDcMotor("intakeTop");
-        intakeBottom = robot.getDcMotor("intakeBottom");
 
         intakeTop.setDirection(DcMotorSimple.Direction.REVERSE);
-        intakeBottom.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftBlocker = robot.getServo("blockerLeft");
         rightBlocker = robot.getServo("blockerRight");
@@ -149,7 +146,6 @@ public class IntakeModule implements Module, TelemetryProvider {
 
     private void runIntake(double power) {
         intakeTop.setPower(power);
-        intakeBottom.setPower(power);
     }
 
     private void intakeBlockerLogic() {

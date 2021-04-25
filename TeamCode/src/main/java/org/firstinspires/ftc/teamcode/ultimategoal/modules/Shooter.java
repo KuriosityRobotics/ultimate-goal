@@ -169,12 +169,8 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         }
         turretWasClose = turretIsClose;
 
-        if (currentUpdateTime > turretCloseTime + 1000 && turretIsClose) {
-            shooterModule.setTargetTurretAngle(shooterModule.getCurrentTurretAngle());
-            robot.drivetrain.setBrakeHeading(desiredTurretHeading() - getTurretHeading());
-        } else {
-            shooterModule.setTargetTurretAngle(adjustedTurretTarget + angleOffset + manualAngleCorrection);
-        }
+
+        shooterModule.setTargetTurretAngle(adjustedTurretTarget + angleOffset + manualAngleCorrection);
 
         aimFlap();
 

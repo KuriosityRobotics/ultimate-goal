@@ -80,7 +80,7 @@ public class RingManager implements Module, TelemetryProvider {
         if (voltage > 1.25) {
             seeingRing = true;
         } else if (seeingRing) { // we saw a ring but now we don't
-            if (robot.intakeModule.intakeBottom.getPower() >= 0) {// outtaking or intaking ?
+            if (robot.intakeModule.intakeTop.getPower() > 0) {// outtaking or intaking ?
                 distanceSensorPasses += 1;
                 forwardDistanceSensorPasses += 1;
             } else {
