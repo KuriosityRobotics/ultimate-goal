@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
@@ -22,6 +23,13 @@ import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunction
 public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
+
+    public static double turretP = 20;
+    public static double turretI = 0;
+    public static double turretD = 0;
+    public static double turretF = 15;
+
+    public static double feedForwardVelocityTurret = 0.1;
 
     // States
     private double targetTurretAngle;
@@ -44,13 +52,9 @@ public class ShooterModule implements Module, TelemetryProvider {
     // Motors
     private DcMotorEx flyWheel1;
     private DcMotorEx flyWheel2;
-
-    // Encoders
-    private DcMotor turretEncoder;
+    private DcMotorEx turretMotor;
 
     // Servos
-    private CRServo turretLeft;
-    private CRServo turretRight;
     private Servo indexerServo;
     private Servo shooterFlap;
 
@@ -65,8 +69,8 @@ public class ShooterModule implements Module, TelemetryProvider {
     private static final double TURRET_MINIMUM_ANGLE = Math.toRadians(-215);
     private static final double TURRET_MAXIMUM_ANGLE = Math.toRadians(270);
 
-    private static final double TURRET_ENCODER_TO_ANGLE = 4842.60745;
-    private static final int FLYWHEEL_SPEED_THRESHOLD = 75;
+    private static final double TURRET_ENCODER_TO_ANGLE = 227.2959951557;
+    private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
 
     private static final double FLAP_STORE_POSITION = 0.0873856;
     private static final double FLAP_LOWER_LIMIT = 0.1766;
@@ -104,13 +108,12 @@ public class ShooterModule implements Module, TelemetryProvider {
     public void initModules() {
         initFlywheels();
 
-        turretEncoder = robot.getDcMotor("intakeBottom");
+        turretMotor = (DcMotorEx) robot.getDcMotor("turretMotor");
 
-        turretEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turretEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        turretLeft = robot.hardwareMap.crservo.get("leftTurret");
-        turretRight = robot.hardwareMap.crservo.get("rightTurret");
+        turretMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(turretP,turretI,turretD,turretF));
 
         indexerServo = robot.getServo("indexer");
 
@@ -153,12 +156,18 @@ public class ShooterModule implements Module, TelemetryProvider {
         indexerLogic(currentTime);
     }
 
-    private void calculateTurretPosition() {
-        this.currentTurretAngle = turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
+    long oldUpdateTime;
 
-        turretVelocity = currentTurretAngle - lastTurretPosition;
+    private void calculateTurretPosition() {
+        long currentUpdateTime = robot.getCurrentTimeMilli();
+
+        this.currentTurretAngle = turretMotor.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
+
+        turretVelocity = (currentTurretAngle - lastTurretPosition)/ (currentUpdateTime-oldUpdateTime) *1000;
 
         lastTurretPosition = currentTurretAngle;
+
+        oldUpdateTime = currentUpdateTime;
     }
 
     public static double P = 0.22;
@@ -171,57 +180,26 @@ public class ShooterModule implements Module, TelemetryProvider {
     public static double CLOSE_STOP_SCALE = 1.55;
 
     private void turnTurretToTarget() {
-        double error = targetTurretAngle - currentTurretAngle;
+        turretMotor.setTargetPosition((int)((targetTurretAngle * TURRET_ENCODER_TO_ANGLE) + turretVelocity * feedForwardVelocityTurret));
+        turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        turretController.P = P;
-        turretController.I = I;
-        turretController.D = D;
-
-        if (Math.abs(error) < Math.toRadians(0.5)) {
-            turretController.reset();
+        if(turretMotor.isBusy()){
+            turretMotor.setPower(1);
+        }else {
+            turretMotor.setPower(0);
         }
-
-        turretPower = turretController.calculatePID(error);
-
-        if (Math.abs(error) < Math.toRadians(CLOSE_THRESHOLD)) {
-            turretPower = error * CLOSE_SCALE;
-            if (Math.abs(turretVelocity) < 0.1) {
-                turretPower *= CLOSE_STOP_SCALE;
-            }
-        } else {
-            if (Math.abs(turretVelocity) < 0.1) {
-                turretPower *= STOP_SCALE;
-            }
-        }
-
-        if (Math.abs(error) > FULL_SPEED_THRESHOLD) {
-            turretPower = Math.signum(error);
-        }
-
-        turnTurret(turretPower);
     }
 
     private void turnTurret(double power) {
         if (power == 0) {
-            turretLeft.setPower(0);
-            turretRight.setPower(0);
+            turretMotor.setPower(0);
 
             return;
         }
 
         power = Range.clip(power, -1, 1);
 
-        if (power > 0) {
-            turretLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-            turretRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        } else {
-            turretLeft.setDirection(DcMotorSimple.Direction.FORWARD);
-            turretRight.setDirection(DcMotorSimple.Direction.FORWARD);
-        }
-
-        double truePower = Math.abs(power);
-        turretLeft.setPower(truePower);
-        turretRight.setPower(truePower);
+        turretMotor.setPower(power);
     }
 
     private void setFlywheelMotors() {
@@ -349,6 +327,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         data.add("--");
         data.add("manualTurret: " + manualTurret + " manualPower: " + manualPower);
         data.add("Target turret angle: " + Math.toDegrees(targetTurretAngle));
+        data.add("Target turret encoders: " + turretMotor.getTargetPosition());
         data.add("Current turret angle: " + Math.toDegrees(currentTurretAngle));
         data.add("Flap angle: " + shooterFlapPosition);
         return data;
