@@ -106,7 +106,7 @@ public class RingManager implements Module, TelemetryProvider {
             }
         }
 
-        if (ringsInShooter + ringsInHopper > 3) {
+        if (ringsInShooter + ringsInHopper >= 3) {
             deliverRings = false;
         }
 
