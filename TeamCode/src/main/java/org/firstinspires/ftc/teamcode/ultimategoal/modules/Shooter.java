@@ -169,7 +169,6 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         }
         turretWasClose = turretIsClose;
 
-
         shooterModule.setTargetTurretAngle(adjustedTurretTarget + angleOffset + manualAngleCorrection);
 
         aimFlap();
