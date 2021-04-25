@@ -46,9 +46,9 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     private static final LinearInterpolation HIGH_GOAL_DATA = new LinearInterpolation(
             new double[][]{
-                    {85.0 - TURRET_DISTANCE_FROM_BACK, 0.2383, Math.toRadians(7.312)},
-                    {90.0 - TURRET_DISTANCE_FROM_BACK, 0.24, Math.toRadians(9.2)},
-                    {95.0 - TURRET_DISTANCE_FROM_BACK, 0.241, Math.toRadians(9.19)},
+                    {85.0 - TURRET_DISTANCE_FROM_BACK, 0.2384, Math.toRadians(7.312)},
+                    {90.0 - TURRET_DISTANCE_FROM_BACK, 0.2401, Math.toRadians(9.2)},
+                    {95.0 - TURRET_DISTANCE_FROM_BACK, 0.2411, Math.toRadians(9.19)},
                     {100.0 - TURRET_DISTANCE_FROM_BACK, 0.24, Math.toRadians(9.2)},
                     {105.0 - TURRET_DISTANCE_FROM_BACK, 0.24, Math.toRadians(8.1)},
                     {110.0 - TURRET_DISTANCE_FROM_BACK, 0.2374, Math.toRadians(8.881)},
@@ -169,7 +169,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         }
         turretWasClose = turretIsClose;
 
-        if (currentUpdateTime > turretCloseTime + 250 && turretIsClose) {
+        if (currentUpdateTime > turretCloseTime + 1000 && turretIsClose) {
             shooterModule.setTargetTurretAngle(shooterModule.getCurrentTurretAngle());
             robot.drivetrain.setBrakeHeading(desiredTurretHeading() - getTurretHeading());
         } else {
@@ -222,7 +222,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
         boolean safeToIndex = hopperModule.msUntilHopperRaised() > ShooterModule.INDEXER_RETURNED_TIME_MS;
         boolean shooterReady = shooterModule.flywheelsUpToSpeed()
-                && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(0.45) : Math.abs(turretError) < Math.toRadians(2))
+                && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(0.45) : Math.abs(turretError) < Math.toRadians(3))
                 && Math.abs(shooterModule.getTurretVelocity()) < 0.001;
         boolean drivetrainReady = robot.drivetrain.getOdometryAngleVel() < Math.toRadians(0.1)
                 && Math.hypot(robot.drivetrain.getOdometryXVel(), robot.drivetrain.getOdometryYVel()) < 1;
@@ -250,6 +250,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private double[] getPowershotAimValues(double distanceToTarget) {
         double[] output = POWERSHOT_DATA.interpolate(distanceToTarget);
 
+        output[0] -= 0.0015;
         output[1] += 0.043;
 
         return output;
@@ -347,10 +348,6 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     public double getTurretVelocity() {
         return shooterModule.getTurretVelocity();
-    }
-
-    public HopperModule.HopperPosition targetHopperPosition() {
-        return hopperModule.targetHopperPosition;
     }
 
     public HopperModule.HopperPosition getCurrentHopperPosition() {

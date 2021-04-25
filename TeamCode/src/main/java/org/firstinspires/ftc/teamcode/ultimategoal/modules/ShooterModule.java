@@ -161,21 +161,16 @@ public class ShooterModule implements Module, TelemetryProvider {
         lastTurretPosition = currentTurretAngle;
     }
 
-    public static double P = 0.42;
+    public static double P = 0.22;
     public static double I = 0;
     public static double D = 0;
-    public static double FULL_SPEED_THRESHOLD = Math.toRadians(36);
-    public static double STOP_SCALE = 1.4;
-    public static double CLOSE_SCALE = 0.75;
-    public static double CLOSE_THRESHOLD = 10;
-    public static double CLOSE_STOP_SCALE = 1.05;
-    public static double MICRO_SCALE = 1.6;
-    public static double MICRO_STOP_SCALE = 1.60;
-    public static double MICRO_THRESHOLD = 4;
+    public static double FULL_SPEED_THRESHOLD = Math.toRadians(58);
+    public static double STOP_SCALE = 2;
+    public static double CLOSE_SCALE = 0.9;
+    public static double CLOSE_THRESHOLD = 9;
+    public static double CLOSE_STOP_SCALE = 1.55;
 
     private void turnTurretToTarget() {
-        this.currentTurretAngle = turretEncoder.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
-
         double error = targetTurretAngle - currentTurretAngle;
 
         turretController.P = P;
@@ -188,24 +183,16 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         turretPower = turretController.calculatePID(error);
 
-        turretVelocity = currentTurretAngle - lastTurretPosition;
-
-        if (Math.abs(error) < Math.toRadians(MICRO_THRESHOLD)) {
-            turretPower = error * MICRO_SCALE;
-            if (Math.abs(turretVelocity) < 0.01) {
-                turretPower *= MICRO_STOP_SCALE;
-            }
-        } else if (Math.abs(error) < Math.toRadians(CLOSE_THRESHOLD)) {
+        if (Math.abs(error) < Math.toRadians(CLOSE_THRESHOLD)) {
             turretPower = error * CLOSE_SCALE;
-            if (Math.abs(turretVelocity) < 0.01) {
+            if (Math.abs(turretVelocity) < 0.1) {
                 turretPower *= CLOSE_STOP_SCALE;
             }
         } else {
-            if (Math.abs(turretVelocity) < 0.01) {
+            if (Math.abs(turretVelocity) < 0.1) {
                 turretPower *= STOP_SCALE;
             }
         }
-        lastTurretPosition = currentTurretAngle;
 
         if (Math.abs(error) > FULL_SPEED_THRESHOLD) {
             turretPower = Math.signum(error);
@@ -360,7 +347,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         data.add("Flywheel1 speed: " + flyWheel1.getVelocity() + ", flywheel2 speed: " + flyWheel2.getVelocity());
         data.add("isUpToSpeed: " + flywheelsUpToSpeed());
         data.add("--");
-        data.add("manualTurret: " + manualTurret  + " manualPower: " + manualPower);
+        data.add("manualTurret: " + manualTurret + " manualPower: " + manualPower);
         data.add("Target turret angle: " + Math.toDegrees(targetTurretAngle));
         data.add("Current turret angle: " + Math.toDegrees(currentTurretAngle));
         data.add("Flap angle: " + shooterFlapPosition);
