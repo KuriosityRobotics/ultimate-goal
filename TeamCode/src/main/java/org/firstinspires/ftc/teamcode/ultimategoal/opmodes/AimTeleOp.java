@@ -84,10 +84,15 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             }
 
             if (doPowershotsAction) {
-                robot.drivetrain.setBrakePosition(POWERSHOT);
+                robot.shooter.flywheelOn = true;
 
-                if (robot.drivetrain.distanceToPoint(POWERSHOT) < 1) {
-                    doPowershotsAction = !bluePowershotsAction.executeAction(robot);
+                if(robot.drivetrain.distanceToPoint(POWERSHOT) > 5) {
+                    robot.drivetrain.setMovementsTowardsPoint(POWERSHOT, 1, 1, 0, true, 0);
+                } else{
+                    if (robot.drivetrain.distanceToPoint(POWERSHOT) < 1) {
+                        doPowershotsAction = !bluePowershotsAction.executeAction(robot);
+                    }
+                    robot.drivetrain.setBrakePosition(POWERSHOT);
                 }
             } else {
                 robot.shooter.lockTarget = true;
@@ -213,14 +218,8 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         xMovement = gamepad1.left_stick_x;
         turnMovement = gamepad1.right_stick_x;
 
-        if (gamepad1.dpad_left) {
-            robot.drivetrain.setPosition(0, robot.drivetrain.getCurrentPosition().y, 0);
-        }
-        if (gamepad1.dpad_down) {
-            robot.drivetrain.setPosition(robot.drivetrain.getCurrentPosition().x, 0, 0);
-        }
-        if (gamepad1.dpad_up) {
-            robot.drivetrain.setPosition(0, 0, 0);
+        if (gamepad1.dpad_down){
+            robot.drivetrain.setPosition(26.0,72.0,0.0);
         }
 
         robot.drivetrain.isSlowMode = gamepad1.right_bumper;

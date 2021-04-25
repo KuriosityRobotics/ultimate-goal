@@ -217,10 +217,13 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     }
 
     public boolean readyToIndex() {
+        turretError = angleWrap(absoluteHeadingToTarget(target) + angleOffset + manualAngleCorrection
+                - (robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle()));
+
         boolean safeToIndex = hopperModule.msUntilHopperRaised() > ShooterModule.INDEXER_RETURNED_TIME_MS;
         boolean shooterReady = shooterModule.flywheelsUpToSpeed()
                 && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(0.45) : Math.abs(turretError) < Math.toRadians(2))
-                && Math.abs(shooterModule.getTurretVelocity()) < 0.005;
+                && Math.abs(shooterModule.getTurretVelocity()) < 0.001;
         boolean drivetrainReady = robot.drivetrain.getOdometryAngleVel() < Math.toRadians(0.1)
                 && Math.hypot(robot.drivetrain.getOdometryXVel(), robot.drivetrain.getOdometryYVel()) < 1;
 
