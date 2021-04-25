@@ -76,17 +76,8 @@ public class IntakeModule implements Module, TelemetryProvider {
                 case "BLOCKING":
                     position = FUNNEL;
                     break;
-                case "FUNNEL":
-                    position = OPEN;
-                    break;
                 case "OPEN":
                     position = BLOCKING;
-                    break;
-                case "STREAMLINE":
-                    position = STREAMLINE;
-                    break;
-                case "INIT":
-                    position = INIT;
                     break;
             }
 

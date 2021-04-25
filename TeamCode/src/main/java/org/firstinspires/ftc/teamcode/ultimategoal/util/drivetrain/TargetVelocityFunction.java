@@ -1,13 +1,18 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain;
 
 public class TargetVelocityFunction {
-    final double slowRate, coastThreshold, coastVelocity, stopThreshold;
+    final double slowRate, coastThreshold, coastVelocity, stopThreshold, atBrakeScale;
 
-    public TargetVelocityFunction(double slowRate, double coastThreshold, double coastVelocity, double stopThreshold) {
+    public TargetVelocityFunction(double slowRate, double coastThreshold, double coastVelocity, double stopThreshold, double atBrakeScale) {
         this.slowRate = slowRate;
         this.coastThreshold = coastThreshold;
         this.coastVelocity = coastVelocity;
         this.stopThreshold = stopThreshold;
+        this.atBrakeScale = atBrakeScale;
+    }
+
+    public TargetVelocityFunction(double slowRate, double coastThreshold, double coastVelocity, double stopThreshold) {
+        this(slowRate, coastThreshold, coastVelocity, stopThreshold, 0.8);
     }
 
     public double desiredVelocity(double distanceToTarget) {
@@ -45,7 +50,7 @@ public class TargetVelocityFunction {
 //        if (trueDistance < stopThreshold) {
 //            targetTrueVelocity = 0;
 //        } else {
-            targetTrueVelocity = slowRate * trueDistance * 0.8;
+            targetTrueVelocity = slowRate * trueDistance * atBrakeScale;
 //        }
 
         return targetTrueVelocity * sign;
