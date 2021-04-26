@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -12,7 +11,6 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PIDController;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,7 +57,8 @@ public class ShooterModule implements Module, TelemetryProvider {
     private Servo shooterFlap;
 
     // Helpers
-    long indexTime;
+    private boolean lastIterationFinishedIndex;
+    private long indexTime;
 
     private double lastTurretPosition;
     private double turretVelocity;
@@ -84,14 +83,10 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     public enum IndexerPosition {RETRACTED, PUSHED}
 
-    PIDController turretController;
-
     public ShooterModule(Robot robot, boolean isOn) {
         robot.telemetryDump.registerProvider(this);
         this.robot = robot;
         this.isOn = isOn;
-
-        turretController = new PIDController(P, I, D, robot);
 
         targetTurretAngle = 0;
 
@@ -113,7 +108,7 @@ public class ShooterModule implements Module, TelemetryProvider {
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        turretMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(turretP,turretI,turretD,turretF));
+        turretMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(turretP, turretI, turretD, turretF));
 
         indexerServo = robot.getServo("indexer");
 
@@ -163,29 +158,20 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         this.currentTurretAngle = turretMotor.getCurrentPosition() / TURRET_ENCODER_TO_ANGLE;
 
-        turretVelocity = (currentTurretAngle - lastTurretPosition)/ (currentUpdateTime-oldUpdateTime) *1000;
+        turretVelocity = (currentTurretAngle - lastTurretPosition) / (currentUpdateTime - oldUpdateTime) * 1000;
 
         lastTurretPosition = currentTurretAngle;
 
         oldUpdateTime = currentUpdateTime;
     }
 
-    public static double P = 0.22;
-    public static double I = 0;
-    public static double D = 0;
-    public static double FULL_SPEED_THRESHOLD = Math.toRadians(58);
-    public static double STOP_SCALE = 2;
-    public static double CLOSE_SCALE = 0.9;
-    public static double CLOSE_THRESHOLD = 9;
-    public static double CLOSE_STOP_SCALE = 1.55;
-
     private void turnTurretToTarget() {
-        turretMotor.setTargetPosition((int)((targetTurretAngle * TURRET_ENCODER_TO_ANGLE) + turretVelocity * feedForwardVelocityTurret));
+        turretMotor.setTargetPosition((int) ((targetTurretAngle * TURRET_ENCODER_TO_ANGLE) + turretVelocity * feedForwardVelocityTurret));
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        if(turretMotor.isBusy()){
+        if (turretMotor.isBusy()) {
             turretMotor.setPower(1);
-        }else {
+        } else {
             turretMotor.setPower(0);
         }
     }
@@ -214,20 +200,27 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     private void indexerLogic(long currentTime) {
+        boolean finishedIndexing = currentTime >= indexTime + INDEXER_RETURNED_TIME_MS;
+
+        if (finishedIndexing && !lastIterationFinishedIndex) {
+            indexRing = false;
+        }
+
         if (currentTime < indexTime + INDEXER_PUSHED_TIME_MS) {
             indexerPosition = IndexerPosition.PUSHED;
         } else if (currentTime < indexTime + INDEXER_RETURNED_TIME_MS) {
             indexerPosition = IndexerPosition.RETRACTED;
         } else if (indexRing) {
-            indexerPosition = IndexerPosition.PUSHED;
-
-            indexRing = false;
             indexTime = currentTime;
+
+            indexerPosition = IndexerPosition.PUSHED;
         } else {
             indexerPosition = IndexerPosition.RETRACTED;
         }
 
         setIndexerPosition();
+
+        lastIterationFinishedIndex = finishedIndexing;
     }
 
     private void setIndexerPosition() {
@@ -326,10 +319,10 @@ public class ShooterModule implements Module, TelemetryProvider {
         data.add("isUpToSpeed: " + flywheelsUpToSpeed());
         data.add("--");
         data.add("manualTurret: " + manualTurret + " manualPower: " + manualPower);
-        data.add("Target turret angle: " + Math.toDegrees(targetTurretAngle));
-        data.add("Target turret encoders: " + turretMotor.getTargetPosition());
+        data.add("Target turret angle: " + Math.toDegrees(targetTurretAngle) + ", Target turret encoders: " + turretMotor.getTargetPosition());
         data.add("Current turret angle: " + Math.toDegrees(currentTurretAngle));
         data.add("Flap angle: " + shooterFlapPosition);
+        data.add("indexer returned: " + isIndexerReturned());
         return data;
     }
 

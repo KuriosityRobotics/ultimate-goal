@@ -95,8 +95,7 @@ public class RingManager implements Module, TelemetryProvider {
         boolean readyToAutoDeliver = autoRaise && ringsInHopper >= autoRaiseThreshold;
         boolean hopperReady = robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED;
         boolean shooterNotFull = ringsInShooter + ringsInHopper <= 3;
-        boolean shooterWillIndex = robot.shooter.readyToIndex() && !robot.shooter.isFinishedFiringQueue();
-        if (readyToAutoDeliver && hopperReady && shooterNotFull && !shooterWillIndex) {
+        if (readyToAutoDeliver && hopperReady && shooterNotFull) {
             if (!deliverRings) {
                 deliverRings = true;
                 deliverDelayStartTime = currentTime;
@@ -136,7 +135,7 @@ public class RingManager implements Module, TelemetryProvider {
             forwardDistanceSensorPasses = 0;
 
             if (autoShootRings) {
-                robot.shooter.clearIndexes();
+//                robot.shooter.clearIndexes();
                 robot.shooter.queueIndex(ringsInShooter);
             }
         }
@@ -225,6 +224,10 @@ public class RingManager implements Module, TelemetryProvider {
 
     public int getDistanceSensorPasses() {
         return distanceSensorPasses;
+    }
+
+    public void addDistanceSensorPasses(int num) {
+        distanceSensorPasses += num;
     }
 
     public int getForwardDistanceSensorPasses() {

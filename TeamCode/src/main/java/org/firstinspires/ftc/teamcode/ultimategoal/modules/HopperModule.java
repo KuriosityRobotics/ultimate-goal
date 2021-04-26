@@ -26,7 +26,7 @@ public class HopperModule implements Module, TelemetryProvider {
     private static final double LINKAGE_LOWERED_POSITION = 0.03;
     private static final double LINKAGE_RAISED_POSITION = 0.55;
 
-    private static final int RAISE_TIME_MS = 500; // from lowered to apex
+    private static final int RAISE_TIME_MS = 425; // from lowered to apex
     private static final int RAISE_TRANSITIONING_TIME_MS = RAISE_TIME_MS / 2; // from lowered to interfering with shooter
     private static final int LOWER_TIME_MS = 250; // from apex to lowered
     private static final int LOWER_CLEAR_SHOOTER_TIME_MS = (int) (LOWER_TIME_MS * 0.75); // from apex to no longer interfering with shooter
@@ -90,16 +90,16 @@ public class HopperModule implements Module, TelemetryProvider {
         }
     }
 
-    public long msUntilHopperRaised() {
+    public long msUntilHopperAtTurret() {
         long currentTime = robot.getCurrentTimeMilli();
 
         if (currentTime < deliveryStartTime + RAISE_TRANSITIONING_TIME_MS) {
             return (deliveryStartTime + RAISE_TRANSITIONING_TIME_MS) - currentTime;
         } else if (currentTime < deliveryStartTime + RAISE_TIME_MS + LOWER_CLEAR_SHOOTER_TIME_MS) {
-            return (deliveryStartTime + RAISE_TIME_MS + LOWER_CLEAR_SHOOTER_TIME_MS) - currentTime;
-        } else if (deliverRings) {
+            return 0;
+        } else if (deliverRings) { // done delivering and have to do it again
             return RAISE_TRANSITIONING_TIME_MS;
-        } else {
+        } else { // hopper done + not delivering
             return Long.MAX_VALUE;
         }
     }
@@ -117,6 +117,7 @@ public class HopperModule implements Module, TelemetryProvider {
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
         data.add("Hopper position: " + getCurrentHopperPosition());
+        data.add("MS until at turret: " + msUntilHopperAtTurret());
         return data;
     }
 
