@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
 
 import android.os.SystemClock;
-import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.HopperModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Toggle;
@@ -87,14 +87,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             if (doPowershotsAction) {
                 robot.shooter.flywheelOn = true;
 
-                if(robot.drivetrain.distanceToPoint(POWERSHOT) > 5) {
-                    robot.drivetrain.setMovementsTowardsPoint(POWERSHOT, 1, 1, 0, true, 0);
-                } else{
-                    if (robot.drivetrain.distanceToPoint(POWERSHOT) < 1) {
-                        doPowershotsAction = !bluePowershotsAction.executeAction(robot);
-                    }
-                    robot.drivetrain.setBrakePosition(POWERSHOT);
-                }
+                doPowershotsAction = !bluePowershotsAction.executeAction(robot);
             } else {
                 robot.shooter.lockTarget = true;
 
@@ -150,14 +143,21 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 //        }
     }
 
+    Toggle g2RT = new Toggle();
     private void updateRingDeliverySystemStates() {
         if (deliverRingsToggle.isToggled(gamepad2.a)) {
-            robot.shooter.deliverRings();
+            if (robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED) {
+                robot.shooter.deliverRings();
+            }
         }
 
         if (autoManagerToggle.isToggled(gamepad1.x)) {
             robot.ringManager.autoRaise = !robot.ringManager.autoRaise;
             robot.ringManager.autoShootRings = !robot.ringManager.autoShootRings;
+        }
+
+        if (g2RT.isToggled(gamepad2.right_trigger)) {
+            robot.ringManager.addDistanceSensorPasses(2);
         }
     }
 
@@ -219,8 +219,8 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         xMovement = gamepad1.left_stick_x;
         turnMovement = gamepad1.right_stick_x;
 
-        if (gamepad1.dpad_down){
-            robot.drivetrain.setPosition(26.0,72.0,0.0);
+        if (gamepad1.dpad_down) {
+            robot.drivetrain.setPosition(26.0, 72.0, 0.0);
         }
 
         robot.drivetrain.isSlowMode = gamepad1.right_bumper;

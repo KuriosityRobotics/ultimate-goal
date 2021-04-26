@@ -118,7 +118,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         }
 
         // hopper, only if indexer ready
-        if (queueDelivery && shooterModule.isFinishedIndexing()) {
+        if (queueDelivery && shooterModule.isIndexerReturned()) {
             hopperModule.deliverRings = true;
             queueDelivery = false;
         }
@@ -140,46 +140,24 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         if (shooterModule.isOn()) shooterModule.update();
     }
 
-    long oldUpdateTime = 0;
-    double oldTurretTarget = 0;
-
-    boolean turretWasClose = false;
-    long turretCloseTime = 0;
-
     private void aimTurret() {
-        long currentUpdateTime = robot.getCurrentTimeMilli();
-
         distanceToTarget = distanceToTarget(target);
 
-        angleOffset = target.isPowershot() ? getPowershotAimValues(distanceToTarget)[1] * 0.9: getHighGoalAimValues(distanceToTarget)[1];
+        angleOffset = target.isPowershot() ? getPowershotAimValues(distanceToTarget)[1]: getHighGoalAimValues(distanceToTarget)[1];
 
-        double absoluteTurretHeading = absoluteHeadingToTarget(target);
-
-        double turretTargetRaw = absoluteTurretHeading - robot.drivetrain.getCurrentHeading();
-        double turretTargetVel = 1000 * (turretTargetRaw - oldTurretTarget) / (currentUpdateTime - oldUpdateTime);
-
-        double adjustedTurretTarget = turretTargetRaw + 0.05 * turretTargetVel;
+        double turretTargetHeading = absoluteHeadingToTarget(target) - robot.drivetrain.getCurrentHeading();
 
         turretError = angleWrap(absoluteHeadingToTarget(target) + angleOffset + manualAngleCorrection
                 - (robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle()));
 
-        boolean turretIsClose = Math.abs(turretError) < Math.toRadians(5);
-        if (turretIsClose && !turretWasClose) {
-            turretCloseTime = currentUpdateTime;
-        }
-        turretWasClose = turretIsClose;
-
-        shooterModule.setTargetTurretAngle(adjustedTurretTarget + angleOffset + manualAngleCorrection);
+        shooterModule.setTargetTurretAngle(turretTargetHeading + angleOffset + manualAngleCorrection);
 
         aimFlap();
-
-        oldTurretTarget = turretTargetRaw;
-        oldUpdateTime = currentUpdateTime;
     }
 
     private void aimFlap() {
         distanceToTarget = distanceToTarget(target);
-        Log.v("shooter", "aimflap distance: " + distanceToTarget + "");
+
         shooterModule.shooterFlapPosition = target.isPowershot() ? getPowershotAimValues(distanceToTarget)[0] + manualAngleFlapCorrection
                 : getHighGoalAimValues(distanceToTarget)[0] + manualAngleFlapCorrection;
     }
@@ -197,12 +175,14 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
             turretError = angleWrap(absoluteHeadingToTarget(target) + angleOffset + manualAngleCorrection
                     - (robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle()));
 
-            if (readyToIndex() && !shooterModule.indexRing) {
+            boolean safeToIndex = hopperModule.msUntilHopperAtTurret() > ShooterModule.INDEXER_RETURNED_TIME_MS;
+
+            if (safeToIndex && readyToIndex() && !shooterModule.indexRing) {
                 shooterModule.indexRing = true;
                 queuedIndexes--;
 
                 lastIndexTime = currentTime;
-            } else if (forceIndex) {
+            } else if (safeToIndex && forceIndex) {
                 shooterModule.indexRing = true;
                 forceIndex = false;
                 robot.ringManager.addRingsInShooter(1);
@@ -215,16 +195,15 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         turretError = angleWrap(absoluteHeadingToTarget(target) + angleOffset + manualAngleCorrection
                 - (robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle()));
 
-        boolean safeToIndex = hopperModule.msUntilHopperRaised() > ShooterModule.INDEXER_RETURNED_TIME_MS;
         boolean shooterReady = shooterModule.flywheelsUpToSpeed()
-                && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(0.45) : Math.abs(turretError) < Math.toRadians(3))
+                && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(1) : Math.abs(turretError) < Math.toRadians(3))
                 && Math.abs(shooterModule.getTurretVelocity()) < 0.001;
-        boolean drivetrainReady = robot.drivetrain.getOdometryAngleVel() < Math.toRadians(0.1)
-                && Math.hypot(robot.drivetrain.getOdometryXVel(), robot.drivetrain.getOdometryYVel()) < 1;
+        boolean drivetrainReady = robot.drivetrain.getOdometryAngleVel() < Math.toRadians(3) // TODO tune these
+                && Math.hypot(robot.drivetrain.getOdometryXVel(), robot.drivetrain.getOdometryYVel()) < 4;
 
         Log.v("shooter", "turreterror: " + turretError);
 
-        return safeToIndex && shooterReady && drivetrainReady;
+        return shooterReady && drivetrainReady;
     }
 
     /**
@@ -245,8 +224,8 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private double[] getPowershotAimValues(double distanceToTarget) {
         double[] output = POWERSHOT_DATA.interpolate(distanceToTarget);
 
-        output[0] -= 0.0015;
-        output[1] += 0.043;
+//        output[0] -= 0.0015;
+//        output[1] += 0.043;
 
         return output;
     }
