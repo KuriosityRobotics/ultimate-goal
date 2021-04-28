@@ -38,7 +38,7 @@ public class RingManager implements Module, TelemetryProvider {
     private int forwardDistanceSensorPasses = 0;
     private boolean seenRingSinceStartDelivery = false;
 
-    private static final int HOPPER_DELIVERY_DELAY = 400;
+    private static final int HOPPER_DELIVERY_DELAY = 700;
 
     public RingManager(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -90,7 +90,7 @@ public class RingManager implements Module, TelemetryProvider {
             seeingRing = false;
         }
 
-        ringsInHopper = (int) Math.ceil(distanceSensorPasses / 2.0);
+        ringsInHopper = distanceSensorPasses;
 
         boolean readyToAutoDeliver = autoRaise && ringsInHopper >= autoRaiseThreshold;
         boolean hopperReady = robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED;
@@ -100,10 +100,10 @@ public class RingManager implements Module, TelemetryProvider {
                 deliverRings = true;
                 deliverDelayStartTime = currentTime;
             } else if (seeingRing) { // if we're going to deliver BUT WAIT! there's another ring!
-                if (distanceSensorPasses % 2 == 0) {
+                if (distanceSensorPasses > 0) {
                     deliverDelayStartTime = currentTime;
                 } else {
-                    deliverDelayStartTime = currentTime + 500;
+                    deliverDelayStartTime = currentTime + 750;
                 }
             }
         } else {
