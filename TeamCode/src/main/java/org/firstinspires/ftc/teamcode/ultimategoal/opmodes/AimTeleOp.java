@@ -153,7 +153,6 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
         if (autoManagerToggle.isToggled(gamepad1.x)) {
             robot.ringManager.autoRaise = !robot.ringManager.autoRaise;
-            robot.ringManager.autoShootRings = !robot.ringManager.autoShootRings;
         }
 
         if (g2RT.isToggled(gamepad2.right_trigger)) {
@@ -220,7 +219,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         turnMovement = gamepad1.right_stick_x;
 
         if (gamepad1.dpad_down) {
-            robot.drivetrain.setPosition(26.0, 72.0, 0.0);
+            robot.drivetrain.setPosition(BlueAuto.PARK);
         }
 
         robot.drivetrain.isSlowMode = gamepad1.right_bumper;
