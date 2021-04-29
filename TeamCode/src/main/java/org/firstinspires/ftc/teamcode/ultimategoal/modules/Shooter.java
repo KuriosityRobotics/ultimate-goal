@@ -61,15 +61,15 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     private static final LinearInterpolation POWERSHOT_DATA = new LinearInterpolation(
             new double[][]{
-                    {85.0 - TURRET_DISTANCE_FROM_BACK, 0.2295, Math.toRadians(5.0415)},
-                    {87.0 - TURRET_DISTANCE_FROM_BACK, 0.23065, Math.toRadians(7.0581)},
-                    {89.0 - TURRET_DISTANCE_FROM_BACK, 0.23065, Math.toRadians(8.82265)},
-                    {91.0 - TURRET_DISTANCE_FROM_BACK, 0.23065, Math.toRadians(6.806042)},
-                    {94.0 - TURRET_DISTANCE_FROM_BACK, 0.23075, Math.toRadians(8.3185)},
-                    {97.0 - TURRET_DISTANCE_FROM_BACK, 0.23045, Math.toRadians(9.07472)},
-                    {102.0 - TURRET_DISTANCE_FROM_BACK, 0.23015, Math.toRadians(9.830949285)},
-                    {105.0 - TURRET_DISTANCE_FROM_BACK, 0.2281, Math.toRadians(5.6082)},
-                    {110.0 - TURRET_DISTANCE_FROM_BACK, 0.2291, Math.toRadians(6.6967)}
+                    {85.0 - TURRET_DISTANCE_FROM_BACK, 0.23195, Math.toRadians(7.5623)},
+                    {87.0 - TURRET_DISTANCE_FROM_BACK, 0.23365, Math.toRadians(8.31850)},
+                    {89.0 - TURRET_DISTANCE_FROM_BACK, 0.23325, Math.toRadians(8.31850)},
+                    {92.0 - TURRET_DISTANCE_FROM_BACK, 0.23175, Math.toRadians(8.31850)},
+                    {94.0 - TURRET_DISTANCE_FROM_BACK, 0.23145, Math.toRadians(8.31850)},
+                    {96.0 - TURRET_DISTANCE_FROM_BACK, 0.23195, Math.toRadians(8.31850)},
+                    {98.0 - TURRET_DISTANCE_FROM_BACK, 0.23325, Math.toRadians(8.31850)},
+                    {100.0 - TURRET_DISTANCE_FROM_BACK, 0.23315, Math.toRadians(8.31850)},
+                    {120.0 - TURRET_DISTANCE_FROM_BACK, 0.23405, Math.toRadians(11.09133)}
             }
     );
 
@@ -199,10 +199,10 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
                 - (robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle()));
 
         boolean shooterReady = shooterModule.flywheelsUpToSpeed()
-                && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(1.5) : Math.abs(turretError) < Math.toRadians(3))
+                && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(1) : Math.abs(turretError) < Math.toRadians(3))
                 && Math.abs(shooterModule.getTurretVelocity()) < 0.001;
-        boolean drivetrainReady = robot.drivetrain.getOdometryAngleVel() < Math.toRadians(3) // TODO tune these
-                && robot.drivetrain.getOdometryVel() < 4;
+        boolean drivetrainReady = robot.drivetrain.getOdometryAngleVel() < Math.toRadians(2) // TODO tune these
+                && robot.drivetrain.getOdometryVel() < 1;
 
         Log.v("shooter", "turreterror: " + turretError);
 
@@ -219,7 +219,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         double[] output = HIGH_GOAL_DATA.interpolate(distanceToTarget);
 
         output[0] -= 0.001;
-        output[1] += 0.00;
+//        output[1] += 0.00;
 
         return output;
     }
@@ -227,8 +227,8 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private double[] getPowershotAimValues(double distanceToTarget) {
         double[] output = POWERSHOT_DATA.interpolate(distanceToTarget);
 
-//        output[0] -= 0.0015;
-//        output[1] += 0.043;
+        output[0] -= 0.001;
+        output[1] -= 0.0045;
 
         return output;
     }

@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.util.Log;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
@@ -21,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.distance;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.transformToCoordinateSystem;
 
 @Config
@@ -80,9 +77,24 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         this.robot = robot;
         this.isOn = isOn;
 
+        T265Module.safeRefreshPosition();
+
+        Pose2d realStartingPose;
+        if (isAuto) {
+            realStartingPose = startingPosition;
+        } else {
+            Pose2d lastPose = T265Module.getRobotPose();
+
+            if (lastPose == null) {
+                realStartingPose = startingPosition;
+            } else {
+                realStartingPose = lastPose;
+            }
+        }
+
         drivetrainModule = new DrivetrainModule(robot, isOn);
         odometryModule = new OdometryModule(robot, isOn, startingPosition);
-        t265Module = new T265Module(robot, true, startingPosition);
+        t265Module = new T265Module(robot, isOn, realStartingPose);
 
         brakePoint = new Point(startingPosition.getTranslation());
         brakeHeading = startingPosition.getHeading();
@@ -225,6 +237,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         brakePoint = new Point(x, y);
         brakeHeading = heading;
         resetBrake();
+    }
+
+    public void setPosition(Pose2d position) {
+        setPosition(position.getTranslation().getX(), position.getTranslation().getY(), position.getHeading());
     }
 
     public void setBrake(Point brakePoint, double brakeHeading) {
@@ -514,8 +530,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         return odometryModule.getXVel();
     }
 
-    public double getOdometryVel(){
-        return Math.hypot(getOdometryXVel(),getOdometryYVel());
+    public double getOdometryVel() {
+        return Math.hypot(getOdometryXVel(), getOdometryYVel());
     }
 
     public double getOdometryYVel() {
