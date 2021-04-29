@@ -22,8 +22,8 @@ public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
-    public static double turretP = 20;
-    public static double turretI = 0;
+    public static double turretP = 21;
+    public static double turretI = 2;
     public static double turretD = 0;
     public static double turretF = 15;
 

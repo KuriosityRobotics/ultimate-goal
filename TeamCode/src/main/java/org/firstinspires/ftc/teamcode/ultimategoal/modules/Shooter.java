@@ -38,7 +38,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     // Constants
     public final static int HIGHGOAL_FLYWHEEL_SPEED = 1750;
-    public final static int POWERSHOT_FLYWHEEL_SPEED = 1750; // todo
+    public final static int POWERSHOT_FLYWHEEL_SPEED = 1650; // todo
 
     private final static long RING_FIRE_TIME = 400;
 
@@ -61,10 +61,13 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     private static final LinearInterpolation POWERSHOT_DATA = new LinearInterpolation(
             new double[][]{
-                    {85.0 - TURRET_DISTANCE_FROM_BACK, 0.22995, Math.toRadians(5.928)},
-                    {90.0 - TURRET_DISTANCE_FROM_BACK, 0.22935, Math.toRadians(5.0639)},
-                    {95.0 - TURRET_DISTANCE_FROM_BACK, 0.2290, Math.toRadians(5.5609)},
-                    {100.0 - TURRET_DISTANCE_FROM_BACK, 0.2288, Math.toRadians(5.5609)},
+                    {85.0 - TURRET_DISTANCE_FROM_BACK, 0.2295, Math.toRadians(5.0415)},
+                    {87.0 - TURRET_DISTANCE_FROM_BACK, 0.23065, Math.toRadians(7.0581)},
+                    {89.0 - TURRET_DISTANCE_FROM_BACK, 0.23065, Math.toRadians(8.82265)},
+                    {91.0 - TURRET_DISTANCE_FROM_BACK, 0.23065, Math.toRadians(6.806042)},
+                    {94.0 - TURRET_DISTANCE_FROM_BACK, 0.23075, Math.toRadians(8.3185)},
+                    {97.0 - TURRET_DISTANCE_FROM_BACK, 0.23045, Math.toRadians(9.07472)},
+                    {102.0 - TURRET_DISTANCE_FROM_BACK, 0.23015, Math.toRadians(9.830949285)},
                     {105.0 - TURRET_DISTANCE_FROM_BACK, 0.2281, Math.toRadians(5.6082)},
                     {110.0 - TURRET_DISTANCE_FROM_BACK, 0.2291, Math.toRadians(6.6967)}
             }
@@ -196,10 +199,10 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
                 - (robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle()));
 
         boolean shooterReady = shooterModule.flywheelsUpToSpeed()
-                && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(1) : Math.abs(turretError) < Math.toRadians(3))
+                && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(1.5) : Math.abs(turretError) < Math.toRadians(3))
                 && Math.abs(shooterModule.getTurretVelocity()) < 0.001;
         boolean drivetrainReady = robot.drivetrain.getOdometryAngleVel() < Math.toRadians(3) // TODO tune these
-                && Math.hypot(robot.drivetrain.getOdometryXVel(), robot.drivetrain.getOdometryYVel()) < 4;
+                && robot.drivetrain.getOdometryVel() < 4;
 
         Log.v("shooter", "turreterror: " + turretError);
 
