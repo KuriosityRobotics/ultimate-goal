@@ -514,6 +514,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         return odometryModule.getXVel();
     }
 
+    public double getOdometryVel(){
+        return Math.hypot(getOdometryXVel(),getOdometryYVel());
+    }
+
     public double getOdometryYVel() {
         return odometryModule.getYVel();
     }

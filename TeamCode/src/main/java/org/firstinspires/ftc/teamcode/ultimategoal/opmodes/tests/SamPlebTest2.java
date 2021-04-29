@@ -50,10 +50,10 @@ public class SamPlebTest2 extends LinearOpMode {
     private Servo claw;
 
 
-    public static double pos = 0.2307999;
+    public static double pos = 0.22995;
     double pos2 = 0.72;
     boolean toggle = false;
-    public double flyWheelTargetSpeed = 1750;
+    public double flyWheelTargetSpeed = 1650;
 
     public double yMovement = 0;
     public double xMovement = 0;
@@ -115,14 +115,6 @@ public class SamPlebTest2 extends LinearOpMode {
         waitForStart();
 
         long startTime = 0;
-
-        turretMotor.setTargetPosition(200);
-        turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        while(turretMotor.isBusy()){
-            turretMotor.setPower(1);
-        }
-        turretMotor.setPower(0);
 
         while (opModeIsActive()) {
             intakeTop.setPower(gamepad2.left_stick_y);
@@ -199,7 +191,7 @@ public class SamPlebTest2 extends LinearOpMode {
 
             //pos2 +=gamepad2.left_stick_y*0.02;
 
-            if (SystemClock.elapsedRealtime()-startTime >= 160 && gamepad1.a) {
+            if (SystemClock.elapsedRealtime()-startTime >= 250 && gamepad1.a) {
                 toggle = !toggle;
                 if(toggle) {
                     pos2 = 0.72;
@@ -211,9 +203,6 @@ public class SamPlebTest2 extends LinearOpMode {
                 pos2 = 0.72;
             }
 
-
-
-
             indexer.setPosition(pos2);
 
             telemetry.addLine("left speed: " + leftFlyWheel.getVelocity());
@@ -221,6 +210,7 @@ public class SamPlebTest2 extends LinearOpMode {
             telemetry.addLine("servo angle: " + pos);
             telemetry.addLine("servo indexer: " + pos2);
             telemetry.addLine("set speed: " + flyWheelTargetSpeed);
+            telemetry.addLine("turret angle: " + Math.toDegrees(turretMotor.getCurrentPosition()/227.2959951557));
 
             telemetry.addLine("pos: " + pos);
             telemetry.update();
