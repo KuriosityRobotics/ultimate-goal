@@ -15,13 +15,18 @@ public class RingManager implements Module, TelemetryProvider {
     boolean isOn;
 
     // Sensors
-    AnalogInput intakeDistance;
+    AnalogInput intakeCounterDistance;
+    AnalogInput intakeEntranceDistance;
 
     // States
     public boolean autoRaise;
     public boolean autoShootRings;
     public int autoRaiseThreshold = 1;
     public boolean intakeFollowThrough;
+
+    // Constants
+    private static final int HOPPER_DELIVERY_DELAY = 750;
+    private static final int INTAKE_STOP_DELAY = 0; // delay before stopping intake after entrance sensor detects ring
 
     // Data
     private int ringsInHopper;
@@ -37,8 +42,6 @@ public class RingManager implements Module, TelemetryProvider {
     private int distanceSensorPasses = 0;
     private int forwardDistanceSensorPasses = 0;
     private boolean seenRingSinceStartDelivery = false;
-
-    private static final int HOPPER_DELIVERY_DELAY = 750;
 
     public RingManager(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -58,7 +61,8 @@ public class RingManager implements Module, TelemetryProvider {
     }
 
     public void initModules() {
-        intakeDistance = robot.hardwareMap.get(AnalogInput.class, "distance");
+        intakeCounterDistance = robot.hardwareMap.get(AnalogInput.class, "distance");
+        intakeEntranceDistance = robot.hardwareMap.get(AnalogInput.class, "intakeEntrance");
     }
 
     public void update() {
@@ -71,7 +75,7 @@ public class RingManager implements Module, TelemetryProvider {
 
     private void countPassingRings() {
         long currentTime = robot.getCurrentTimeMilli();
-        double voltage = intakeDistance.getVoltage();
+        double voltage = intakeCounterDistance.getVoltage();
         lastSensorReading = voltage;
 
         if (voltage > 1.55) {
@@ -105,12 +109,6 @@ public class RingManager implements Module, TelemetryProvider {
             }
         } else {
             deliverRings = false;
-        }
-
-        if (seeingRing && robot.shooter.getCurrentHopperPosition() != HopperModule.HopperPosition.LOWERED) {
-            seenRingSinceStartDelivery = true;
-        } else if (robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED) {
-            seenRingSinceStartDelivery = false;
         }
 
         if (deliverRings && currentTime >= deliverDelayStartTime + HOPPER_DELIVERY_DELAY) {
@@ -157,33 +155,31 @@ public class RingManager implements Module, TelemetryProvider {
         oldIndexerPosition = currentIndexerPosition;
     }
 
-    boolean fullRings;
-    long fullRingsTime = 0;
+    boolean entranceSeeingRing = false;
+    boolean seenRingSinceRaise = false;
+    long entranceRingTime = 0;
 
     private void stopIntakeLogic() {
-//        if (ringsInHopper + ringsInShooter >= 3) {
-//            long currentTime = robot.getCurrentTimeMilli();
-//
-//            if (!fullRings) {
-//                fullRingsTime = currentTime;
-//            }
-//
-//            fullRings = true;
-//
-//            if (currentTime > fullRingsTime + 1000) {
-//                robot.intakeModule.stopIntake = true;
-//                return;
-//            }
-//        } else {
-//            fullRings = false;
-//        }
+        long currentTime = robot.getCurrentTimeMilli();
+        double voltage = intakeEntranceDistance.getVoltage();
+
+        if (voltage > 1.55) {
+            entranceSeeingRing = true;
+        } else if (entranceSeeingRing) {
+            entranceRingTime = currentTime;
+            entranceSeeingRing = false;
+        }
 
         if (robot.shooter.getCurrentHopperPosition() != HopperModule.HopperPosition.LOWERED) {
-            robot.intakeModule.stopIntake = seenRingSinceStartDelivery;
-        } else if (deliverRings && intakeFollowThrough) { // waiting to raise the hopper
-//            robot.intakeModule.intakePower = 0.7;
+            seenRingSinceRaise = seenRingSinceRaise || entranceSeeingRing;
+            if (currentTime >= entranceRingTime + INTAKE_STOP_DELAY && seenRingSinceRaise) {
+                robot.intakeModule.stopIntake = true;
+            } else {
+                robot.intakeModule.stopIntake = false;
+            }
         } else {
             robot.intakeModule.stopIntake = false;
+            seenRingSinceRaise = false;
         }
     }
 
