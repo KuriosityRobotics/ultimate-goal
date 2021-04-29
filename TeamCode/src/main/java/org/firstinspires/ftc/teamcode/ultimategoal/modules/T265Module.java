@@ -23,27 +23,18 @@ public class T265Module implements Module, TelemetryProvider {
     public static T265Camera t265Camera;
 
     // Data
-    private Pose2d robotPose;
-
-    // Velocity of the robot, in/s and rad/s
     private double xVel;
     private double yVel;
-    private double angleVel;
+    private double angleVel; // rad/s
 
+    // Helpers
     private Pose2d oldWorldPose;
     private long oldUpdateTime;
 
-    private static Pose2d trueRobotPose = new Pose2d();
+    private static Pose2d trueRobotPose;
+    private static Pose2d resetOrigin;
 
     Pose2d startingPosition;
-
-    private long currentUpdateTime;
-
-    // Helpers
-    private Pose2d resetOrigin;
-
-    Translation2d translation;
-    Rotation2d rotation;
 
     // Constants
     private static final double INCHES_TO_METERS = 0.0254;
@@ -53,8 +44,8 @@ public class T265Module implements Module, TelemetryProvider {
         this.isOn = isOn;
         this.startingPosition = startingPosition;
 
-        this.resetOrigin = new Pose2d(0, 0, new Rotation2d(0));
-        this.robotPose = new Pose2d();
+        if (trueRobotPose == null) trueRobotPose = startingPosition;
+        if (resetOrigin == null) resetOrigin = new Pose2d();
 
         robot.telemetryDump.registerProvider(this);
     }
@@ -63,8 +54,8 @@ public class T265Module implements Module, TelemetryProvider {
     public void initModules() {
         // init cam
         if (t265Camera == null) {
-            t265Camera = new T265Camera(new Transform2d(new Translation2d(-0.0285496, 0.2097278), new Rotation2d(Math.toRadians(270))), 0.0056, robot.hardwareMap.appContext);
-            t265Camera.setPose(new Pose2d(0, 0, new Rotation2d(Math.toRadians(180))));
+            t265Camera = new T265Camera(new Transform2d(new Translation2d(-0.0285496, 0.2097278), new Rotation2d(Math.toRadians(270))), 0.0055, robot.hardwareMap.appContext);
+            t265Camera.setPose(new Pose2d(0, 0, new Rotation2d(Math.toRadians(90))));
         }
 
         try {
@@ -100,7 +91,7 @@ public class T265Module implements Module, TelemetryProvider {
     public void update() {
         sendOdometryData();
         calculateTruePosition();
-        calculateRobotPosition();
+        getRobotPose();
         calculateRobotVelocity();
     }
 
@@ -109,16 +100,22 @@ public class T265Module implements Module, TelemetryProvider {
 //        t265Camera.stop();
     }
 
-    public void calculateTruePosition() {
+    public static void calculateTruePosition() {
         T265Camera.CameraUpdate update = t265Camera.getLastReceivedCameraUpdate();
 
         if (update == null) return;
 
         // We divide by INCHES_TO_METERS to convert meters to inches
-        translation = new Translation2d(update.pose.getTranslation().getX() / INCHES_TO_METERS, update.pose.getTranslation().getY() / INCHES_TO_METERS);
-        rotation = update.pose.getRotation();
+        Translation2d translation = new Translation2d(update.pose.getTranslation().getX() / INCHES_TO_METERS, update.pose.getTranslation().getY() / INCHES_TO_METERS);
+        Rotation2d rotation = update.pose.getRotation();
 
         trueRobotPose = new Pose2d(-translation.getY(), translation.getX(), new Rotation2d(-1 * rotation.getRadians()));
+    }
+
+    public static void safeRefreshPosition() {
+        if (t265Camera != null) {
+            calculateTruePosition();
+        }
     }
 
     private void sendOdometryData() {
@@ -130,20 +127,16 @@ public class T265Module implements Module, TelemetryProvider {
         t265Camera.sendOdometry(transformedVelocity.getTranslation().getY() * INCHES_TO_METERS, -transformedVelocity.getTranslation().getX() * INCHES_TO_METERS);
     }
 
-    private void calculateRobotPosition() {
-        robotPose = MathFunctions.transformToCoordinateSystem(resetOrigin, trueRobotPose);
-    }
-
     private void calculateRobotVelocity() {
-        currentUpdateTime = robot.getCurrentTimeMilli();
+        long currentUpdateTime = robot.getCurrentTimeMilli();
 
         if (oldWorldPose != null) {
-            xVel = 1000 * (robotPose.getTranslation().getX() - oldWorldPose.getTranslation().getX()) / (currentUpdateTime - oldUpdateTime);
-            yVel = 1000 * (robotPose.getTranslation().getY() - oldWorldPose.getTranslation().getY()) / (currentUpdateTime - oldUpdateTime);
-            angleVel = 1000 * (robotPose.getHeading() - oldWorldPose.getHeading()) / (currentUpdateTime - oldUpdateTime);
+            xVel = 1000 * (trueRobotPose.getTranslation().getX() - oldWorldPose.getTranslation().getX()) / (currentUpdateTime - oldUpdateTime);
+            yVel = 1000 * (trueRobotPose.getTranslation().getY() - oldWorldPose.getTranslation().getY()) / (currentUpdateTime - oldUpdateTime);
+            angleVel = 1000 * (trueRobotPose.getHeading() - oldWorldPose.getHeading()) / (currentUpdateTime - oldUpdateTime);
         }
 
-        oldWorldPose = robotPose;
+        oldWorldPose = trueRobotPose;
         oldUpdateTime = currentUpdateTime;
     }
 
@@ -184,8 +177,16 @@ public class T265Module implements Module, TelemetryProvider {
         angleVel = 0;
     }
 
+    public static Pose2d getRobotPose() {
+        if (trueRobotPose == null || resetOrigin == null) {
+            return null;
+        } else {
+            return MathFunctions.transformToCoordinateSystem(resetOrigin, trueRobotPose);
+        }
+    }
+
     public double getWorldHeadingRad() {
-        return robotPose.getHeading();
+        return trueRobotPose.getRotation().getRadians() - resetOrigin.getRotation().getRadians();
     }
 
     public double getxVel() {
@@ -200,12 +201,10 @@ public class T265Module implements Module, TelemetryProvider {
         return angleVel;
     }
 
-    public Pose2d getRobotPose() {
-        return robotPose;
-    }
-
     @Override
     public ArrayList<String> getTelemetryData() {
+        Pose2d robotPose = getRobotPose();
+
         ArrayList<String> data = new ArrayList<>();
         data.add("trueWorldX: " + trueRobotPose.getTranslation().getX());
         data.add("trueWorldY: " + trueRobotPose.getTranslation().getY());

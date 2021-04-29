@@ -22,12 +22,12 @@ public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
-    public static double turretP = 21;
+    public static double turretP = 25;
     public static double turretI = 2;
-    public static double turretD = 0;
+    public static double turretD = 24;
     public static double turretF = 15;
 
-    public static double feedForwardVelocityTurret = 13;
+    public static double feedForwardVelocityTurret = 12;
 
     // States
     private double targetTurretAngle;
@@ -306,7 +306,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     public HashMap<String, Object> getDashboardData() {
         HashMap<String, Object> data = new HashMap<>();
         data.put("turretPos", Math.toDegrees(currentTurretAngle));
-        data.put("turretTargetPos", Math.toDegrees(angleWrap(targetTurretAngle)));
+        data.put("turretTargetPos", Math.toDegrees(targetTurretAngle));
         data.put("turret Power: ", turretPower);
         return data;
     }
