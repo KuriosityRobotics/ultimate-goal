@@ -112,7 +112,7 @@ public class Robot extends ModuleCollection {
         this.shooter = new Shooter(this, true);
 
         this.intakeModule = new IntakeModule(this, true, isAuto);
-        this.wobbleModule = new WobbleModule(this, true);
+        this.wobbleModule = new WobbleModule(this, false);
         this.ringManager = new RingManager(this, true);
 //        this.visionModule = new VisionModule(this, true);
 

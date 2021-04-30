@@ -249,6 +249,6 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     public String getName() {
-        return "ShooterAutoAim";
+        return "AimTeleOp";
     }
 }

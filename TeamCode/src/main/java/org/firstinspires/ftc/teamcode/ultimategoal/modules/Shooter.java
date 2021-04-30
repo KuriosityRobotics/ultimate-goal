@@ -227,7 +227,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
     private double[] getPowershotAimValues(double distanceToTarget) {
         double[] output = POWERSHOT_DATA.interpolate(distanceToTarget);
 
-        output[0] -= 0.001;
+        output[0] -= 0.00015;
         output[1] -= 0.0045;
 
         return output;

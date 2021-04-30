@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class T265Module implements Module, TelemetryProvider {
     private final Robot robot;
@@ -206,16 +207,14 @@ public class T265Module implements Module, TelemetryProvider {
         Pose2d robotPose = getRobotPose();
 
         ArrayList<String> data = new ArrayList<>();
-        data.add("trueWorldX: " + trueRobotPose.getTranslation().getX());
-        data.add("trueWorldY: " + trueRobotPose.getTranslation().getY());
+        data.add(String.format(Locale.ROOT, "trueWorldX: %.4f, trueWorldY: %.4f", trueRobotPose.getTranslation().getX(), trueRobotPose.getTranslation().getY()));
         data.add("trueWorldAngleDeg: " + Math.toDegrees(trueRobotPose.getHeading()));
         data.add("--");
         data.add("worldX: " + robotPose.getTranslation().getX());
         data.add("worldY: " + robotPose.getTranslation().getY());
         data.add("worldAngleDeg: " + Math.toDegrees(robotPose.getHeading()));
         data.add("--");
-        data.add("originX: " + resetOrigin.getTranslation().getX());
-        data.add("originY: " + resetOrigin.getTranslation().getY());
+        data.add(String.format(Locale.ROOT, "originX: %.4f, originY: %.4f", resetOrigin.getTranslation().getX(), resetOrigin.getTranslation().getY()));
         data.add("originAngleDeg: " + Math.toDegrees(resetOrigin.getHeading()));
         return data;
     }
