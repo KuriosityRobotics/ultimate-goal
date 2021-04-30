@@ -22,12 +22,17 @@ public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
-    public static double turretP = 25;
-    public static double turretI = 2;
-    public static double turretD = 24;
-    public static double turretF = 15;
+    public static double turretP = 12;
+    public static double turretI = 3;
+    public static double turretD = 12;
+    public static double turretF = 3;
 
-    public static double feedForwardVelocityTurret = 12;
+    public static double flywheelP = 45;
+    public static double flywheelI = 0;
+    public static double flywheelD = 0;
+    public static double flywheelF = 15.5;
+
+    public static double feedForwardVelocityTurret = 8;
 
     // States
     private double targetTurretAngle;
@@ -69,7 +74,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     private static final double TURRET_MAXIMUM_ANGLE = Math.toRadians(270);
 
     private static final double TURRET_ENCODER_TO_ANGLE = 227.2959951557;
-    private static final int FLYWHEEL_SPEED_THRESHOLD = 50;
+    private static final int FLYWHEEL_SPEED_THRESHOLD = 25;
 
     private static final double FLAP_STORE_POSITION = 0.0873856;
     private static final double FLAP_LOWER_LIMIT = 0.1766;
@@ -128,13 +133,18 @@ public class ShooterModule implements Module, TelemetryProvider {
         flyWheel1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flyWheel2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        flyWheel1.setVelocityPIDFCoefficients(9, 0.4, 0, 11.7);
-        flyWheel2.setVelocityPIDFCoefficients(9, 0.4, 0, 11.7);
+        flyWheel1.setVelocityPIDFCoefficients(flywheelP, flywheelI, flywheelD, flywheelF);
+        flyWheel2.setVelocityPIDFCoefficients(flywheelP, flywheelI, flywheelD, flywheelF);
     }
 
     @Override
     public void update() {
         long currentTime = robot.getCurrentTimeMilli();
+
+        flyWheel1.setVelocityPIDFCoefficients(flywheelP, flywheelI, flywheelD, flywheelF);
+        flyWheel2.setVelocityPIDFCoefficients(flywheelP, flywheelI, flywheelD, flywheelF);
+
+        turretMotor.setVelocityPIDFCoefficients(turretP, turretI, turretD, turretF);
 
         calculateTurretPosition();
 
@@ -308,6 +318,13 @@ public class ShooterModule implements Module, TelemetryProvider {
         data.put("turretPos", Math.toDegrees(currentTurretAngle));
         data.put("turretTargetPos", Math.toDegrees(targetTurretAngle));
         data.put("turret Power: ", turretPower);
+        data.put("flywheel 1 velocity: ", flyWheel1.getVelocity());
+        data.put("flywheel 2 velocity: ", flyWheel2.getVelocity());
+        data.put("flywheel target velocity : ", flyWheelTargetSpeed);
+        data.put("flywheel 1 PID coeff ", flyWheel1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER));
+        data.put("turret PID coeff ", turretMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER));
+
+
         return data;
     }
 

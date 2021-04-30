@@ -25,7 +25,6 @@ public class RingManager implements Module, TelemetryProvider {
     public boolean intakeFollowThrough;
 
     // Constants
-    private static final int HOPPER_DELIVERY_DELAY = 750;
     private static final int INTAKE_STOP_DELAY = 0; // delay before stopping intake after entrance sensor detects ring
 
     // Data
@@ -42,6 +41,9 @@ public class RingManager implements Module, TelemetryProvider {
     private int distanceSensorPasses = 0;
     private int forwardDistanceSensorPasses = 0;
     private boolean seenRingSinceStartDelivery = false;
+
+
+    private static final int HOPPER_DELIVERY_DELAY = 700;
 
     public RingManager(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -62,7 +64,7 @@ public class RingManager implements Module, TelemetryProvider {
 
     public void initModules() {
         intakeCounterDistance = robot.hardwareMap.get(AnalogInput.class, "distance");
-        intakeEntranceDistance = robot.hardwareMap.get(AnalogInput.class, "intakeEntrance");
+        intakeEntranceDistance = robot.hardwareMap.get(AnalogInput.class, "distanceCenter");
     }
 
     public void update() {
@@ -71,6 +73,9 @@ public class RingManager implements Module, TelemetryProvider {
         countPassingRings();
 
         stopIntakeLogic();
+
+        Log.v("ringmanager", "inshooter: " + ringsInShooter);
+        Log.v("ringmanager", "inhopper: " + ringsInHopper);
     }
 
     private void countPassingRings() {
@@ -78,7 +83,7 @@ public class RingManager implements Module, TelemetryProvider {
         double voltage = intakeCounterDistance.getVoltage();
         lastSensorReading = voltage;
 
-        if (voltage > 1.55) {
+        if (voltage > 1.25) {
             seeingRing = true;
         } else if (seeingRing) { // we saw a ring but now we don't
             if (robot.intakeModule.intakeTop.getPower() > 0) {// outtaking or intaking ?
@@ -111,8 +116,13 @@ public class RingManager implements Module, TelemetryProvider {
             deliverRings = false;
         }
 
+        if (seeingRing && robot.shooter.getCurrentHopperPosition() != HopperModule.HopperPosition.LOWERED) {
+            seenRingSinceStartDelivery = true;
+        }
+
         if (deliverRings && currentTime >= deliverDelayStartTime + HOPPER_DELIVERY_DELAY) {
             deliverRings = false;
+            seenRingSinceStartDelivery = false;
             robot.shooter.deliverRings();
             Log.v("ringmanager", "delivering rings");
         }
