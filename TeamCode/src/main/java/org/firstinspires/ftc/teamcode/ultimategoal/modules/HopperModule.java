@@ -23,7 +23,7 @@ public class HopperModule implements Module, TelemetryProvider {
     private long deliveryStartTime = 0;
 
     // Constants
-    private static final double LINKAGE_LOWERED_POSITION = 0.03;
+    private static final double LINKAGE_LOWERED_POSITION = 0.001112;
     private static final double LINKAGE_RAISED_POSITION = 0.55;
 
     private static final int RAISE_TIME_MS = 425; // from lowered to apex
@@ -60,22 +60,30 @@ public class HopperModule implements Module, TelemetryProvider {
         currentHopperPosition = calculateHopperPosition(this.deliveryStartTime, currentTime); // do the thing
 
         // Determine target hopper position
+        boolean runLinkage;
         boolean raiseHopper;
         if (currentHopperPosition == HopperPosition.LOWERED && this.deliverRings) {
+            runLinkage = true;
             raiseHopper = true;
 
             this.deliveryStartTime = currentTime;
             deliverRings = false;
         } else {
+            runLinkage = currentTime < this.deliveryStartTime + RAISE_TIME_MS + LOWER_TIME_MS;
             raiseHopper = currentTime < this.deliveryStartTime + RAISE_TIME_MS;
         }
 
         // Move hopper
-        if (raiseHopper) {
-            hopperLinkage.setPosition(LINKAGE_RAISED_POSITION);
+        if (runLinkage) {
+            if (raiseHopper) {
+                hopperLinkage.setPosition(LINKAGE_RAISED_POSITION);
+            } else {
+                hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
+            }
         } else {
-            hopperLinkage.setPosition(LINKAGE_LOWERED_POSITION);
+            hopperLinkage.setPosition(0);
         }
+
     }
 
     private HopperPosition calculateHopperPosition(long deliveryStartTime, long currentTime) {
@@ -116,6 +124,7 @@ public class HopperModule implements Module, TelemetryProvider {
     @Override
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
+        data.add("deliverRings: " + deliverRings);
         data.add("Hopper position: " + getCurrentHopperPosition());
         data.add("MS until at turret: " + msUntilHopperAtTurret());
         return data;
