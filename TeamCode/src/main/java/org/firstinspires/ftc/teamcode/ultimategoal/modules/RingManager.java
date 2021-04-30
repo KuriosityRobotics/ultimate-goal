@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.wrappers.AnalogDistance;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +17,8 @@ public class RingManager implements Module, TelemetryProvider {
 
     // Sensors
     AnalogInput intakeCounterDistance;
-    AnalogInput intakeEntranceDistance;
+    //    AnalogInput intakeEntranceDistance;
+    AnalogDistance intakeEntranceDistance;
 
     // States
     public boolean autoRaise;
@@ -26,7 +28,6 @@ public class RingManager implements Module, TelemetryProvider {
 
     // Constants
     private static final int HOPPER_DELIVERY_DELAY = 700;
-    private static final int INTAKE_STOP_DELAY = 0; // delay before stopping intake after entrance sensor detects ring
 
     // Data
     private int ringsInHopper;
@@ -61,7 +62,7 @@ public class RingManager implements Module, TelemetryProvider {
 
     public void initModules() {
         intakeCounterDistance = robot.hardwareMap.get(AnalogInput.class, "distance");
-        intakeEntranceDistance = robot.hardwareMap.get(AnalogInput.class, "distanceCenter");
+        intakeEntranceDistance = new AnalogDistance(robot.hardwareMap.get(AnalogInput.class, "distanceCenter"));
     }
 
     public void update() {
@@ -82,7 +83,7 @@ public class RingManager implements Module, TelemetryProvider {
         if (voltage > 1.55) {
             seeingRing = true;
         } else if (seeingRing) { // we saw a ring but now we don't
-            if (robot.intakeModule.intakeTop.getPower() > 0) {// outtaking or intaking ?
+            if (robot.intakeModule.intakeTop.getPower() >= 0) {// outtaking or intaking ?
                 distanceSensorPasses += 1;
                 forwardDistanceSensorPasses += 1;
             } else {
@@ -102,11 +103,7 @@ public class RingManager implements Module, TelemetryProvider {
                 deliverRings = true;
                 deliverDelayStartTime = currentTime;
             } else if (seeingRing) { // if we're going to deliver BUT WAIT! there's another ring!
-                if (distanceSensorPasses > 0) {
-                    deliverDelayStartTime = currentTime;
-                } else {
-                    deliverDelayStartTime = currentTime + 750;
-                }
+                deliverDelayStartTime = currentTime;
             }
         } else {
             deliverRings = false;
@@ -130,6 +127,7 @@ public class RingManager implements Module, TelemetryProvider {
             distanceSensorPasses = 0;
             ringsInHopper = 0;
             forwardDistanceSensorPasses = 0;
+//            seenRingSinceRaise = false;
 
             if (autoShootRings) {
 //                robot.shooter.clearIndexes();
@@ -158,30 +156,31 @@ public class RingManager implements Module, TelemetryProvider {
 
     boolean entranceSeeingRing = false;
     boolean seenRingSinceRaise = false;
-    long entranceRingTime = 0;
 
     private void stopIntakeLogic() {
-        long currentTime = robot.getCurrentTimeMilli();
-        double voltage = intakeEntranceDistance.getVoltage();
+        double distance = intakeEntranceDistance.getSensorReading();
 
-        if (voltage > 1.55) {
+        Log.v("ringmanager", "entrance sensor: " + distance);
+
+        if (distance < 80) {
             entranceSeeingRing = true;
-            entranceRingTime = currentTime;
         } else {
             entranceSeeingRing = false;
         }
 
-        if (robot.shooter.getCurrentHopperPosition() != HopperModule.HopperPosition.LOWERED || deliverRings || robot.shooter.deliveryQueued()) {
-            seenRingSinceRaise = seenRingSinceRaise || entranceSeeingRing;
-            if (currentTime <= entranceRingTime + INTAKE_STOP_DELAY) {
-                robot.intakeModule.stopIntake = seenRingSinceRaise;
-            } else {
-                robot.intakeModule.stopIntake = false;
-            }
-            Log.v("ringmanager", "seenringsinceraise: " + seenRingSinceRaise);
-        } else {
-            robot.intakeModule.stopIntake = false;
-            seenRingSinceRaise = false;
+//        if (robot.shooter.getCurrentHopperPosition() != HopperModule.HopperPosition.LOWERED || deliverRings || robot.shooter.deliveryQueued()) {
+//            seenRingSinceRaise = seenRingSinceRaise || (entranceSeeingRing && !seeingRing);
+//            robot.intakeModule.stopIntake = seenRingSinceRaise;
+//        } else {
+//            robot.intakeModule.stopIntake = false;
+//        }
+//
+//        if (robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED) {
+//            seenRingSinceRaise = false;
+//        }
+
+        if (entranceSeeingRing) {
+            robot.intakeModule.stopIntake = true;
         }
     }
 
@@ -194,7 +193,7 @@ public class RingManager implements Module, TelemetryProvider {
 
     public ArrayList<String> getTelemetryData() {
         ArrayList<String> data = new ArrayList<>();
-        data.add("Entrance Ring Voltage: " + intakeEntranceDistance.getVoltage());
+        data.add("counter voltage: " + lastSensorReading);
         data.add("Ring passes: " + distanceSensorPasses);
         data.add("deliverRings: " + deliverRings);
         data.add("Rings in hopper: " + ringsInHopper + ", Rings in shooter: " + ringsInShooter);

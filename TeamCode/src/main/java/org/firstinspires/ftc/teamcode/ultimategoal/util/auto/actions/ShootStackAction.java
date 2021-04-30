@@ -51,9 +51,9 @@ public class ShootStackAction extends Action {
         Log.v("shootstack", "expect: " + ringsToExpect);
         Log.v("shootstack", "distsensorpasses: " + robot.ringManager.getDistanceSensorPasses());
 
-        if (robot.ringManager.getForwardDistanceSensorPasses() >= 4 && ringsShotSoFar < 2) {
+        if (robot.ringManager.getForwardDistanceSensorPasses() >= 2 && ringsShotSoFar < 2) {
             robot.intakeModule.intakePower = -0.4;
-        } else if (ringsShotSoFar + (robot.ringManager.getDistanceSensorPasses() / 2.0) >= 4 || robot.ringManager.getDistanceSensorPasses() / 2 >= 2) {
+        } else if (ringsShotSoFar + robot.ringManager.getDistanceSensorPasses() >= 4 || robot.ringManager.getDistanceSensorPasses() >= 2) {
             robot.intakeModule.intakePower = 0;
         } else if (ringsShotSoFar >= 2) {
             robot.intakeModule.intakePower = 1;

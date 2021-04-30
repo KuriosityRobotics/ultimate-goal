@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.DelayAction
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.FlywheelAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.IntakeBlockerAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.RunIntakeAction;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ShootAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.ShootStackAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 import org.firstinspires.ftc.teamcode.ultimategoal.vision.Vision;
@@ -49,7 +50,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     final Point STACK = new Point(34 - 9, 47 - (16.5 / 2));
 
-    final Point SECOND_WOBBLE = new Point(36 - 18 - 4, 30.5 - 4 - 2);
+    final Point SECOND_WOBBLE = new Point(36 - 18 - 4, 30.5 - 4);
 
     final double SHOOT_RING_Y = 60;
     final double SHOOT_RING_X = 28;
@@ -75,6 +76,9 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         robot.shooter.manualTurretPower = 0;
         robot.shooter.manualTurret = true;
+
+//        robot.shooter.manualAngleCorrection = -0.02;
+//        robot.shooter.manualAngleFlapCorrection = 0.001;
 
         measuredZone = vision.runDetection();
         measuredZone = Vision.TargetGoal.C;
@@ -143,7 +147,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         }));
         PathFollow towardsStack = new PathFollow(new Waypoint[]{
                 new Waypoint(firstWobbleDropOff.x + 16, firstWobbleDropOff.y, towardsStackActions),
-                new Waypoint(STACK.x, STACK.y + 25)
+                new Waypoint(STACK.x + 6, STACK.y + 25)
         }, robot, "towards the stack");
 
         ArrayList<Action> secondWobbleStartActions = new ArrayList<>();
@@ -232,11 +236,12 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         sleep(750);
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.WOBBLE;
 
-        startToPowershot.followPath(0, 1, 1, false, Math.toRadians(0), false);
+        startToPowershot.followPath(0, 1, 1, false, Math.toRadians(0), true);
 
-        robot.drivetrain.setBrakePosition(new Point(robot.drivetrain.getCurrentPosition().x, robot.drivetrain.getCurrentPosition().y + 6));
+//        robot.drivetrain.setBrakePosition(new Point(robot.drivetrain.getCurrentPosition().x, robot.drivetrain.getCurrentPosition().y + 6));
 
-        BluePowershotsAction powershotsAction = new BluePowershotsAction();
+//        BluePowershotsAction powershotsAction = new BluePowershotsAction();
+        ShootAction powershotsAction = new ShootAction(BLUE_HIGH);
         while (!powershotsAction.executeAction(robot) && opModeIsActive()) {
 //            Log.v("blueauto", "poweraction");
         }
@@ -287,7 +292,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         robot.drivetrain.setBrakeHeading(0);
         while (Math.abs(angleWrap(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading())) > Math.toRadians(10) && opModeIsActive()) {
             // wait
-            Log.v("blueauto", "waitin");
+//            Log.v("blueauto", "waitin");
         }
 
         sleep(750);
