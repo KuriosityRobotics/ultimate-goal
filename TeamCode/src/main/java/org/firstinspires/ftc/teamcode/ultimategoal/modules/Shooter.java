@@ -199,7 +199,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
                 - (robot.drivetrain.getCurrentHeading() + shooterModule.getCurrentTurretAngle()));
 
         boolean shooterReady = shooterModule.flywheelsUpToSpeed()
-                && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(1) : Math.abs(turretError) < Math.toRadians(3))
+                && (target.isPowershot() ? Math.abs(turretError) < Math.toRadians(1.5) : Math.abs(turretError) < Math.toRadians(3))
                 && Math.abs(shooterModule.getTurretVelocity()) < 0.001;
         boolean drivetrainReady = robot.drivetrain.getOdometryAngleVel() < Math.toRadians(2) // TODO tune these
                 && robot.drivetrain.getOdometryVel() < 1;
