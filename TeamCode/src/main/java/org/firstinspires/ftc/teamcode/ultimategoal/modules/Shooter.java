@@ -331,6 +331,10 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         return hopperModule.getCurrentHopperPosition();
     }
 
+    public boolean deliveryQueued() {
+        return hopperModule.deliverRings || queueDelivery;
+    }
+
     public ShooterModule.IndexerPosition getIndexerPosition() {
         return shooterModule.getIndexerPosition();
     }
