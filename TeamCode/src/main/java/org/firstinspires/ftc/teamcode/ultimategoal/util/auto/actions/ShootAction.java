@@ -21,6 +21,7 @@ public class ShootAction extends Action {
         if (beginExecutionTime == 0) {
             robot.shooter.target = target;
 
+            robot.shooter.manualTurret = false;
             robot.shooter.lockTarget = true;
             robot.shooter.flywheelOn = true;
 

@@ -51,11 +51,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double TURN_SCALE = Math.toRadians(30);
 
     public static double TOWARDS_P = 0.0014;
-    public static double TOWARDS_D = 0.555;
+    public static double TOWARDS_D = 0.565;
     public static double NORMAL_P = 0.009;
     public static double NORMAL_D = 0.1;
-    public static double ANGULAR_P = 0.0975;
-    public static double ANGULAR_D = 5.9;
+    public static double ANGULAR_P = 0.097;
+    public static double ANGULAR_D = 5.95;
     // Braking Controllers
     private final BrakeController towardsBrakeController = new BrakeController(
             new VelocityPidController(TOWARDS_P, 0, TOWARDS_D),
@@ -94,7 +94,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         drivetrainModule = new DrivetrainModule(robot, isOn);
         odometryModule = new OdometryModule(robot, isOn, startingPosition);
-        t265Module = new T265Module(robot, isOn, realStartingPose);
+        t265Module = new T265Module(robot, !isAuto, realStartingPose);
 
         brakePoint = new Point(startingPosition.getTranslation());
         brakeHeading = startingPosition.getHeading();
@@ -263,7 +263,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
             brakePoint = new Point((0.95 * robotPosition.x) + (0.05 * brakePoint.x), (0.95 * robotPosition.y) + (0.05 * brakePoint.y));
         }
 
-        if (Math.abs(getCurrentHeading() - brakeHeading) > Math.toRadians(1)) {
+        if (Math.abs(getCurrentHeading() - brakeHeading) > Math.toRadians(0.9)) {
             brakeHeading = (brakeHeading + getCurrentHeading()) / 2;
         }
     }
@@ -292,7 +292,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         if (weakBrake) {
             xMovement *= 0.6;
             yMovement *= 0.95;
-            turnMovement *= 0.45;
+            turnMovement *= 0.4;
 
 //            xMovement = Math.abs(xMovement) < 0.02 ? 0 : xMovement;
 //            yMovement = Math.abs(yMovement) < 0.02 ? 0 : yMovement;

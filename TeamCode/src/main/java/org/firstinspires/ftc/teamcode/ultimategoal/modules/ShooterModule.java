@@ -22,7 +22,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     Robot robot;
     boolean isOn;
 
-    public static double turretP = 12;
+    public static double turretP = 15;
     public static double turretI = 3;
     public static double turretD = 12;
     public static double turretF = 3;
@@ -339,7 +339,6 @@ public class ShooterModule implements Module, TelemetryProvider {
         data.add("Target turret angle: " + Math.toDegrees(targetTurretAngle) + ", Target turret encoders: " + turretMotor.getTargetPosition());
         data.add("Current turret angle: " + Math.toDegrees(currentTurretAngle));
         data.add("Flap angle: " + shooterFlapPosition);
-        data.add("indexer returned: " + isIndexerReturned());
         return data;
     }
 

@@ -39,7 +39,7 @@ public class BluePowershotsAction extends Action implements TelemetryProvider {
             // actually begin action
             oldLockTarget = robot.shooter.lockTarget;
 //            robot.shooter.lockTarget = false;
-//            robot.shooter.manualTurret = true;
+            robot.shooter.manualTurret = false;
             robot.shooter.manualTurretPower = 0;
             robot.shooter.target = Target.Blue.BLUE_POWERSHOT1;
 
