@@ -37,6 +37,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     public boolean isSlowMode = false;
     public boolean zeroPowerBrake = true;
     public boolean weakBrake = false;
+    public boolean isAuto;
 
     // Brake states
     public boolean brake;
@@ -50,17 +51,17 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double SLOW_MODE_FACTOR = 0.35;
     private final static double TURN_SCALE = Math.toRadians(30);
 
-    public static double TOWARDS_P = 0.0014;
-    public static double TOWARDS_D = 0.565;
-    public static double NORMAL_P = 0.009;
-    public static double NORMAL_D = 0.1;
-    public static double ANGULAR_P = 0.097;
-    public static double ANGULAR_D = 5.95;
+    public static double TOWARDS_P = 0.0016;
+    public static double TOWARDS_D = 0.417;
+    public static double NORMAL_P = 0.007;
+    public static double NORMAL_D = 0.115;
+    public static double ANGULAR_P = 0.12;
+    public static double ANGULAR_D = 5.5;
     // Braking Controllers
     private final BrakeController towardsBrakeController = new BrakeController(
             new VelocityPidController(TOWARDS_P, 0, TOWARDS_D),
             new TargetVelocityFunction(1.99, 4, 10, 0.5),
-            0.0094, 28
+            0.0087, 28
     );
     private final BrakeController normalToBrakeController = new BrakeController(
             new VelocityPidController(NORMAL_P, 0, NORMAL_D),
@@ -69,7 +70,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     );
     private final BrakeController angularBrakeController = new BrakeController(
             new VelocityPidController(ANGULAR_P, 0, ANGULAR_D),
-            new TargetVelocityFunction(Math.toRadians(210), Math.toRadians(10), Math.toRadians(45), Math.toRadians(0.5), 1.4),
+            new TargetVelocityFunction(Math.toRadians(210), Math.toRadians(9), Math.toRadians(35), Math.toRadians(0.5), 1.1),
             0.2, Math.toRadians(110)
     );
 
@@ -94,7 +95,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
 
         drivetrainModule = new DrivetrainModule(robot, isOn);
         odometryModule = new OdometryModule(robot, isOn, startingPosition);
-        t265Module = new T265Module(robot, !isAuto, realStartingPose);
+        t265Module = new T265Module(robot, isOn, realStartingPose);
 
         brakePoint = new Point(startingPosition.getTranslation());
         brakeHeading = startingPosition.getHeading();
@@ -102,6 +103,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         modules = new Module[]{drivetrainModule, odometryModule, t265Module};
 
         robot.telemetryDump.registerProvider(this);
+
+        this.isAuto = isAuto;
 
         lastIterData = new HashMap<>();
 
@@ -485,7 +488,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
      */
     public Point getCurrentPosition() {
         Point currentPosition;
-        if (t265Module.isOn()) {
+        if (t265Module.isOn() && !isAuto) {
             Pose2d robotPose = t265Module.getRobotPose();
 
             Point t265Position = new Point(robotPose.getTranslation());

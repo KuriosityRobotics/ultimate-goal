@@ -27,7 +27,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     public static double turretD = 12;
     public static double turretF = 3;
 
-    public static double flywheelP = 45;
+    public static double flywheelP = 47.5;
     public static double flywheelI = 0;
     public static double flywheelD = 0;
     public static double flywheelF = 15.5;
@@ -74,7 +74,7 @@ public class ShooterModule implements Module, TelemetryProvider {
     private static final double TURRET_MAXIMUM_ANGLE = Math.toRadians(270);
 
     private static final double TURRET_ENCODER_TO_ANGLE = 227.2959951557;
-    private static final int FLYWHEEL_SPEED_THRESHOLD = 25;
+    private static final int FLYWHEEL_SPEED_THRESHOLD = 40;
 
     private static final double FLAP_STORE_POSITION = 0.0873856;
     private static final double FLAP_LOWER_LIMIT = 0.1766;

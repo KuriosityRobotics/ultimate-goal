@@ -38,26 +38,26 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     static final Pose2d STARTING = new Pose2d(48 - 9, 0, new Rotation2d(0));
 
-    public static final Point POWERSHOT = new Point(STARTING.getTranslation().getX() + 5, 20.5 * 2.5);
+    public static final Point POWERSHOT = new Point(STARTING.getTranslation().getX(), 20.5 * 2.5);
 
     Vision.TargetGoal measuredZone;
 
     final Point TARGET_A_DROPOFF_FIRST = new Point(23, 80 - 19);
     final Point TARGET_B_DROPOFF_FIRST = new Point(23.5 * 2 - 2, 88 - (16.5 / 2) + 6);
-    final Point TARGET_C_DROPOFF_FIRST = new Point(23 - 4, 112 - (16.5 / 2) + 9);
+    final Point TARGET_C_DROPOFF_FIRST = new Point(23 - 4, 112 - (16.5 / 2) + 4);
 
     Point firstWobbleDropOff;
 
-    final Point STACK = new Point(34 - 9, 47 - (16.5 / 2));
+    final Point STACK = new Point(34 - 7, 47 - (16.5 / 2));
 
-    final Point SECOND_WOBBLE = new Point(36 - 18 - 4, 30.5 - 4);
+    final Point SECOND_WOBBLE = new Point(36 - 18 - 0, 30.5 - 3);
 
     final double SHOOT_RING_Y = 60;
     final double SHOOT_RING_X = 28;
 
     final Point TARGET_A_DROPOFF_SECOND = new Point(18 - 12, 47 + 4);
     final Point TARGET_B_DROPOFF_SECOND = new Point(23 + 12 - 9, 94.25 - 18);
-    final Point TARGET_C_DROPOFF_SECOND = new Point(14 - 9, 117 - 20 + 5);
+    final Point TARGET_C_DROPOFF_SECOND = new Point(14 - 5, 117 - 20 + 1);
 
     Point secondWobbleDropoff;
 
@@ -77,8 +77,8 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         robot.shooter.manualTurretPower = 0;
         robot.shooter.manualTurret = true;
 
-//        robot.shooter.manualAngleCorrection = -0.02;
-//        robot.shooter.manualAngleFlapCorrection = 0.001;
+        robot.shooter.manualAngleCorrection = -0.005;
+        robot.shooter.manualAngleFlapCorrection = 0.0011;
 
         measuredZone = vision.runDetection();
         measuredZone = Vision.TargetGoal.C;
@@ -111,11 +111,22 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         ArrayList<Action> startActions = new ArrayList<>();
         startActions.add(new FlywheelAction(true));
+        Action offManualTurret = new Action() {
+            @Override
+            public boolean executeAction(Robot robot) {
+                robot.shooter.manualTurret = false;
+                return true;
+            }
 
+            @Override
+            public String getName() {
+                return "manual turret off";
+            }
+        };
         PathFollow startToPowershot = new PathFollow(new Waypoint[]{
-                new Waypoint(new Point(STARTING.getTranslation().getX(), STARTING.getTranslation().getY()), startActions),
-                new Waypoint(STACK.x + 15, STACK.y),
-                new Waypoint(POWERSHOT)
+                new Waypoint(new Point(STARTING.getTranslation()), startActions),
+                new Waypoint(STACK.x + 16, STACK.y, offManualTurret),
+                new Waypoint(POWERSHOT, new ShootAction(BLUE_HIGH, false))
         }, robot, "startinng to first wobble dropoff");
 
         ArrayList<Action> powershotToFirstWobbleStartActions = new ArrayList<>();
@@ -133,7 +144,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         ArrayList<Action> towardsStackActions = new ArrayList<>();
         towardsStackActions.add(new DelayAction(500, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.BLOCKING)));
-        towardsStackActions.add(new DelayAction(750, new Action() {
+        towardsStackActions.add(new DelayAction(900, new Action() {
             @Override
             public boolean executeAction(Robot robot) {
                 robot.shooter.manualTurret = false;
@@ -147,7 +158,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         }));
         PathFollow towardsStack = new PathFollow(new Waypoint[]{
                 new Waypoint(firstWobbleDropOff.x + 16, firstWobbleDropOff.y, towardsStackActions),
-                new Waypoint(STACK.x + 6, STACK.y + 25)
+                new Waypoint(STACK.x + 8, STACK.y + 21)
         }, robot, "towards the stack");
 
         ArrayList<Action> secondWobbleStartActions = new ArrayList<>();
@@ -233,40 +244,37 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 //                new Waypoint(new Point(PARK.getTranslation().getX(), PARK.getTranslation().getY()))
 //        }, robot, "Second wobble drop off to park");
 
-        sleep(750);
+        sleep(400);
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.WOBBLE;
 
-        startToPowershot.followPath(0, 1, 1, false, Math.toRadians(0), true);
-
-//        robot.drivetrain.setBrakePosition(new Point(robot.drivetrain.getCurrentPosition().x, robot.drivetrain.getCurrentPosition().y + 6));
+        startToPowershot.followPath(0, 0.8, 1, false, Math.toRadians(0), true);
 
 //        BluePowershotsAction powershotsAction = new BluePowershotsAction();
-        ShootAction powershotsAction = new ShootAction(BLUE_HIGH);
-        while (!powershotsAction.executeAction(robot) && opModeIsActive()) {
-//            Log.v("blueauto", "poweraction");
-        }
+//        ShootAction powershotsAction = new ShootAction(BLUE_HIGH);
+//        while (!powershotsAction.executeAction(robot) && opModeIsActive()) {
+////            Log.v("blueauto", "poweraction");
+//        }
 
-//        robot.shooter.manualTurret = true;
-        robot.shooter.target = BLUE_POWERSHOT1;
+        robot.shooter.manualTurret = true;
 
-        powershotToFirstWobble.followPath(0, 1, 1, true, Math.toRadians(-45));
+        powershotToFirstWobble.followPath(0, 1, 1, true, Math.toRadians(-30));
 //        sleep(500);
 
         long startTime = SystemClock.elapsedRealtime();
         long currentTime = startTime;
-        while (currentTime < startTime + 250 && opModeIsActive()) {
-            robot.drivetrain.setMovements(0.4, -0.6, -0.4);
+        while (currentTime < startTime + 350 && opModeIsActive()) {
+            robot.drivetrain.setMovements(0.4, -0.5, -0.4);
             currentTime = SystemClock.elapsedRealtime();
         }
 //        backFromFirstWobble.followPath(Math.toRadians(180), 1, 1, false, Math.toRadians(-45));
 
         robot.shooter.target = BLUE_HIGH;
+        robot.shooter.manualAngleFlapCorrection = 0.0014;
+        robot.shooter.manualAngleCorrection = -0.000;
 
-        towardsStack.followPath(0, 0.85, 1, false, Math.toRadians(180), false);
+        towardsStack.followPath(0, 0.85, 0.27, false, Math.toRadians(180), false);
 
-        robot.shooter.manualTurret = false;
-
-        ShootStackAction shootStackAction = new ShootStackAction(4, new Point(STACK.x - 6, STACK.y - 4), BLUE_HIGH);
+        ShootStackAction shootStackAction = new ShootStackAction(4, new Point(STACK.x - 3, STACK.y - 4), BLUE_HIGH);
         while (!shootStackAction.executeAction(robot) && opModeIsActive()) {
             // yeet
         }
@@ -284,25 +292,24 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         robot.intakeModule.intakePower = 0;
 
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.OPEN;
-        sleep(500);
+        sleep(100);
 
         stackToSecondWobble.followPath(0, 0.5, 1, false, Math.toRadians(200), true);
-        sleep(500);
+        sleep(100);
 
         robot.drivetrain.setBrakeHeading(0);
-        while (Math.abs(angleWrap(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading())) > Math.toRadians(10) && opModeIsActive()) {
+        while (Math.abs(angleWrap(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading())) > Math.toRadians(28) && opModeIsActive()) {
+            robot.drivetrain.setMovements(0, 0, -1);
             // wait
 //            Log.v("blueauto", "waitin");
         }
 
-        sleep(750);
-
         robot.shooter.flywheelOn = false;
         robot.shooter.lockTarget = false;
-        robot.shooter.setTurretTargetHeading(0);
+        robot.shooter.manualTurret = true;
 
         secondWobbleToSecondWobbleDropOff.followPath(0, 1, 1, true, 0);
-        sleep(500);
+//        sleep(150);
 
         secondDropOffToPark.followPath(0, 1, 1, true, 0);
 //        if (measuredZone == Vision.TargetGoal.C) {
