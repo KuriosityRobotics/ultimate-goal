@@ -41,7 +41,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     final Point TARGET_A_DROPOFF_FIRST = new Point(23, 80 - 19);
     final Point TARGET_B_DROPOFF_FIRST = new Point(23.5 * 2 - 2, 88 - (16.5 / 2) + 6);
-    final Point TARGET_C_DROPOFF_FIRST = new Point(23 - 4, 112 - (16.5 / 2) + 4);
+    final Point TARGET_C_DROPOFF_FIRST = new Point(23 - 4, 112 - (16.5 / 2) + 5);
 
     Point firstWobbleDropOff;
 
@@ -54,7 +54,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     final Point TARGET_A_DROPOFF_SECOND = new Point(18 - 12, 47 + 4);
     final Point TARGET_B_DROPOFF_SECOND = new Point(23 + 12 - 9, 94.25 - 18);
-    final Point TARGET_C_DROPOFF_SECOND = new Point(14 - 5, 117 - 20 + 1);
+    final Point TARGET_C_DROPOFF_SECOND = new Point(14 - 5, 117 - 20 + 4);
 
     Point secondWobbleDropoff;
 
@@ -296,7 +296,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         robot.drivetrain.setBrakeHeading(0);
         while (Math.abs(angleWrap(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading())) > Math.toRadians(28) && opModeIsActive()) {
-            robot.drivetrain.setMovements(0, 0, -0.9);
+//            robot.drivetrain.setMovements(0, 0, -0.9);
             // wait
 //            Log.v("blueauto", "waitin");
         }
