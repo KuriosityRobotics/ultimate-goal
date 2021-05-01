@@ -47,9 +47,10 @@ public class ShooterModule implements Module, TelemetryProvider {
     public boolean limitAngle = false;
     public double lowerAngleLimit = -Math.PI;
     public double upperAngleLimit = Math.PI;
+    private boolean isAuto;
 
     // Data
-    private double currentTurretAngle;
+    private static double currentTurretAngle;
     private IndexerPosition indexerPosition;
 
     // Motors
@@ -88,10 +89,11 @@ public class ShooterModule implements Module, TelemetryProvider {
 
     public enum IndexerPosition {RETRACTED, PUSHED}
 
-    public ShooterModule(Robot robot, boolean isOn) {
+    public ShooterModule(Robot robot, boolean isOn, boolean isAuto) {
         robot.telemetryDump.registerProvider(this);
         this.robot = robot;
         this.isOn = isOn;
+        this.isAuto = isAuto;
 
         targetTurretAngle = 0;
 
@@ -101,7 +103,9 @@ public class ShooterModule implements Module, TelemetryProvider {
         indexerPosition = IndexerPosition.RETRACTED;
         indexTime = 0;
 
-        currentTurretAngle = 0;
+        if (isAuto) {
+            currentTurretAngle = 0;
+        }
     }
 
     @Override
@@ -110,7 +114,10 @@ public class ShooterModule implements Module, TelemetryProvider {
 
         turretMotor = (DcMotorEx) robot.getDcMotor("turretMotor");
 
-        turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (isAuto) {
+            turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+
         turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         turretMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(turretP, turretI, turretD, turretF));
@@ -245,9 +252,6 @@ public class ShooterModule implements Module, TelemetryProvider {
     }
 
     public boolean flywheelsUpToSpeed() {
-//        Log.v("shootermod", ""+flyWheel1.getVelocity());
-//        Log.v("shootermod", ""+flyWheel2.getVelocity());
-
         return (flyWheel1.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD
                 || flyWheel2.getVelocity() > flyWheelTargetSpeed - FLYWHEEL_SPEED_THRESHOLD)
                 && flyWheelTargetSpeed > 0;

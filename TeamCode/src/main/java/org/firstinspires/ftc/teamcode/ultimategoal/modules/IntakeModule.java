@@ -73,9 +73,9 @@ public class IntakeModule implements Module, TelemetryProvider {
             switch (name()) {
                 default:
                 case "BLOCKING":
-                    position = FUNNEL;
+                    position = OPEN;
                     break;
-                case "FUNNEL":
+                case "OPEN":
                     position = BLOCKING;
                     break;
             }
