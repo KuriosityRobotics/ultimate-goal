@@ -24,13 +24,15 @@ public class ShootStackAction extends Action {
         this.stopMovementForExecution = true;
     }
 
+    int itr = 0;
+
     @Override
     public boolean executeAction(Robot robot) {
+        itr++;
         if (beginExecutionTime == 0) {
             robot.ringManager.autoRaise = true;
             robot.ringManager.autoShootRings = true;
             robot.ringManager.autoRaiseThreshold = 2;
-            robot.ringManager.intakeFollowThrough = false;
 
             robot.shooter.target = this.target;
             robot.shooter.flywheelOn = true;
@@ -43,22 +45,30 @@ public class ShootStackAction extends Action {
 
         int ringsShotSoFar = robot.ringManager.getTotalRingsShot() - startingRingsShot;
 
-        if (ringsShotSoFar >= 2) {
-            robot.ringManager.intakeFollowThrough = true;
-        }
+//        Log.v("shootstack", "ringsshosofar: " + ringsShotSoFar);
+//        Log.v("shootstack", "expect: " + ringsToExpect);
+//        Log.v("shootstack", "distsensorpasses: " + robot.ringManager.getDistanceSensorPasses());
 
-        Log.v("shootstack", "ringsshosofar: " + ringsShotSoFar);
-        Log.v("shootstack", "expect: " + ringsToExpect);
-        Log.v("shootstack", "distsensorpasses: " + robot.ringManager.getDistanceSensorPasses());
-
-        if (robot.ringManager.getForwardDistanceSensorPasses() >= 2 && ringsShotSoFar < 2) {
+        String message;
+        if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 1 && robot.ringManager.getEntraceSensorReading() < 60) {
+            robot.intakeModule.intakePower = 0.8;
+            message = "slowing down!";
+        } else if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 2) {
             robot.intakeModule.intakePower = -0.4;
+            message = "got two!";
         } else if (ringsShotSoFar + robot.ringManager.getDistanceSensorPasses() >= 4 || robot.ringManager.getDistanceSensorPasses() >= 2) {
             robot.intakeModule.intakePower = 0;
+            message = "got 4! or we have 2 idk";
         } else if (ringsShotSoFar >= 2) {
             robot.intakeModule.intakePower = 1;
+            message = "go ham";
         } else {
-            robot.intakeModule.intakePower = 0.9;
+            robot.intakeModule.intakePower = 0.85;
+            message = "normal ops";
+        }
+
+        if (itr % 40 == 0) {
+            Log.v("shootstack", message);
         }
 
 //        if (robot.shooter.getTurretVelocity() < 0.01 )
@@ -70,9 +80,9 @@ public class ShootStackAction extends Action {
                 robot.drivetrain.setBrakePosition(end);
             } else {
                 if (ringsShotSoFar >= 2) {
-                    robot.drivetrain.setMovementsTowardsPoint(end, 0.25, 0.9, 0, false, 0);
+                    robot.drivetrain.setMovementsTowardsPoint(end, 0.35, 0.5, 0, false, 0);
                 } else {
-                    robot.drivetrain.setMovementsTowardsPoint(end, 0.145, 0.9, 0, false, 0);
+                    robot.drivetrain.setMovementsTowardsPoint(end, 0.22, 0.3, 0, false, 0);
                 }
             }
         }
@@ -80,7 +90,6 @@ public class ShootStackAction extends Action {
         boolean done = (ringsShotSoFar >= ringsToExpect) || (robot.getCurrentTimeMilli() > beginExecutionTime + 9500);
 
         if (done) {
-            robot.ringManager.intakeFollowThrough = true;
             robot.intakeModule.intakePower = 0;
             robot.ringManager.autoRaiseThreshold = 1;
             robot.ringManager.resetRingCounters();

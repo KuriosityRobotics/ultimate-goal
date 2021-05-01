@@ -7,7 +7,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDumpProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
 
-import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -113,7 +112,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
                     double pathDistanceLeft = 0;
                     for (int i = pathIndex; i < path.length - 2; i++) {
                         Point start = path[i];
-                        Point end = path[i+1];
+                        Point end = path[i + 1];
 
                         pathDistanceLeft += Math.hypot(start.x - end.x, start.y - end.y);
                     }
@@ -201,11 +200,15 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
 
                 ArrayList<Point> intersections = lineSegmentCircleIntersection(center, FOLLOW_RADIUS, start, end);
 
-                for (Point thisIntersection : intersections) {
-                    double thisDistanceToSegmentStart = Math.hypot(thisIntersection.x - pathSegmentStartPoint.x, thisIntersection.y - pathSegmentStartPoint.y);
+                if (intersections.size() == 0) {
+                    followPoint = end;
+                } else {
+                    for (Point thisIntersection : intersections) {
+                        double thisDistanceToSegmentStart = Math.hypot(thisIntersection.x - pathSegmentStartPoint.x, thisIntersection.y - pathSegmentStartPoint.y);
 
-                    if (thisDistanceToSegmentStart > distToSegmentStart) { // If this intersection is furthest along the segment of the path
-                        followPoint = thisIntersection; // Use this point
+                        if (thisDistanceToSegmentStart > distToSegmentStart) { // If this intersection is furthest along the segment of the path
+                            followPoint = thisIntersection; // Use this point
+                        }
                     }
                 }
             }
