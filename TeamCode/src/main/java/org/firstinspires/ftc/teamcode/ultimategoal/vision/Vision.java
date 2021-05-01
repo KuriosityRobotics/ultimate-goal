@@ -107,7 +107,7 @@ public class Vision {
             final long startTime = SystemClock.elapsedRealtime();
 
             final ExecutorService executorService = ThreadPool.getDefault();
-
+// && SystemClock.elapsedRealtime() - startTime <= 100
             while (linearOpMode.opModeIsActive() && SystemClock.elapsedRealtime() - startTime <= 100) {
                 final ConditionVariable resultAvaliable = new ConditionVariable(false);
 
@@ -117,13 +117,13 @@ public class Vision {
                         Bitmap bitmap = vuforia.convertFrameToBitmap(frame);
 
                         if (bitmap != null) {
-                            double percentageOrange = calcOrangeValue(bitmap, 120, 310, 85, 60);
+                            double percentageOrange = calcOrangeValue(bitmap, 152, 344, 85, 60);
 
 
                             Log.d("Vision", Double.toString(percentageOrange));
-                            if (percentageOrange > 1300) {
+                            if (percentageOrange > 1500) {
                                 resultTargetGoal[0] = TargetGoal.C;
-                            } else if (percentageOrange < 1300 && percentageOrange > -50) {
+                            } else if (percentageOrange < 1300 && percentageOrange > 500) {
                                 resultTargetGoal[0] = TargetGoal.B;
                             } else {
                                 resultTargetGoal[0] = TargetGoal.A;
@@ -131,7 +131,7 @@ public class Vision {
 
                             //                            updateBitmapWithBoundingBoxes(bitmap,105, 287, 128, 100);
                             if (linearOpMode.gamepad1.a) {
-                                updateBitmapWithBoundingBoxes(bitmap, 135, 315, 75, 60);
+                                updateBitmapWithBoundingBoxes(bitmap, 152, 344, 85, 60);
 
                                 captureFrameToFile(bitmap);
                             }
