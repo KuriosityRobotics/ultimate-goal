@@ -54,7 +54,7 @@ public class ShootStackAction extends Action {
             robot.intakeModule.intakePower = 0.8;
             message = "slowing down!";
         } else if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 2) {
-            robot.intakeModule.intakePower = -0.4;
+            robot.intakeModule.intakePower = -0.15;
             message = "got two!";
         } else if (ringsShotSoFar + robot.ringManager.getDistanceSensorPasses() >= 4 || robot.ringManager.getDistanceSensorPasses() >= 2) {
             robot.intakeModule.intakePower = 0;
@@ -82,7 +82,7 @@ public class ShootStackAction extends Action {
                 if (ringsShotSoFar >= 2) {
                     robot.drivetrain.setMovementsTowardsPoint(end, 0.35, 0.5, 0, false, 0);
                 } else {
-                    robot.drivetrain.setMovementsTowardsPoint(end, 0.22, 0.3, 0, false, 0);
+                    robot.drivetrain.setMovementsTowardsPoint(end, 0.20, 0.3, 0, false, 0);
                 }
             }
         }

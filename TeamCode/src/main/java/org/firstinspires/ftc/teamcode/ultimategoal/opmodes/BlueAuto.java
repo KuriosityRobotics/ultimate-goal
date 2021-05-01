@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.opmodes;
 
 import android.os.SystemClock;
-import android.util.Log;
 
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
@@ -15,7 +14,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
-import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.BluePowershotsAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.DelayAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.FlywheelAction;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions.IntakeBlockerAction;
@@ -28,7 +26,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.vision.Vision;
 import java.util.ArrayList;
 
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_HIGH;
-import static org.firstinspires.ftc.teamcode.ultimategoal.util.Target.Blue.BLUE_POWERSHOT1;
 import static org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions.angleWrap;
 
 @Autonomous
@@ -77,7 +74,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         robot.shooter.manualTurretPower = 0;
         robot.shooter.manualTurret = true;
 
-        robot.shooter.manualAngleCorrection = -0.005;
+        robot.shooter.manualAngleCorrection = -0.015;
         robot.shooter.manualAngleFlapCorrection = 0.0011;
 
         measuredZone = vision.runDetection();
@@ -137,7 +134,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
                 new Waypoint(firstWobbleDropOff, new IntakeBlockerAction(IntakeModule.IntakeBlockerPosition.STREAMLINE))
         }, robot, "first wobble dropoff to powershot");
 
-        PathFollow backFromFirstWobble = new PathFollow(new Waypoint[] {
+        PathFollow backFromFirstWobble = new PathFollow(new Waypoint[]{
                 new Waypoint(firstWobbleDropOff),
                 new Waypoint(firstWobbleDropOff.x + 16, firstWobbleDropOff.y)
         }, robot, "back away from first wobble");
@@ -257,13 +254,13 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         robot.shooter.manualTurret = true;
 
-        powershotToFirstWobble.followPath(0, 1, 1, true, Math.toRadians(-30));
+        powershotToFirstWobble.followPath(0, 1, 1, true, Math.toRadians(-45));
 //        sleep(500);
 
         long startTime = SystemClock.elapsedRealtime();
         long currentTime = startTime;
-        while (currentTime < startTime + 350 && opModeIsActive()) {
-            robot.drivetrain.setMovements(0.4, -0.5, -0.4);
+        while (currentTime < startTime + 400 && opModeIsActive()) {
+            robot.drivetrain.setMovements(0.4, -0.6, -0.4);
             currentTime = SystemClock.elapsedRealtime();
         }
 //        backFromFirstWobble.followPath(Math.toRadians(180), 1, 1, false, Math.toRadians(-45));
@@ -299,7 +296,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
         robot.drivetrain.setBrakeHeading(0);
         while (Math.abs(angleWrap(robot.drivetrain.getCurrentHeading() - robot.drivetrain.getBrakeHeading())) > Math.toRadians(28) && opModeIsActive()) {
-            robot.drivetrain.setMovements(0, 0, -1);
+            robot.drivetrain.setMovements(0, 0, -0.9);
             // wait
 //            Log.v("blueauto", "waitin");
         }
