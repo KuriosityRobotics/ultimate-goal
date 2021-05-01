@@ -66,6 +66,8 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.BLOCKING;
 
         while (opModeIsActive()) {
+            robot.drivetrain.brake = false; // sam wants no brake
+
             if (powershotsToggle.isToggled(gamepad1.b)) {
                 doPowershotsAction = !doPowershotsAction;
 
@@ -219,7 +221,11 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         turnMovement = gamepad1.right_stick_x;
 
         if (gamepad1.dpad_down) {
-            robot.drivetrain.setPosition(BlueAuto.PARK);
+            robot.drivetrain.setPosition(37.5, 48, 0);
+        }
+
+        if (gamepad1.dpad_up) {
+            robot.drivetrain.setPosition(50.5, 50.25, 0);
         }
 
         robot.drivetrain.isSlowMode = gamepad1.right_bumper;
