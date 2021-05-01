@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.ultimategoal.util.auto.actions;
 import android.util.Log;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.HopperModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.Target;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Action;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Point;
@@ -31,8 +32,6 @@ public class ShootStackAction extends Action {
     public boolean executeAction(Robot robot) {
         itr++;
 
-        boolean lastDitch = robot.getCurrentTimeMilli() > beginExecutionTime + 8500;
-
         if (beginExecutionTime == 0) {
             robot.ringManager.autoRaise = true;
             robot.ringManager.autoShootRings = true;
@@ -47,6 +46,8 @@ public class ShootStackAction extends Action {
             beginExecutionTime = robot.getCurrentTimeMilli();
         }
 
+        boolean lastDitch = robot.getCurrentTimeMilli() > beginExecutionTime + 8500;
+
         int ringsShotSoFar = robot.ringManager.getTotalRingsShot() - startingRingsShot;
 
 //        Log.v("shootstack", "ringsshosofar: " + ringsShotSoFar);
@@ -54,14 +55,11 @@ public class ShootStackAction extends Action {
 //        Log.v("shootstack", "distsensorpasses: " + robot.ringManager.getDistanceSensorPasses());
 
         String message;
-        if (lastDitch) {
-            robot.intakeModule.intakePower = 1;
-            message = "last ditch";
-        } else if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 1 && robot.ringManager.getEntraceSensorReading() < 60) {
-            robot.intakeModule.intakePower = 0.8;
+        if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 1 && robot.ringManager.getEntraceSensorReading() < 60) {
+            robot.intakeModule.intakePower = 0.75;
             message = "slowing down!";
         } else if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 2) {
-            robot.intakeModule.intakePower = -0.15;
+            robot.intakeModule.intakePower = -0.2;
             message = "got two!";
         } else if (ringsShotSoFar + robot.ringManager.getDistanceSensorPasses() >= 4 || robot.ringManager.getDistanceSensorPasses() >= 2) {
             robot.intakeModule.intakePower = 0;
@@ -74,7 +72,7 @@ public class ShootStackAction extends Action {
             message = "normal ops";
         }
 
-        if (itr % 40 == 0) {
+        if (itr % 55 == 0) {
             Log.v("shootstack", message);
         }
 
@@ -89,14 +87,21 @@ public class ShootStackAction extends Action {
                 if (ringsShotSoFar >= 2) {
                     robot.drivetrain.setMovementsTowardsPoint(end, 0.35, 0.5, 0, false, 0);
                 } else {
-                    robot.drivetrain.setMovementsTowardsPoint(end, 0.20, 0.3, 0, false, 0);
+                    robot.drivetrain.setMovementsTowardsPoint(end, 0.19, 0.3, 0, false, 0);
                 }
             }
         }
 
         if (lastDitch && !completedLastDitch) {
-            robot.shooter.deliverRings();
-            robot.shooter.queueIndex(3);
+            Log.v("shoostack", "last ditching");
+            robot.shooter.clearIndexes();
+            if (robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED && !robot.shooter.deliveryQueued() && robot.ringManager.getForwardDistanceSensorPasses() > 0) {
+                robot.shooter.deliverRings();
+            } else {
+                Log.v("shootstack", "didn't need to deliv");
+            }
+            robot.shooter.queuedIndexes = 3;
+            completedLastDitch = true;
         }
 
         boolean done = (ringsShotSoFar >= ringsToExpect) || (robot.getCurrentTimeMilli() > beginExecutionTime + 9500);
