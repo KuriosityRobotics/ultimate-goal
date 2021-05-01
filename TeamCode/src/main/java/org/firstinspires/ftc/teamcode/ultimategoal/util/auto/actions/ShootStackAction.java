@@ -46,7 +46,7 @@ public class ShootStackAction extends Action {
             beginExecutionTime = robot.getCurrentTimeMilli();
         }
 
-        boolean lastDitch = robot.getCurrentTimeMilli() > beginExecutionTime + 8500;
+        boolean lastDitch = robot.getCurrentTimeMilli() > beginExecutionTime + 8100;
 
         int ringsShotSoFar = robot.ringManager.getTotalRingsShot() - startingRingsShot;
 
@@ -56,7 +56,7 @@ public class ShootStackAction extends Action {
 
         String message;
         if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 1 && robot.ringManager.getEntraceSensorReading() < 60) {
-            robot.intakeModule.intakePower = 0.75;
+            robot.intakeModule.intakePower = 0.8;
             message = "slowing down!";
         } else if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 2) {
             robot.intakeModule.intakePower = -0.2;
@@ -72,7 +72,7 @@ public class ShootStackAction extends Action {
             message = "normal ops";
         }
 
-        if (itr % 55 == 0) {
+        if (itr % 100 == 0) {
             Log.v("shootstack", message);
         }
 
@@ -85,9 +85,9 @@ public class ShootStackAction extends Action {
                 robot.drivetrain.setBrakePosition(end);
             } else {
                 if (ringsShotSoFar >= 2) {
-                    robot.drivetrain.setMovementsTowardsPoint(end, 0.35, 0.5, 0, false, 0);
+                    robot.drivetrain.setMovementsTowardsPoint(end, 0.34, 0.5, 0, false, 0);
                 } else {
-                    robot.drivetrain.setMovementsTowardsPoint(end, 0.19, 0.3, 0, false, 0);
+                    robot.drivetrain.setMovementsTowardsPoint(end, 0.18, 0.3, 0, false, 0);
                 }
             }
         }
