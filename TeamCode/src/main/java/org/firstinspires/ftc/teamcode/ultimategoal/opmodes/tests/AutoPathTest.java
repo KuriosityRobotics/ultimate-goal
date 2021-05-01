@@ -2,13 +2,14 @@ package org.firstinspires.ftc.teamcode.ultimategoal.opmodes.tests;
 
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.PathFollow;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.auto.Waypoint;
 
-//@Disabled
+@Disabled
 @Autonomous
 public class AutoPathTest extends LinearOpMode {
 

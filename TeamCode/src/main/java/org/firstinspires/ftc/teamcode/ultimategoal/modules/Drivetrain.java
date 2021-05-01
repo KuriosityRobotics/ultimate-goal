@@ -51,17 +51,17 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double SLOW_MODE_FACTOR = 0.35;
     private final static double TURN_SCALE = Math.toRadians(30);
 
-    public static double TOWARDS_P = 0.0014;
+    public static double TOWARDS_P = 0.0016;
     public static double TOWARDS_D = 0.415;
-    public static double NORMAL_P = 0.007;
+    public static double NORMAL_P = 0.006;
     public static double NORMAL_D = 0.115;
     public static double ANGULAR_P = 0.12;
     public static double ANGULAR_D = 5.5;
     // Braking Controllers
     private final BrakeController towardsBrakeController = new BrakeController(
             new VelocityPidController(TOWARDS_P, 0, TOWARDS_D),
-            new TargetVelocityFunction(1.99, 4, 10, 0.5),
-            0.0087, 28
+            new TargetVelocityFunction(2.00, 4, 10, 0.75),
+            0.012, 28
     );
     private final BrakeController normalToBrakeController = new BrakeController(
             new VelocityPidController(NORMAL_P, 0, NORMAL_D),

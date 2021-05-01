@@ -55,7 +55,7 @@ public class T265Module implements Module, TelemetryProvider {
     public void initModules() {
         // init cam
         if (t265Camera == null) {
-            t265Camera = new T265Camera(new Transform2d(new Translation2d(-0.0285496, 0.2097278), new Rotation2d(Math.toRadians(270))), 0.0055, robot.hardwareMap.appContext);
+            t265Camera = new T265Camera(new Transform2d(new Translation2d(-0.0285496, 0.2097278), new Rotation2d(Math.toRadians(270))), 0.0054, robot.hardwareMap.appContext);
             t265Camera.setPose(new Pose2d(0, 0, new Rotation2d(Math.toRadians(90))));
         }
 
