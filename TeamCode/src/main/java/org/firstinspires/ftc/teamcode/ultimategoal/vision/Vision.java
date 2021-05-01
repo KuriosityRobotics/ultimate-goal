@@ -117,7 +117,7 @@ public class Vision {
                         Bitmap bitmap = vuforia.convertFrameToBitmap(frame);
 
                         if (bitmap != null) {
-                            double percentageOrange = calcOrangeValue(bitmap, 152, 344, 85, 60);
+                            double percentageOrange = calcOrangeValue(bitmap, 170, 335, 85, 60);
 
 
                             Log.d("Vision", Double.toString(percentageOrange));
@@ -131,7 +131,7 @@ public class Vision {
 
                             //                            updateBitmapWithBoundingBoxes(bitmap,105, 287, 128, 100);
                             if (linearOpMode.gamepad1.a) {
-                                updateBitmapWithBoundingBoxes(bitmap, 152, 344, 85, 60);
+                                updateBitmapWithBoundingBoxes(bitmap, 170, 335, 85, 60);
 
                                 captureFrameToFile(bitmap);
                             }
@@ -158,7 +158,7 @@ public class Vision {
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          */
         try {
-            webcamName = linearOpMode.hardwareMap.get(WebcamName.class, "Webcam 1");
+            webcamName = linearOpMode.hardwareMap.get(WebcamName.class, "Webcam");
 
             int cameraMonitorViewId = linearOpMode.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", linearOpMode.hardwareMap.appContext.getPackageName());
             VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
