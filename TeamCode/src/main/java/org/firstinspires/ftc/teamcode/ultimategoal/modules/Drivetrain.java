@@ -51,17 +51,17 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double SLOW_MODE_FACTOR = 0.35;
     private final static double TURN_SCALE = Math.toRadians(30);
 
-    public static double TOWARDS_P = 0.0016;
-    public static double TOWARDS_D = 0.415;
-    public static double NORMAL_P = 0.006;
-    public static double NORMAL_D = 0.115;
-    public static double ANGULAR_P = 0.12;
-    public static double ANGULAR_D = 5.5;
+    public static double TOWARDS_P = 0.0019;
+    public static double TOWARDS_D = 0.411;
+    public static double NORMAL_P = 0.0025;
+    public static double NORMAL_D = 0.08;
+    public static double ANGULAR_P = 0.22;
+    public static double ANGULAR_D = 5.8;
     // Braking Controllers
     private final BrakeController towardsBrakeController = new BrakeController(
             new VelocityPidController(TOWARDS_P, 0, TOWARDS_D),
             new TargetVelocityFunction(2.00, 4, 10, 0.75),
-            0.012, 28
+            0.02, 28
     );
     private final BrakeController normalToBrakeController = new BrakeController(
             new VelocityPidController(NORMAL_P, 0, NORMAL_D),
@@ -71,7 +71,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final BrakeController angularBrakeController = new BrakeController(
             new VelocityPidController(ANGULAR_P, 0, ANGULAR_D),
             new TargetVelocityFunction(Math.toRadians(210), Math.toRadians(9), Math.toRadians(35), Math.toRadians(0.5), 1.1),
-            0.2, Math.toRadians(110)
+            0.26, Math.toRadians(110)
     );
 
     public Drivetrain(Robot robot, boolean isOn, Pose2d startingPosition, boolean isAuto) {
