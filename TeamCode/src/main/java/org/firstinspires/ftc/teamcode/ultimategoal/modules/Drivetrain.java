@@ -51,8 +51,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double SLOW_MODE_FACTOR = 0.35;
     private final static double TURN_SCALE = Math.toRadians(30);
 
-    public static double TOWARDS_P = 0.0016;
-    public static double TOWARDS_D = 0.417;
+    public static double TOWARDS_P = 0.0014;
+    public static double TOWARDS_D = 0.415;
     public static double NORMAL_P = 0.007;
     public static double NORMAL_D = 0.115;
     public static double ANGULAR_P = 0.12;
