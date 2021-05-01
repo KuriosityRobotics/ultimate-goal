@@ -109,7 +109,7 @@ public class Robot extends ModuleCollection {
     private void initialize(Pose2d startingPosition, boolean isAuto) {
         // Add individual modules into the array here
         this.drivetrain = new Drivetrain(this, true, startingPosition, isAuto);
-        this.shooter = new Shooter(this, true);
+        this.shooter = new Shooter(this, true, isAuto);
 
         this.intakeModule = new IntakeModule(this, true, isAuto);
         this.wobbleModule = new WobbleModule(this, false);

@@ -79,7 +79,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
 
     private boolean forceIndex = false;
 
-    public Shooter(Robot robot, boolean isOn) {
+    public Shooter(Robot robot, boolean isOn, boolean isAuto) {
         robot.telemetryDump.registerProvider(this);
 
         this.robot = robot;
@@ -87,7 +87,7 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
         manualAngleCorrection = 0;
         manualAngleFlapCorrection = 0;
 
-        shooterModule = new ShooterModule(robot, isOn);
+        shooterModule = new ShooterModule(robot, isOn, isAuto);
         hopperModule = new HopperModule(robot, isOn);
 
         modules = new Module[]{shooterModule, hopperModule};
