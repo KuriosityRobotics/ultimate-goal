@@ -160,7 +160,7 @@ public class RingManager implements Module, TelemetryProvider {
         double distance = intakeEntranceDistance.getSensorReading();
         lastEntranceSensorReading = distance;
 
-        Log.v("ringmanager", "entrance sensor: " + distance);
+//        Log.v("ringmanager", "entrance sensor: " + distance);
 
         if (distance < 100) {
             entranceSeenIterations++;

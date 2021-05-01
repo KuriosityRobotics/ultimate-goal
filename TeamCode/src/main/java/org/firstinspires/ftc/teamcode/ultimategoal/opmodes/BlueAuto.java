@@ -41,7 +41,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     final Point TARGET_A_DROPOFF_FIRST = new Point(23, 80 - 19);
     final Point TARGET_B_DROPOFF_FIRST = new Point(23.5 * 2 - 2, 88 - (16.5 / 2) + 6);
-    final Point TARGET_C_DROPOFF_FIRST = new Point(23 - 4, 112 - (16.5 / 2) + 6);
+    final Point TARGET_C_DROPOFF_FIRST = new Point(23 - 8, 112 - (16.5 / 2) + 10);
 
     Point firstWobbleDropOff;
 
@@ -54,7 +54,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 
     final Point TARGET_A_DROPOFF_SECOND = new Point(18 - 12, 47 + 4);
     final Point TARGET_B_DROPOFF_SECOND = new Point(23 + 12 - 9, 94.25 - 18);
-    final Point TARGET_C_DROPOFF_SECOND = new Point(14 - 6, 117 - 20 + 4);
+    final Point TARGET_C_DROPOFF_SECOND = new Point(14 - 2, 117 - 20 + 4);
 
     Point secondWobbleDropoff;
 
@@ -74,8 +74,8 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         robot.shooter.manualTurretPower = 0;
         robot.shooter.manualTurret = false;
 
-        robot.shooter.manualAngleCorrection = -0.015;
-        robot.shooter.manualAngleFlapCorrection = 0.0011;
+        robot.shooter.manualAngleCorrection = 0.000;
+        robot.shooter.manualAngleFlapCorrection = 0.0028;
 
         measuredZone = vision.runDetection();
         measuredZone = Vision.TargetGoal.C;
@@ -155,7 +155,7 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
         }));
         PathFollow towardsStack = new PathFollow(new Waypoint[]{
                 new Waypoint(firstWobbleDropOff.x + 16, firstWobbleDropOff.y, towardsStackActions),
-                new Waypoint(STACK.x + 8, STACK.y + 21)
+                new Waypoint(STACK.x + 8, STACK.y + 19)
         }, robot, "towards the stack");
 
         ArrayList<Action> secondWobbleStartActions = new ArrayList<>();
@@ -266,19 +266,19 @@ public class BlueAuto extends LinearOpMode implements TelemetryProvider {
 //        backFromFirstWobble.followPath(Math.toRadians(180), 1, 1, false, Math.toRadians(-45));
 
         robot.shooter.target = BLUE_HIGH;
-        robot.shooter.manualAngleFlapCorrection = 0.0016;
-        robot.shooter.manualAngleCorrection = +0.0008;
+        robot.shooter.manualAngleFlapCorrection = 0.0027;
+        robot.shooter.manualAngleCorrection = +0.025;
 
-        towardsStack.followPath(0, 0.85, 0.27, false, Math.toRadians(180), false);
+        towardsStack.followPath(0, 0.85, 0.26, false, Math.toRadians(180), false);
 
         ShootStackAction shootStackAction = new ShootStackAction(4, new Point(STACK.x - 3, STACK.y - 4), BLUE_HIGH);
         while (!shootStackAction.executeAction(robot) && opModeIsActive()) {
             // yeet
         }
-        while ((!robot.shooter.isFinishedFiringQueue() || robot.shooter.getCurrentHopperPosition() != HopperModule.HopperPosition.LOWERED)
-                && opModeIsActive()) {
-            // yeeter
-        }
+//        while ((!robot.shooter.isFinishedFiringQueue() || robot.shooter.getCurrentHopperPosition() != HopperModule.HopperPosition.LOWERED)
+//                && opModeIsActive()) {
+//            // yeeter
+//        }
 
         robot.intakeModule.stopIntake = true;
 
