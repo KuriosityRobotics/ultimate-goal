@@ -26,7 +26,7 @@ public class RingManager implements Module, TelemetryProvider {
     public int autoRaiseThreshold = 1;
 
     // Constants
-    private static final int HOPPER_DELIVERY_DELAY = 500;
+    private static final int HOPPER_DELIVERY_DELAY = 400;
 
     // Data
     private int ringsInHopper;
