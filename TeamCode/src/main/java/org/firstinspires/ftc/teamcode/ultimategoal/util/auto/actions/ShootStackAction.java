@@ -25,10 +25,14 @@ public class ShootStackAction extends Action {
     }
 
     int itr = 0;
+    boolean completedLastDitch = false;
 
     @Override
     public boolean executeAction(Robot robot) {
         itr++;
+
+        boolean lastDitch = robot.getCurrentTimeMilli() > beginExecutionTime + 8500;
+
         if (beginExecutionTime == 0) {
             robot.ringManager.autoRaise = true;
             robot.ringManager.autoShootRings = true;
@@ -50,7 +54,10 @@ public class ShootStackAction extends Action {
 //        Log.v("shootstack", "distsensorpasses: " + robot.ringManager.getDistanceSensorPasses());
 
         String message;
-        if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 1 && robot.ringManager.getEntraceSensorReading() < 60) {
+        if (lastDitch) {
+            robot.intakeModule.intakePower = 1;
+            message = "last ditch";
+        } else if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 1 && robot.ringManager.getEntraceSensorReading() < 60) {
             robot.intakeModule.intakePower = 0.8;
             message = "slowing down!";
         } else if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 2) {
@@ -85,6 +92,11 @@ public class ShootStackAction extends Action {
                     robot.drivetrain.setMovementsTowardsPoint(end, 0.20, 0.3, 0, false, 0);
                 }
             }
+        }
+
+        if (lastDitch && !completedLastDitch) {
+            robot.shooter.deliverRings();
+            robot.shooter.queueIndex(3);
         }
 
         boolean done = (ringsShotSoFar >= ringsToExpect) || (robot.getCurrentTimeMilli() > beginExecutionTime + 9500);
