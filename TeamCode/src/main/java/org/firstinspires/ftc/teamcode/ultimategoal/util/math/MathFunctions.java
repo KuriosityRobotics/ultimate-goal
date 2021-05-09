@@ -277,4 +277,31 @@ public class MathFunctions {
 
         return new Pose2d(resultX, resultY, new Rotation2d(resultRotation));
     }
+
+    public static Matrix transpose(Matrix m){
+        double[][] retVal = new double[m.getNumCol()][m.getNumRow()];
+        for (int i = 0; i < m.getNumRow(); i++){
+            for (int j = 0; j < m.getNumCol(); j++){
+                retVal[j][i] =  m.getCell(i,j);
+            }
+        }
+        return new Matrix(retVal);
+    }
+
+    public static Matrix multiply(Matrix a, Matrix b){
+
+        double[][] retVal = new double[a.getNumRow()][b.getNumCol()];
+
+        for (int row = 0; row < a.getNumRow(); row++) {
+            for (int col = 0; col < b.getNumCol(); col++) {
+                double dotP = 0;
+                for (int i = 0; i < a.getNumCol(); i++) {
+                    dotP += a.getCell(row, i) * b.getCell(i,col);
+                }
+                retVal[row][col] = dotP;
+            }
+        }
+
+        return new Matrix(retVal);
+    }
 }
