@@ -24,6 +24,10 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
     private double worldY;
     private double worldHeadingRad;
 
+    public double dRobotX;
+    public double dRobotY;
+    public double dTheta;
+
     // Velocity of the robot, in/s and rad/s
     private double xVel;
     private double yVel;
@@ -153,9 +157,9 @@ public class OdometryModule implements Module, TelemetryProvider, FileDumpProvid
         double Q = M_ENCODER_DIST_FROM_CENTER;
 
         // find robot relative deltas
-        double dTheta = (L - R) / (2 * P);
-        double dRobotX = M * sinXOverX(dTheta) + Q * Math.sin(dTheta) - L * cosXMinusOneOverX(dTheta) + P * (Math.cos(dTheta) - 1);
-        double dRobotY = L * sinXOverX(dTheta) - P * Math.sin(dTheta) + M * cosXMinusOneOverX(dTheta) + Q * (Math.cos(dTheta) - 1);
+        dTheta = (L - R) / (2 * P);
+        dRobotX = M * sinXOverX(dTheta) + Q * Math.sin(dTheta) - L * cosXMinusOneOverX(dTheta) + P * (Math.cos(dTheta) - 1);
+        dRobotY = L * sinXOverX(dTheta) - P * Math.sin(dTheta) + M * cosXMinusOneOverX(dTheta) + Q * (Math.cos(dTheta) - 1);
 
         worldX += dRobotX * Math.cos(worldHeadingRad) + dRobotY * Math.sin(worldHeadingRad);
         worldY += dRobotY * Math.cos(worldHeadingRad) - dRobotX * Math.sin(worldHeadingRad);

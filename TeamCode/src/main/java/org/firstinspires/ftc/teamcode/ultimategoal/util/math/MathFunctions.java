@@ -304,4 +304,75 @@ public class MathFunctions {
 
         return new Matrix(retVal);
     }
+
+    public static Matrix add(Matrix a, Matrix b){
+        double[][] retVal = new double[a.getNumRow()][b.getNumCol()];
+
+        for (int row = 0; row < a.getNumRow(); row++) {
+            for (int col = 0; col < a.getNumCol(); col++) {
+                retVal[row][col] = a.getCell(row, col) + b.getCell(row, col);
+            }
+        }
+
+        return new Matrix(retVal);
+    }
+
+    public static Matrix negate(Matrix a){
+        double[][] retVal = new double[a.getNumRow()][a.getNumCol()];
+        for (int row = 0; row < a.getNumRow(); row++) {
+            for (int col = 0; col < a.getNumCol(); col++) {
+                retVal[row][col] = -a.getCell(row, col);
+            }
+        }
+
+        return new Matrix(retVal);
+    }
+
+    public static Matrix inverse3x3(Matrix a){
+
+        double determinant = determinant3x3(a);
+        double[][] matrix = a.getVal();
+
+        if (determinant != 0) {
+            double [][] newMatrix = new double[3][3];
+
+            newMatrix[0][0] = ((matrix[1][1]*matrix[2][2]) - (matrix[1][2]*matrix[2][1]));
+            newMatrix[0][1] = -((matrix[0][1]*matrix[2][2]) - (matrix[0][2]*matrix[2][1]));
+            newMatrix[0][2] = ((matrix[0][1]*matrix[1][2]) - (matrix[0][2]*matrix[1][1]));
+
+            newMatrix[1][0] = -((matrix[1][0]*matrix[2][2]) - (matrix[1][2]*matrix[2][0]));
+            newMatrix[1][1] = ((matrix[0][0]*matrix[2][2]) - (matrix[0][2]*matrix[2][0]));
+            newMatrix[1][2] = -((matrix[0][0]*matrix[1][2]) - (matrix[0][2]*matrix[1][0]));
+
+            newMatrix[2][0] = ((matrix[1][0]*matrix[2][1]) - (matrix[1][1]*matrix[2][0]));
+            newMatrix[2][1] = -((matrix[0][0]*matrix[2][1]) - (matrix[0][1]*matrix[2][0]));
+            newMatrix[2][2] = ((matrix[0][0]*matrix[1][1]) - (matrix[0][1]*matrix[1][0]));
+
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    newMatrix[i][j] *= 1/determinant;
+                }
+            }
+
+            return new Matrix(newMatrix);
+        } else {
+            return null;
+        }
+    }
+
+    public static double determinant3x3 (Matrix a) {
+
+        double[][] matrix = a.getVal();
+        double determinant = 0;
+
+        determinant += matrix[0][0]*((matrix[1][1]*matrix[2][2]) - (matrix[1][2]*matrix[2][1]));
+
+        determinant -= matrix[0][1]*((matrix[1][0]*matrix[2][2]) - (matrix[1][2]*matrix[2][0]));
+
+        determinant += matrix[0][2]*((matrix[1][0]*matrix[2][1]) - (matrix[1][1]*matrix[2][0]));
+
+        return determinant;
+    }
 }

@@ -20,6 +20,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Drivetrain;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.LocalizerModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ModuleCollection;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.RingManager;
@@ -40,7 +41,7 @@ public class Robot extends ModuleCollection {
     public WobbleModule wobbleModule;
     public RingManager ringManager;
 
-    public VuforiaModule vuforiaModule;
+    public LocalizerModule localizerModule;
 //    public VisionModule visionModule;
 
     public HardwareMap hardwareMap;
@@ -118,11 +119,11 @@ public class Robot extends ModuleCollection {
         this.intakeModule = new IntakeModule(this, true, isAuto);
         this.wobbleModule = new WobbleModule(this, false);
         this.ringManager = new RingManager(this, true);
-        this.vuforiaModule = new VuforiaModule(this, true);
+        this.localizerModule = new LocalizerModule(this, true);
 //        this.visionModule = new VisionModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.ringManager, this.intakeModule, this.shooter, this.wobbleModule, this.vuforiaModule
+                this.drivetrain, this.ringManager, this.intakeModule, this.shooter, this.wobbleModule, this.localizerModule
         };
 
         // Initialize modules

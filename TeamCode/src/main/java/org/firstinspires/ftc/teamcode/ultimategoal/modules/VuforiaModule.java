@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
-import android.util.Log;
-
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
@@ -20,11 +18,6 @@ import org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 
 public class VuforiaModule implements Module, TelemetryProvider {
 
@@ -32,18 +25,37 @@ public class VuforiaModule implements Module, TelemetryProvider {
     private boolean isOn;
     private String VUFORIA_KEY = "AblAnwD/////AAABmRHXA7f65ErFhMbZmr+8xjArZA83Y+l2nal3r90Dmzl6nc0hUj+zgUCK3sF8PxkhDDJkMsSJSl05Q3U0Bjz6HeydKoGMwsvF8x2IbUto/6gbCm8WqDkvfBjzDeVL5Y3XCkczOi1F8dmNt1JkJQdX4bJokLrzEBQnQOF6mwxI22M2eSobTgyHSrZk4hl6jTXVSO9ckVtMfVjV/pryDQMnnJDFMQ/64u+uhxtnsMZKgd9UlORAMwsSL9Wwk1ixoWeUsLzZS4w/5b4GbupBTsY/teWORJo0AulqTI+rCJRhKzQcZRlG7v5jt2f3es7y0uXbxT5QrQ06tNmvhEfjAIduF5eSbPZ/3QjQnFgtRuyMW0ix";
 
-    public double tX;
-    public double tZ;
-    public double rY;
+    public double tRX;
+    public double tRY;
+    public double tRPhi;
     public VuforiaTrackable tracker;
 
     private VuforiaLocalizer vuforia = null;
     private WebcamName webcamName = null;
 
-    private List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+    public List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
     private VuforiaTrackables targetsUltimateGoal;
 
     public boolean visibleTracker = false; // note: do not take data from this vuf stream if no tracker is visible
+
+
+
+
+    // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
+    // We will define some constants and conversions here
+    private final float targetHeight   = 6f;
+
+    // Constants for perimeter targets
+    private final float fullField = 144f;
+    private final float halfField = 72f;
+    private final float quadField  = 36f;
+
+    private final float cornerOffsetX = -9f;
+    private final float cornerOffsetY = -8.25f;
+
+
+
+
 
     public VuforiaModule(Robot robot, boolean isOn) {
         this.robot = robot;
@@ -100,6 +112,17 @@ public class VuforiaModule implements Module, TelemetryProvider {
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
         allTrackables.addAll(targetsUltimateGoal);
 
+        //Set the position of the perimeter targets with relation to origin (center of field)
+        // NOTE: rather than using x,y,z, using x,y,theta to get know pose
+        redAllianceTarget.setLocation(OpenGLMatrix.translation(fullField+cornerOffsetX, halfField+cornerOffsetY, (float)Math.toRadians(270)));
+        blueAllianceTarget.setLocation(OpenGLMatrix.translation(cornerOffsetX, halfField+cornerOffsetY, (float)Math.toRadians(90)));
+
+        frontWallTarget.setLocation(OpenGLMatrix.translation(halfField+cornerOffsetX, cornerOffsetY, 0f));
+
+        // The tower goal targets are located a quarter field length from the ends of the back perimeter wall.
+        blueTowerGoalTarget.setLocation(OpenGLMatrix.translation(quadField+cornerOffsetX, fullField+cornerOffsetY, (float)Math.toRadians(180)));
+        redTowerGoalTarget.setLocation(OpenGLMatrix.translation(halfField+quadField+cornerOffsetX, fullField+cornerOffsetY, (float)Math.toRadians(180)));
+
         // placed here because takes a while to activate, technically could be moved to onStart() due to low dependency on vuf at beginning
         targetsUltimateGoal.activate();
         robot.telemetry.addLine("DONE INITING VUFORIA");
@@ -120,9 +143,11 @@ public class VuforiaModule implements Module, TelemetryProvider {
                     Orientation rot = Orientation.getOrientation(cameraFromTarget, AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS);
 
                     tracker = trackable;
-                    tX = trans.get(0)/25.4;
-                    tZ = trans.get(2)/25.4;
-                    rY = Math.toDegrees(MathFunctions.angleWrap(rot.secondAngle));
+
+                    //TODO: need to convert from camera coordinates to robot coordinates
+                    tRX = trans.get(0)/25.4; // right now this is left right camera coords
+                    tRY = trans.get(2)/25.4; // right now this is forward backward camera coords
+                    tRPhi = -MathFunctions.angleWrap(rot.secondAngle); // right now this is angle in camera coords
                 }
                 break;
             }
@@ -145,10 +170,13 @@ public class VuforiaModule implements Module, TelemetryProvider {
         ArrayList<String> data = new ArrayList<>();
         if (tracker != null){
             data.add("Tracker Name: " + tracker.getName());
+            data.add("Tracker X: " + (double)tracker.getLocation().getTranslation().get(0));
+            data.add("Tracker Y: " + (double)tracker.getLocation().getTranslation().get(1));
+            data.add("Tracker Phi: " + (double)Math.toDegrees(tracker.getLocation().getTranslation().get(2)));
         }
-        data.add("tX: " + tX);
-        data.add("tZ: " + tZ);
-        data.add("rY: " + rY);
+        data.add("tX: " + tRX);
+        data.add("tY: " + tRY);
+        data.add("rPhi: " + Math.toDegrees(tRPhi));
         return data;
     }
 
@@ -159,6 +187,6 @@ public class VuforiaModule implements Module, TelemetryProvider {
 
     @Override
     public String getName() {
-        return "CameraModule";
+        return "VuforiaModule";
     }
 }
