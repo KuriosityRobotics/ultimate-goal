@@ -61,12 +61,14 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
         double predY = y - odoDX * Math.sin(heading) + odoDY * Math.cos(heading);
         double predHeading = heading + odoDTheta;
 
+        // jacobian of states with respect to states
         Matrix G = new Matrix(new double[][]{
                 {1, 0, -odoDX * Math.sin(heading) + odoDY * Math.cos(heading)},
                 {0, 1, -odoDX * Math.cos(heading) - odoDY * Math.sin(heading)},
                 {0, 0, 1}
         }); // just learned how stupid the matrix class i made is
 
+        // jacobian of states with respect to controls
         Matrix V = new Matrix(new double[][]{
                 {Math.cos(heading), Math.sin(heading), 0},
                 {-Math.sin(heading), Math.cos(heading), 0},
@@ -96,6 +98,7 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
             double predTRY = (tX - predX) * Math.sin(heading) + (tY - predY) * Math.cos(heading);
             double predTRPhi = tPhi - heading;
 
+            // jacobian of observation with respect to states
             Matrix H = new Matrix(new double[][]{
                     {-Math.cos(heading), Math.sin(heading), -(tX-predX)*Math.sin(heading) - (tY-predY)*Math.cos(heading)},
                     {-Math.sin(heading), -Math.cos(heading), (tX-predX)*Math.cos(heading) - (tY-predY)*Math.sin(heading)},
@@ -113,7 +116,10 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
                     Q
             );
 
+            // STEP 3: updating prediction based off observation
             if (determinant3x3(S) != 0 || inverse3x3(S) != null){ // hit the dip if S is non-invertible, both conditions are same btw
+
+                // Kalman Gain
                 Matrix K = multiply(predCovariance, multiply(transpose(H), inverse3x3(S)));
 
                 Matrix z = new Matrix(new double[][]{
@@ -128,8 +134,8 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
                         {predTRPhi}
                 });
 
+                // correction is based of predicted observation error and Kalman Gain
                 Matrix correction = multiply(K, add(z, negate(zPred)));
-
                 double correctionX = correction.getCell(0,0);
                 double correctionY = correction.getCell(1, 0);
                 double correctionHeading = correction.getCell(2, 0);
