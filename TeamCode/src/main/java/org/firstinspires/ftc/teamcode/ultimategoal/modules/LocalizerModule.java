@@ -57,7 +57,7 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
         double odoDY = odometryModule.dRobotY;
         double odoDTheta = odometryModule.dTheta;
 
-        double predX = x + odoDY * Math.cos(heading) + odoDY * Math.sin(heading);
+        double predX = x + odoDX * Math.cos(heading) + odoDY * Math.sin(heading);
         double predY = y - odoDX * Math.sin(heading) + odoDY * Math.cos(heading);
         double predHeading = heading + odoDTheta;
 
@@ -116,9 +116,23 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
             if (determinant3x3(S) != 0 || inverse3x3(S) != null){ // hit the dip if S is non-invertible, both conditions are same btw
                 Matrix K = multiply(predCovariance, multiply(transpose(H), inverse3x3(S)));
 
-                double correctionX = K.getCell(0,0) * (vuforiaModule.tRX-predTRX);
-                double correctionY = K.getCell(1,0) * (vuforiaModule.tRY-predTRY);
-                double correctionHeading = K.getCell(2,0) * (vuforiaModule.tRPhi - predTRPhi);
+                Matrix z = new Matrix(new double[][]{
+                        {vuforiaModule.tRX},
+                        {vuforiaModule.tRY},
+                        {vuforiaModule.tRPhi}
+                });
+
+                Matrix zPred = new Matrix(new double[][]{
+                        {predTRX},
+                        {predTRY},
+                        {predTRPhi}
+                });
+
+                Matrix correction = multiply(K, add(z, negate(zPred)));
+
+                double correctionX = correction.getCell(0,0);
+                double correctionY = correction.getCell(1, 0);
+                double correctionHeading = correction.getCell(2, 0);
 
                 predX += correctionX;
                 predY += correctionY;
@@ -137,12 +151,12 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
                         predCovariance
                 );
             }
-
-            x = predX;
-            y = predY;
-            heading = angleWrap(predHeading);
-            covariance = predCovariance;
         }
+
+        x = predX;
+        y = predY;
+        heading = angleWrap(predHeading);
+        covariance = predCovariance;
 
     }
 
