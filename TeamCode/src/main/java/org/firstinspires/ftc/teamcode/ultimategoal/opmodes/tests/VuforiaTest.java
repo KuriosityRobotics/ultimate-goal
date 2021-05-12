@@ -15,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.teamcode.ultimategoal.util.math.MathFunctions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,44 +99,6 @@ public class VuforiaTest extends LinearOpMode {
         List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
         allTrackables.addAll(targetsUltimateGoal);
 
-        /**
-         * In order for localization to work, we need to tell the system where each target is on the field, and
-         * where the phone resides on the robot.  These specifications are in the form of <em>transformation matrices.</em>
-         * Transformation matrices are a central, important concept in the math here involved in localization.
-         * See <a href="https://en.wikipedia.org/wiki/Transformation_matrix">Transformation Matrix</a>
-         * for detailed information. Commonly, you'll encounter transformation matrices as instances
-         * of the {@link OpenGLMatrix} class.
-         *
-         * If you are standing in the Red Alliance Station looking towards the center of the field,
-         *     - The X axis runs from your left to the right. (positive from the center to the right)
-         *     - The Y axis runs from the Red Alliance Station towards the other side of the field
-         *       where the Blue Alliance Station is. (Positive is from the center, towards the BlueAlliance station)
-         *     - The Z axis runs from the floor, upwards towards the ceiling.  (Positive is above the floor)
-         *
-         * Before being transformed, each target image is conceptually located at the origin of the field's
-         *  coordinate system (the center of the field), facing up.
-         */
-
-        //Set the position of the perimeter targets with relation to origin (center of field)
-        redAllianceTarget.setLocation(OpenGLMatrix
-                .translation(0, -halfField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
-
-        blueAllianceTarget.setLocation(OpenGLMatrix
-                .translation(0, halfField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
-        frontWallTarget.setLocation(OpenGLMatrix
-                .translation(-halfField, 0, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
-
-        // The tower goal targets are located a quarter field length from the ends of the back perimeter wall.
-        blueTowerGoalTarget.setLocation(OpenGLMatrix
-                .translation(halfField, quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
-        redTowerGoalTarget.setLocation(OpenGLMatrix
-                .translation(halfField, -quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
-
         waitForStart();
 
         // Note: To use the remote camera preview:
@@ -163,21 +126,26 @@ public class VuforiaTest extends LinearOpMode {
             // Provide feedback as to where the robot is located (if we know).
             if (targetVisible) {
 
-                telemetry.addData("cameraFromTarget", format(lastCameraFromTarget));
-
                 // express position (translation) of robot in inches.
                 VectorF trans = lastCameraFromTarget.getTranslation();
-                Orientation rot = Orientation.getOrientation(lastCameraFromTarget, AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES);
+                Orientation rot = Orientation.getOrientation(lastCameraFromTarget, AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS);
 
                 // Extract the X, Y, and Z components of the offset of the target relative to the robot
-                double tX = trans.get(0);
-                double tY = trans.get(1);
-                double tZ = trans.get(2);
+                double tX = trans.get(0)/25.4;
+                double tY = trans.get(1)/25.4;
+                double tZ = trans.get(2)/25.4;
 
                 // Extract the rotational components of the target relative to the robot
-                double rX = rot.firstAngle;
-                double rY = rot.secondAngle;
-                double rZ = rot.thirdAngle;
+                double rX = Math.toDegrees(MathFunctions.angleWrap(rot.firstAngle));
+                double rY = Math.toDegrees(MathFunctions.angleWrap(rot.secondAngle));
+                double rZ = Math.toDegrees(MathFunctions.angleWrap(rot.thirdAngle));
+
+                telemetry.addData("tX", tX);
+                telemetry.addData("tY", tY);
+                telemetry.addData("tZ", tZ);
+                telemetry.addData("rX", rX);
+                telemetry.addData("rY", rY);
+                telemetry.addData("rZ", rZ);
             }  else {
                 telemetry.addData("Visible Target", "none");
             }
@@ -186,9 +154,5 @@ public class VuforiaTest extends LinearOpMode {
 
         // Disable Tracking when we are done;
         targetsUltimateGoal.deactivate();
-    }
-
-    String format(OpenGLMatrix transformationMatrix) {
-        return (transformationMatrix != null) ? transformationMatrix.formatAsTransform() : "null";
     }
 }

@@ -17,12 +17,14 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Drivetrain;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.IntakeModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Module;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.ModuleCollection;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.RingManager;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.Shooter;
+import org.firstinspires.ftc.teamcode.ultimategoal.modules.VuforiaModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.modules.WobbleModule;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.FileDump;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.ModuleExecutor;
@@ -37,6 +39,8 @@ public class Robot extends ModuleCollection {
     public IntakeModule intakeModule;
     public WobbleModule wobbleModule;
     public RingManager ringManager;
+
+    public VuforiaModule vuforiaModule;
 //    public VisionModule visionModule;
 
     public HardwareMap hardwareMap;
@@ -114,10 +118,11 @@ public class Robot extends ModuleCollection {
         this.intakeModule = new IntakeModule(this, true, isAuto);
         this.wobbleModule = new WobbleModule(this, false);
         this.ringManager = new RingManager(this, true);
+        this.vuforiaModule = new VuforiaModule(this, true);
 //        this.visionModule = new VisionModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.ringManager, this.intakeModule, this.shooter, this.wobbleModule
+                this.drivetrain, this.ringManager, this.intakeModule, this.shooter, this.wobbleModule, this.vuforiaModule
         };
 
         // Initialize modules
