@@ -119,7 +119,7 @@ public class Robot extends ModuleCollection {
         this.intakeModule = new IntakeModule(this, true, isAuto);
         this.wobbleModule = new WobbleModule(this, false);
         this.ringManager = new RingManager(this, true);
-        this.localizerModule = new LocalizerModule(this, true);
+        this.localizerModule = new LocalizerModule(this, true, startingPosition);
 //        this.visionModule = new VisionModule(this, true);
 
         this.modules = new Module[]{

@@ -145,7 +145,7 @@ public class VuforiaModule implements Module, TelemetryProvider {
                     tracker = trackable;
 
                     //TODO: need to convert from camera coordinates to robot coordinates
-                    tRX = trans.get(0)/25.4; // right now this is left right camera coords
+                    tRX = -trans.get(0)/25.4; // right now this is left right camera coords
                     tRY = trans.get(2)/25.4; // right now this is forward backward camera coords
                     tRPhi = -MathFunctions.angleWrap(rot.secondAngle); // right now this is angle in camera coords
                 }

@@ -23,4 +23,8 @@ public class Matrix {
     public double getCell(int row, int col){
         return val[row][col];
     }
+
+    public void setCell(int row, int col, double value){
+        val[row][col] = value;
+    }
 }

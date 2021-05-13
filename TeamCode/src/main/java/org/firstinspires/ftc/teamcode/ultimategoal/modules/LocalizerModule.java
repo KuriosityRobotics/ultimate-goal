@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import com.arcrobotics.ftclib.geometry.Pose2d;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.TelemetryProvider;
 import org.firstinspires.ftc.teamcode.ultimategoal.util.math.Matrix;
-import org.opencv.core.Mat;
 
 import java.util.ArrayList;
 
@@ -21,9 +21,9 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
     private Robot robot;
     private boolean isOn;
 
-    public double x = 0;
-    public double y = 0;
-    public double heading = 0;
+    public double x;
+    public double y;
+    public double heading;
     public Matrix covariance = new Matrix(new double[][]{
             {2, 0, 0},
             {0, 2, 0},
@@ -33,12 +33,16 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
     private final VuforiaModule vuforiaModule;
     private final OdometryModule odometryModule;
 
-    public LocalizerModule(Robot robot, boolean isOn) {
+    public LocalizerModule(Robot robot, boolean isOn, Pose2d startingPosition) {
         this.robot = robot;
         this.isOn = isOn;
 
+        x = startingPosition.getTranslation().getX();
+        y = startingPosition.getTranslation().getY();
+        heading = startingPosition.getRotation().getRadians();
+
         vuforiaModule = new VuforiaModule(robot, isOn);
-        odometryModule = new OdometryModule(robot, isOn);
+        odometryModule = new OdometryModule(robot, isOn); // odo does not need starting position
 
         modules = new Module[]{odometryModule, vuforiaModule};
 
@@ -55,11 +59,11 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
         // STEP 1: prediction
         double odoDX = odometryModule.dRobotX;
         double odoDY = odometryModule.dRobotY;
-        double odoDTheta = odometryModule.dTheta;
+        double odoDTheta = angleWrap(odometryModule.dTheta);
 
         double predX = x + odoDX * Math.cos(heading) + odoDY * Math.sin(heading);
         double predY = y - odoDX * Math.sin(heading) + odoDY * Math.cos(heading);
-        double predHeading = heading + odoDTheta;
+        double predHeading = angleWrap(heading + odoDTheta);
 
         // jacobian of states with respect to states
         Matrix G = new Matrix(new double[][]{
@@ -88,15 +92,15 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
         );
 
         // STEP 2: observation
-        if (vuforiaModule.visibleTracker ){
+        if (vuforiaModule.visibleTracker){
             VuforiaTrackable tracker = vuforiaModule.tracker;
             double tX = (double)tracker.getLocation().getTranslation().get(0);
             double tY = (double)tracker.getLocation().getTranslation().get(1);
-            double tPhi = (double)tracker.getLocation().getTranslation().get(2);
+            double tPhi = angleWrap((double)tracker.getLocation().getTranslation().get(2));
 
             double predTRX = (tX - predX) * Math.cos(heading) - (tY - predY) * Math.sin(heading);
             double predTRY = (tX - predX) * Math.sin(heading) + (tY - predY) * Math.cos(heading);
-            double predTRPhi = tPhi - heading;
+            double predTRPhi = angleWrap(tPhi - heading);
 
             // jacobian of observation with respect to states
             Matrix H = new Matrix(new double[][]{
@@ -134,8 +138,12 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
                         {predTRPhi}
                 });
 
+                Matrix predictedObservationError = add(z, negate(zPred));
+                predictedObservationError.setCell(2,0,angleWrap(predictedObservationError.getCell(2,0)));
+
                 // correction is based of predicted observation error and Kalman Gain
-                Matrix correction = multiply(K, add(z, negate(zPred)));
+                Matrix correction = multiply(K, predictedObservationError);
+
                 double correctionX = correction.getCell(0,0);
                 double correctionY = correction.getCell(1, 0);
                 double correctionHeading = correction.getCell(2, 0);
@@ -164,6 +172,12 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
         heading = angleWrap(predHeading);
         covariance = predCovariance;
 
+    }
+
+    public void setPosition(double x, double y, double heading){
+        this.x = x;
+        this.y = y;
+        this.heading = heading;
     }
 
     @Override
