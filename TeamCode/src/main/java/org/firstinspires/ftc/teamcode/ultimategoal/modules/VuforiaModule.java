@@ -40,19 +40,21 @@ public class VuforiaModule implements Module, TelemetryProvider {
 
 
 
-
-    // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
-    // We will define some constants and conversions here
-    private final float targetHeight   = 6f;
-
     // Constants for perimeter targets
-    private final float fullField = 144f;
-    private final float halfField = 72f;
-    private final float quadField  = 36f;
+    private final float FULL_FIELD_LENGTH = 144f;
+    private final float HALF_FIELD_LENGTH = 72f;
+    private final float QUARTER_FIELD_LENGTH = 36f;
 
-    private final float cornerOffsetX = -9f;
-    private final float cornerOffsetY = -8.25f;
+    private final float CORNER_OFFSET_X = -9f;
+    private final float CORNER_OFFSET_Y = -8.25f;
 
+
+
+    // constants for where camera is on robot
+    private final double CAMERA_ON_ROBOT_X = -5;
+    private final double CAMERA_ON_ROBOT_Y = 2;
+    private final double CAMERA_ON_ROBOT_PHI = Math.toRadians(3);
+    // TODO: perhaps add this to a camera wrapper
 
 
 
@@ -114,14 +116,14 @@ public class VuforiaModule implements Module, TelemetryProvider {
 
         //Set the position of the perimeter targets with relation to origin (center of field)
         // NOTE: rather than using x,y,z, using x,y,theta to get know pose
-        redAllianceTarget.setLocation(OpenGLMatrix.translation(fullField+cornerOffsetX, halfField+cornerOffsetY, (float)Math.toRadians(270)));
-        blueAllianceTarget.setLocation(OpenGLMatrix.translation(cornerOffsetX, halfField+cornerOffsetY, (float)Math.toRadians(90)));
+        redAllianceTarget.setLocation(OpenGLMatrix.translation(FULL_FIELD_LENGTH + CORNER_OFFSET_X, HALF_FIELD_LENGTH + CORNER_OFFSET_Y, (float)Math.toRadians(270)));
+        blueAllianceTarget.setLocation(OpenGLMatrix.translation(CORNER_OFFSET_X, HALF_FIELD_LENGTH + CORNER_OFFSET_Y, (float)Math.toRadians(90)));
 
-        frontWallTarget.setLocation(OpenGLMatrix.translation(halfField+cornerOffsetX, cornerOffsetY, 0f));
+        frontWallTarget.setLocation(OpenGLMatrix.translation(HALF_FIELD_LENGTH + CORNER_OFFSET_X, CORNER_OFFSET_Y, 0f));
 
         // The tower goal targets are located a quarter field length from the ends of the back perimeter wall.
-        blueTowerGoalTarget.setLocation(OpenGLMatrix.translation(quadField+cornerOffsetX, fullField+cornerOffsetY, (float)Math.toRadians(180)));
-        redTowerGoalTarget.setLocation(OpenGLMatrix.translation(halfField+quadField+cornerOffsetX, fullField+cornerOffsetY, (float)Math.toRadians(180)));
+        blueTowerGoalTarget.setLocation(OpenGLMatrix.translation(QUARTER_FIELD_LENGTH + CORNER_OFFSET_X, FULL_FIELD_LENGTH + CORNER_OFFSET_Y, (float)Math.toRadians(180)));
+        redTowerGoalTarget.setLocation(OpenGLMatrix.translation(HALF_FIELD_LENGTH + QUARTER_FIELD_LENGTH + CORNER_OFFSET_X, FULL_FIELD_LENGTH + CORNER_OFFSET_Y, (float)Math.toRadians(180)));
 
         // placed here because takes a while to activate, technically could be moved to onStart() due to low dependency on vuf at beginning
         targetsUltimateGoal.activate();
@@ -144,10 +146,17 @@ public class VuforiaModule implements Module, TelemetryProvider {
 
                     tracker = trackable;
 
-                    //TODO: need to convert from camera coordinates to robot coordinates
-                    tRX = -trans.get(0)/25.4; // right now this is left right camera coords
-                    tRY = trans.get(2)/25.4; // right now this is forward backward camera coords
-                    tRPhi = -MathFunctions.angleWrap(rot.secondAngle); // right now this is angle in camera coords
+                    double tCX = -trans.get(0)/25.4;
+                    double tCY = trans.get(2)/25.4;
+                    double tCPhi = -MathFunctions.angleWrap(rot.secondAngle);
+
+                    // convert to relative to robot
+                    double hypot = Math.hypot(tCX, tCY);
+                    double angle = Math.atan2(tCY, tCX) - CAMERA_ON_ROBOT_PHI;
+
+                    tRX = CAMERA_ON_ROBOT_X + hypot*Math.cos(angle);
+                    tRY = CAMERA_ON_ROBOT_Y + hypot*Math.sin(angle);
+                    tRPhi = MathFunctions.angleWrap(CAMERA_ON_ROBOT_PHI + tCPhi);
                 }
                 break;
             }
