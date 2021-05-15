@@ -164,6 +164,13 @@ public class LocalizerModule extends ModuleCollection implements TelemetryProvid
 
                         predCovariance
                 );
+
+                Matrix U = new Matrix(new double[][]{
+                        {1,0,0},
+                        {0,1,0},
+                        {0,0,Math.toRadians(1.5)}
+                });
+                predCovariance = add(predCovariance, U); // new kuriosity creation: lack of confidence in measurement term
             }
         }
 
