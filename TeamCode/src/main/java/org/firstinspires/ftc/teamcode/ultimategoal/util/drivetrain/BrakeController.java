@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.drivetrain;
 
+import android.util.Log;
+
 /**
  * Calculates the desired power to brake using a VelocityPIDController
  */
@@ -76,8 +78,12 @@ public class BrakeController {
             stopCoast = false;
         }
 
+        Log.v("brakecontroller", "atbrake: " + atBrake);
+        Log.v("brakecontroller", "stopcoast: " + stopCoast);
+
         if ((absoluteDistanceToTarget < targetVelocityFunction.stopThreshold && !atBrake) || (stopCoast && !atBrake)) { // close enough
             stopCoast = true;
+            Log.v("brakecontroller", "STAHP");
             return 0;
         } else {
             // on the way to brake point
@@ -93,7 +99,11 @@ public class BrakeController {
 
             double error = targetVelocity - currentVelocity;
 
-            return velocityPidController.calculateScale(error);
+            double scale = velocityPidController.calculateScale(error);
+
+            Log.v("brakecontroller", "scale: " + scale);
+
+            return scale;
         }
     }
 

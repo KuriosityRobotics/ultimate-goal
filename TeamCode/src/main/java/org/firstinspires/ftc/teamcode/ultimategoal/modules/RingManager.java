@@ -168,7 +168,7 @@ public class RingManager implements Module, TelemetryProvider {
             entranceSeenIterations = 0;
         }
 
-        if (robot.shooter.getCurrentHopperPosition() != HopperModule.HopperPosition.LOWERED || deliverRings || robot.shooter.deliveryQueued()) {
+        if (robot.shooter.getCurrentHopperPosition() != HopperModule.HopperPosition.LOWERED) {
             boolean entranceSeeingRing = entranceSeenIterations > 0;
 
             seenRingSinceRaise = seenRingSinceRaise || (entranceSeenIterations >= 2);

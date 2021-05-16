@@ -3,15 +3,12 @@ package org.firstinspires.ftc.teamcode.ultimategoal;
 import android.os.SystemClock;
 import android.util.Log;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.LynxNackException;
 import com.qualcomm.hardware.lynx.commands.standard.LynxSetModuleLEDColorCommand;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -203,7 +200,9 @@ public class Robot extends ModuleCollection {
     private void cleanUp() {
         Log.d("Robot", "Cleaning up");
 
-        this.fileDump.writeFilesToDevice();
+        if (WILL_FILE_DUMP) {
+            this.fileDump.writeFilesToDevice();
+        }
 
         onClose();
 

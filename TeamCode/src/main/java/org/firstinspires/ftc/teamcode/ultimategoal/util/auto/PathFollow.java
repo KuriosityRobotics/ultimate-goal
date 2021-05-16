@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.util.auto;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 
 import org.firstinspires.ftc.teamcode.ultimategoal.Robot;
@@ -39,6 +41,7 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
     private final Waypoint[] path;
     private int pathIndex;
     private boolean registeredLastAction;
+    private boolean doneMoving = false;
 
     // settings
     private double direction = 0;
@@ -78,7 +81,9 @@ public class PathFollow implements TelemetryProvider, FileDumpProvider {
 
             if (robot.actionExecutor.requiresStop()) { // an action requires us to stop
                 robot.drivetrain.setMovements(0, 0, 0);
-            } else if (isDoneMoving(robotPosition, robotHeading)) { // We're at the end of the path
+            } else if (isDoneMoving(robotPosition, robotHeading) || doneMoving) { // We're at the end of the path
+                doneMoving = true;
+
                 robot.drivetrain.brakePoint = path[path.length - 1];
 
                 if (willAngleLockAtEnd) {

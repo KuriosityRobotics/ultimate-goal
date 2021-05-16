@@ -63,6 +63,8 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
         robot.startModules();
 
+        resetManualOffsets();
+
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.BLOCKING;
 
         while (opModeIsActive()) {
@@ -75,7 +77,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
                     bluePowershotsAction = new BluePowershotsAction();
 
                     robot.shooter.manualAngleFlapCorrection = 0;
-                    robot.shooter.manualAngleCorrection = 0;
+                    robot.shooter.manualAngleCorrection = -0.08;
                 } else {
                     robot.shooter.flywheelOn = false;
                     robot.drivetrain.setBrakePosition(robot.drivetrain.getCurrentPosition());
@@ -146,6 +148,7 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
     }
 
     Toggle g2RT = new Toggle();
+
     private void updateRingDeliverySystemStates() {
         if (deliverRingsToggle.isToggled(gamepad2.a)) {
             if (robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED) {
@@ -222,10 +225,12 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
         if (gamepad1.dpad_down) {
             robot.drivetrain.setPosition(37.5, 48, 0);
+            resetManualOffsets();
         }
 
         if (gamepad1.dpad_up) {
             robot.drivetrain.setPosition(50.5, 50.25, 0);
+            resetManualOffsets();
         }
 
         robot.drivetrain.isSlowMode = gamepad1.right_bumper;
@@ -245,6 +250,11 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
         } else {
             robot.drivetrain.weakBrake = true;
         }
+    }
+
+    private void resetManualOffsets() {
+        robot.shooter.manualAngleFlapCorrection = 0;
+        robot.shooter.manualAngleCorrection = -0.065;
     }
 
     @Override

@@ -17,7 +17,7 @@ public class Target {
 
     private static final double POWERSHOT_CENTRE_X = (24 - 0.5) * 3 - 9;
     // these are abs of dist from centre (for each powershot)
-    private static final double SHOT1_OFFSET = 6, SHOT2_OFFSET = 14, SHOT3_OFFSET = 18.5;
+    private static final double SHOT1_OFFSET = 8, SHOT2_OFFSET = 16, SHOT3_OFFSET = 20; // todo force tuned ooga booga
 //    private static final double SHOT1_OFFSET = 3.5, SHOT2_OFFSET = 11, SHOT3_OFFSET = 18.5;
 
     public interface ITarget {

@@ -35,7 +35,12 @@ public class ShootStackAction extends Action {
         if (beginExecutionTime == 0) {
             robot.ringManager.autoRaise = true;
             robot.ringManager.autoShootRings = true;
-            robot.ringManager.autoRaiseThreshold = 2;
+
+            if (ringsToExpect >= 3) {
+                robot.ringManager.autoRaiseThreshold = 2;
+            } else {
+                robot.ringManager.autoRaiseThreshold = 1;
+            }
 
             robot.shooter.target = this.target;
             robot.shooter.flywheelOn = true;
@@ -54,22 +59,60 @@ public class ShootStackAction extends Action {
 //        Log.v("shootstack", "expect: " + ringsToExpect);
 //        Log.v("shootstack", "distsensorpasses: " + robot.ringManager.getDistanceSensorPasses());
 
-        String message;
-        if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 1 && robot.ringManager.getEntraceSensorReading() < 60) {
-            robot.intakeModule.intakePower = 0.8;
-            message = "slowing down!";
-        } else if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 2) {
-            robot.intakeModule.intakePower = -0.2;
-            message = "got two!";
-        } else if (ringsShotSoFar + robot.ringManager.getDistanceSensorPasses() >= 4 || robot.ringManager.getDistanceSensorPasses() >= 2) {
-            robot.intakeModule.intakePower = 0;
-            message = "got 4! or we have 2 idk";
-        } else if (ringsShotSoFar >= 2) {
-            robot.intakeModule.intakePower = 1;
-            message = "go ham";
+        String message = "placeholder";
+        if (ringsToExpect >= 3) {
+            if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 1 && robot.ringManager.getEntraceSensorReading() < 60) {
+                robot.intakeModule.intakePower = 0.8;
+                message = "slowing down!";
+            } else if (ringsShotSoFar < 2 && robot.ringManager.getForwardDistanceSensorPasses() >= 2) {
+                robot.intakeModule.intakePower = -0.2;
+                message = "got two!";
+            } else if (ringsShotSoFar + robot.ringManager.getDistanceSensorPasses() >= 4 || robot.ringManager.getDistanceSensorPasses() >= 2) {
+                robot.intakeModule.intakePower = 0;
+                message = "got 4! or we have 2 idk";
+            } else if (ringsShotSoFar >= 2) {
+                robot.intakeModule.intakePower = 1;
+                message = "go ham";
+            } else {
+                robot.intakeModule.intakePower = 0.85;
+                message = "normal ops";
+            }
+
+            if (robot.intakeModule.stopIntake || !robot.shooter.isFinishedFiringQueue() || robot.intakeModule.intakePower < 0) {
+                robot.drivetrain.setMovements(0, 0, 0);
+            } else {
+                if (robot.drivetrain.distanceToPoint(end) < 3) {
+                    robot.drivetrain.setMovements(0, 0, 0);
+                    robot.drivetrain.setBrakePosition(end);
+                } else {
+                    if (ringsShotSoFar >= 2) {
+                        robot.drivetrain.setMovementsTowardsPoint(end, 0.34, 0.5, 0, false, 0);
+                    } else {
+                        robot.drivetrain.setMovementsTowardsPoint(end, 0.175, 0.3, 0, false, 0);
+                    }
+                }
+            }
+        } else if (ringsToExpect >= 1) {
+            int systemrings = robot.ringManager.getRingsInShooter() + ringsShotSoFar;
+            robot.intakeModule.intakePower = systemrings >= ringsToExpect ? 0 : 1;
+
+            if (robot.intakeModule.stopIntake || !robot.shooter.isFinishedFiringQueue() || robot.intakeModule.intakePower < 0) {
+                robot.drivetrain.setMovements(0, 0, 0);
+            } else {
+                if (robot.drivetrain.distanceToPoint(end) < 3 || ringsShotSoFar >= ringsToExpect) {
+                    robot.drivetrain.setMovements(0, 0, 0);
+                    robot.drivetrain.setBrakePosition(end);
+                } else {
+                    robot.drivetrain.setMovementsTowardsPoint(end, 0.2, 0.3, 0, false, 0);
+                }
+            }
         } else {
-            robot.intakeModule.intakePower = 0.85;
-            message = "normal ops";
+            if (robot.drivetrain.distanceToPoint(end) < 3) {
+                robot.drivetrain.setMovements(0, 0, 0);
+                robot.drivetrain.setBrakePosition(end);
+            } else {
+                robot.drivetrain.setMovementsTowardsPoint(end, 0.17, 0.1, 0, true, Math.toRadians(-150));
+            }
         }
 
         if (itr % 100 == 0) {
@@ -77,25 +120,13 @@ public class ShootStackAction extends Action {
         }
 
 //        if (robot.shooter.getTurretVelocity() < 0.01 )
-        if (robot.intakeModule.stopIntake || !robot.shooter.isFinishedFiringQueue() || robot.intakeModule.intakePower < 0) {
-            robot.drivetrain.setMovements(0, 0, 0);
-        } else {
-            if (robot.drivetrain.distanceToPoint(end) < 3) {
-                robot.drivetrain.setMovements(0, 0, 0);
-                robot.drivetrain.setBrakePosition(end);
-            } else {
-                if (ringsShotSoFar >= 2) {
-                    robot.drivetrain.setMovementsTowardsPoint(end, 0.34, 0.5, 0, false, 0);
-                } else {
-                    robot.drivetrain.setMovementsTowardsPoint(end, 0.18, 0.3, 0, false, 0);
-                }
-            }
-        }
+
 
         if (lastDitch && !completedLastDitch) {
             Log.v("shoostack", "last ditching");
             robot.shooter.clearIndexes();
-            if (robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED && !robot.shooter.deliveryQueued() && robot.ringManager.getForwardDistanceSensorPasses() > 0) {
+            int tobe = robot.ringManager.getRingsInShooter() + ringsShotSoFar;
+            if (robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED && !robot.shooter.deliveryQueued() && tobe < ringsToExpect) {
                 robot.shooter.deliverRings();
             } else {
                 Log.v("shootstack", "didn't need to deliv");
