@@ -233,10 +233,6 @@ public class RingManager implements Module, TelemetryProvider {
         return forwardDistanceSensorPasses;
     }
 
-    public int getRingsInHopper() {
-        return ringsInHopper;
-    }
-
     public int getRingsInShooter() {
         return ringsInShooter;
     }
@@ -247,22 +243,6 @@ public class RingManager implements Module, TelemetryProvider {
 
     public int getTotalRingsShot() {
         return totalRingsShot;
-    }
-
-    public int getRingsInSystem() {
-        return ringsInHopper + ringsInShooter;
-    }
-
-    public boolean getSeeingRing() {
-        return seeingRing;
-    }
-
-    public boolean getDeliverRings() {
-        return deliverRings;
-    }
-
-    public boolean entraceSeeingRing() {
-        return entranceSeenIterations > 0;
     }
 
     public double getEntraceSensorReading() {
