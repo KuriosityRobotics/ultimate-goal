@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.ultimategoal.modules;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
@@ -51,8 +53,8 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final static double SLOW_MODE_FACTOR = 0.35;
     private final static double TURN_SCALE = Math.toRadians(30);
 
-    public static double TOWARDS_P = 0.0019;
-    public static double TOWARDS_D = 0.411;
+    public static double TOWARDS_P = 0.0015;
+    public static double TOWARDS_D = 0.375;
     public static double NORMAL_P = 0.0025;
     public static double NORMAL_D = 0.08;
     public static double ANGULAR_P = 0.22;
@@ -61,7 +63,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     private final BrakeController towardsBrakeController = new BrakeController(
             new VelocityPidController(TOWARDS_P, 0, TOWARDS_D),
             new TargetVelocityFunction(2.00, 4, 10, 0.75),
-            0.02, 28
+            0.01, 28
     );
     private final BrakeController normalToBrakeController = new BrakeController(
             new VelocityPidController(NORMAL_P, 0, NORMAL_D),
@@ -70,7 +72,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
     );
     private final BrakeController angularBrakeController = new BrakeController(
             new VelocityPidController(ANGULAR_P, 0, ANGULAR_D),
-            new TargetVelocityFunction(Math.toRadians(210), Math.toRadians(9), Math.toRadians(35), Math.toRadians(0.5), 1.1),
+            new TargetVelocityFunction(Math.toRadians(200), Math.toRadians(9), Math.toRadians(35), Math.toRadians(0.5), 1.1),
             0.26, Math.toRadians(110)
     );
 
@@ -246,6 +248,11 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         setPosition(position.getTranslation().getX(), position.getTranslation().getY(), position.getHeading());
     }
 
+    public void setBrake(double x, double y, double brakeHeading) {
+        setBrakePosition(new Point(x, y));
+        setBrakeHeading(brakeHeading);
+    }
+
     public void setBrake(Point brakePoint, double brakeHeading) {
         setBrakePosition(brakePoint);
         setBrakeHeading(brakeHeading);
@@ -327,6 +334,7 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         double towardsScale = towardsBrakeController.calculatePower(distanceToPoint(brakePoint), velocityTowardsBrake);
         double normalScale = normalToBrakeController.calculatePower(0, velocityNormalToBrake);
 
+        Log.v("drivetrain", "distance: " + distanceToBrake());
 
         // Decompose desired towards target and normal to target powers into xMovement & yMovement
         Pose2d toRobotCentric = new Pose2d(new Translation2d(), new Rotation2d(-relativeAngleToPoint(brakePoint)));
@@ -515,6 +523,10 @@ public class Drivetrain extends ModuleCollection implements TelemetryProvider {
         } else {
             return odometryModule.getWorldHeadingRad();
         }
+    }
+
+    public double distanceToBrake() {
+        return distanceToPoint(brakePoint);
     }
 
     public Point getCurrentOdometryPosition() {
