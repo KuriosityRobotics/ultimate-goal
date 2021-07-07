@@ -84,10 +84,6 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
                 }
             }
 
-            if (resetCountersToggle.isToggled(gamepad2.right_bumper)) {
-                robot.ringManager.resetRingCounters();
-            }
-
             if (doPowershotsAction) {
                 robot.shooter.flywheelOn = true;
 
@@ -136,15 +132,15 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             robot.shooter.queueIndex();
         }
 
-//        if (Math.abs(gamepad2.left_stick_x) > 0.1 || robot.shooter.manualTurret) {
-//            robot.shooter.manualTurret = true;
-//            robot.shooter.manualTurretPower = gamepad2.left_stick_x;
-//        }
-//
-//        if (autoTurretToggle.isToggled(gamepad2.left_bumper)) {
-//            robot.shooter.manualTurret = false;
-//            robot.shooter.manualTurretPower = 0;
-//        }
+        if (Math.abs(gamepad2.left_stick_x) > 0.1 || robot.shooter.manualTurret) {
+            robot.shooter.manualTurret = true;
+            robot.shooter.manualTurretPower = gamepad2.left_stick_x;
+        }
+
+        if (autoTurretToggle.isToggled(gamepad2.left_bumper)) {
+            robot.shooter.manualTurret = false;
+            robot.shooter.manualTurretPower = 0;
+        }
     }
 
     Toggle g2RT = new Toggle();
@@ -154,14 +150,6 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
             if (robot.shooter.getCurrentHopperPosition() == HopperModule.HopperPosition.LOWERED) {
                 robot.shooter.deliverRings();
             }
-        }
-
-        if (autoManagerToggle.isToggled(gamepad1.x)) {
-            robot.ringManager.autoRaise = !robot.ringManager.autoRaise;
-        }
-
-        if (g2RT.isToggled(gamepad2.right_trigger)) {
-            robot.ringManager.addDistanceSensorPasses(2);
         }
     }
 

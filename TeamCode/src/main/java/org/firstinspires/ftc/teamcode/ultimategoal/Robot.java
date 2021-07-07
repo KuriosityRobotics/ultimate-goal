@@ -34,7 +34,6 @@ public class Robot extends ModuleCollection {
     public IntakeModule intakeModule;
     public WobbleModule wobbleModule;
     public RingManager ringManager;
-//    public VisionModule visionModule;
 
     public HardwareMap hardwareMap;
     public Telemetry telemetry;
@@ -110,11 +109,9 @@ public class Robot extends ModuleCollection {
 
         this.intakeModule = new IntakeModule(this, true, isAuto);
         this.wobbleModule = new WobbleModule(this, false);
-        this.ringManager = new RingManager(this, true);
-//        this.visionModule = new VisionModule(this, true);
 
         this.modules = new Module[]{
-                this.drivetrain, this.ringManager, this.intakeModule, this.shooter, this.wobbleModule
+                this.drivetrain, this.intakeModule, this.shooter, this.wobbleModule
         };
 
         // Initialize modules

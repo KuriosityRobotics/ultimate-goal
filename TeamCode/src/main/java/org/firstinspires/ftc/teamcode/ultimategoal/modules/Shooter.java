@@ -188,7 +188,6 @@ public class Shooter extends ModuleCollection implements TelemetryProvider {
             } else if (safeToIndex && forceIndex) {
                 shooterModule.indexRing = true;
                 forceIndex = false;
-                robot.ringManager.addRingsInShooter(1);
                 lastIndexTime = currentTime;
             }
         }
