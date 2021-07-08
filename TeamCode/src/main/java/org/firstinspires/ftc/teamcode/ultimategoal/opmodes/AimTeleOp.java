@@ -65,6 +65,8 @@ public class AimTeleOp extends LinearOpMode implements TelemetryProvider {
 
         resetManualOffsets();
 
+
+        robot.shooter.manualTurret = true;
         robot.intakeModule.blockerPosition = IntakeModule.IntakeBlockerPosition.BLOCKING;
 
         while (opModeIsActive()) {
