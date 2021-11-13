@@ -23,12 +23,16 @@ repositories {
     maven {
         url "https://maven.0x778.tk"
     }
+    maven {
+        url "https://maven.brott.dev/"
+    }
 }
 
 dependencies {
     implementation 'com.spartronics4915.lib:ftc265:2.1.8'
     implementation 'org.openftc:easyopencv:1.4.1'
     implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
+    implementation 'com.acmerobotics.dashboard:dashboard:0.4.3'
 
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
